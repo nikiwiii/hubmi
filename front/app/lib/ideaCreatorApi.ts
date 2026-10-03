@@ -97,8 +97,14 @@ async function request<T>(path: string, body: unknown, fallback: string, auth = 
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    // FastAPI returns a string for HTTPException and an array for validation errors (422).
-    const message = typeof err.detail === 'string' ? err.detail : fallback;
+    let message = fallback;
+    if (typeof err.detail === 'string') {
+      message = err.detail;
+    } else if (Array.isArray(err.detail) && err.detail.length > 0) {
+      message = err.detail.map((e: any) => e.msg || e.message || 'Błąd walidacji danych').join('; ');
+    } else if (res.status >= 500) {
+      message = 'Wystąpił problem po stronie serwera AI. Spróbuj ponownie za chwilę.';
+    }
     throw new IdeaCreatorError(message, res.status);
   }
   return res.json();
@@ -143,7 +149,7 @@ export function generateImage(fields: IdeaFields, category?: string): Promise<Ge
   return request(
     '/generate_image',
     { ...fields, category: category || undefined },
-    'Uzupełnij przynajmniej tytuł lub opis, aby wygenerować obraz.'
+    'Nie udało się wygenerować wizualizacji AI.'
   );
 }
 

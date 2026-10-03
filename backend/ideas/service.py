@@ -32,7 +32,7 @@ class IdeaService:
             category=idea.get("category", "general"),
             user_id=str(idea["user_id"]),
             author_name=idea.get("author_name") or "Anonim",
-            image_url=idea.get("image_url"),
+            image_url=idea.get("image_url") or idea.get("essence"),
             created_at=str(idea["created_at"]),
             likes_count=likes,
             volunteers_count=volunteers,
