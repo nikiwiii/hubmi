@@ -510,40 +510,6 @@ function ChatContent() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick suggestions */}
-              <div className="px-4 py-2 bg-stone-50/60 border-t border-stone-100 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-                <button
-                  onClick={() =>
-                    handleSendMessage(
-                      "Dzień dobry! Jak mogę zgłosić pomysł do inkubatora ROPS Kraków?",
-                    )
-                  }
-                  className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
-                >
-                  Jak zgłosić pomysł do inkubatora?
-                </button>
-                <button
-                  onClick={() =>
-                    handleSendMessage(
-                      "Jakie formy dofinansowania są obecnie dostępne dla seniorów?",
-                    )
-                  }
-                  className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
-                >
-                  Dostępne formy dofinansowania
-                </button>
-                <button
-                  onClick={() =>
-                    handleSendMessage(
-                      "Chętnie wezmę udział w testowaniu prototypu.",
-                    )
-                  }
-                  className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
-                >
-                  Chętnie przetestuję prototyp
-                </button>
-              </div>
-
               {/* Input Bar */}
               <div className="p-3 bg-white border-t border-stone-100">
                 <form
