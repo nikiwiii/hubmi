@@ -1,16 +1,22 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { Search, ArrowRight, RefreshCw, Users2, ChevronLeft, ChevronRight, Layers } from "lucide-react";
-import { searchInnovations } from "../../lib/api";
+import React, { useEffect, useMemo, useRef } from "react";
+import {
+  Search,
+  ArrowRight,
+  RefreshCw,
+  Users2,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+} from "lucide-react";
 import { InnovationRecord } from "../../lib/types";
-import { errorMessage } from "../../lib/middleman";
+import { useApp } from "../../context/AppContext";
 
 interface InnovationPickerProps {
   onSelect: (innovation: InnovationRecord) => void;
 }
 
-const SEARCH_DEBOUNCE_MS = 300;
 const PAGE_SIZE = 15;
 
 function getPageNumbers(current: number, total: number): (number | "...")[] {
@@ -27,53 +33,48 @@ function getPageNumbers(current: number, total: number): (number | "...")[] {
 }
 
 export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) => {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<InnovationRecord[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    innovations,
+    isLoadingInnovations,
+    innovationsError,
+    loadInnovations,
+    searchLocalInnovations,
+    pickerQuery,
+    setPickerQuery,
+    pickerPage,
+    setPickerPage,
+  } = useApp();
 
   const listTopRef = useRef<HTMLDivElement>(null);
 
+  // Zapewnij, że baza innowacji zostanie pobrana, jeśli stan jest jeszcze pusty
   useEffect(() => {
-    let cancelled = false;
-    const handle = setTimeout(async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // Pobieramy wszystkie pasujące innowacje (limit pominięty), aby frontend mógł paginować po 15 na stronę
-        const data = await searchInnovations(query);
-        if (!cancelled) {
-          setResults(data);
-          setCurrentPage(1);
-        }
-      } catch (err) {
-        if (!cancelled) setError(errorMessage(err, "Nie udało się pobrać innowacji."));
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    }, SEARCH_DEBOUNCE_MS);
-    return () => {
-      cancelled = true;
-      clearTimeout(handle);
-    };
-  }, [query]);
+    if (innovations.length === 0 && !isLoadingInnovations) {
+      loadInnovations();
+    }
+  }, [innovations.length, isLoadingInnovations, loadInnovations]);
+
+  // Błyskawiczne filtrowanie w pamięci ze stanu globalnego
+  const results = useMemo(() => {
+    return searchLocalInnovations(pickerQuery);
+  }, [searchLocalInnovations, pickerQuery]);
 
   // Obliczenia paginacji
   const totalItems = results.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
-  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const validCurrentPage = Math.min(Math.max(1, pickerPage), totalPages);
   const startIndex = (validCurrentPage - 1) * PAGE_SIZE;
   const endIndex = Math.min(startIndex + PAGE_SIZE, totalItems);
   const currentResults = results.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages || page === validCurrentPage) return;
-    setCurrentPage(page);
+    setPickerPage(page);
     listTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const pageNumbers = getPageNumbers(validCurrentPage, totalPages);
+  const isInitialLoading = isLoadingInnovations && innovations.length === 0;
 
   return (
     <div ref={listTopRef} className="space-y-4 scroll-mt-6">
@@ -85,10 +86,10 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
           <Search className="w-4 h-4 text-stone-400 shrink-0" />
           <input
             type="search"
-            value={query}
+            value={pickerQuery}
             onChange={(e) => {
-              setQuery(e.target.value);
-              setCurrentPage(1);
+              setPickerQuery(e.target.value);
+              setPickerPage(1);
             }}
             placeholder="np. seniorzy, samotność, transport, dzieci..."
             className="flex-1 py-3.5 bg-transparent text-base text-stone-900 placeholder:text-stone-400 focus:outline-none"
@@ -96,14 +97,14 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
         </div>
       </label>
 
-      {error && (
+      {innovationsError && innovations.length === 0 && (
         <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-          {error}
+          {innovationsError}
         </p>
       )}
 
       {/* Pasek podsumowania liczby wyników i bieżącej strony */}
-      {!isLoading && !error && totalItems > 0 && (
+      {!isInitialLoading && totalItems > 0 && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-stone-500 px-1">
           <div className="flex items-center gap-1.5 font-medium">
             <Layers className="w-3.5 h-3.5 text-stone-400" />
@@ -120,12 +121,12 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
         </div>
       )}
 
-      {isLoading ? (
+      {isInitialLoading ? (
         <div className="flex items-center gap-2 text-sm text-stone-500 py-12 justify-center">
           <RefreshCw className="w-4 h-4 animate-spin text-stone-400" />
           <span>Szukam w bazie innowacji ROPS Kraków...</span>
         </div>
-      ) : totalItems === 0 && !error ? (
+      ) : totalItems === 0 ? (
         <p className="text-sm text-stone-500 py-12 text-center bg-stone-50 rounded-2xl border border-stone-100">
           Nie znaleziono innowacji dla podanej frazy. Spróbuj innego słowa kluczowego.
         </p>

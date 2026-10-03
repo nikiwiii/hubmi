@@ -15,6 +15,11 @@ interface CustomSelectProps<T extends string = string> {
   options: SelectOption<T>[];
   labelPrefix?: string;
   className?: string;
+  fullWidth?: boolean;
+  size?: "sm" | "md";
+  placeholder?: string;
+  error?: boolean;
+  id?: string;
 }
 
 export function CustomSelect<T extends string = string>({
@@ -23,11 +28,17 @@ export function CustomSelect<T extends string = string>({
   options,
   labelPrefix,
   className = "",
+  fullWidth = false,
+  size = "sm",
+  placeholder,
+  error = false,
+  id,
 }: CustomSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+  const selectedOption = options.find((opt) => opt.value === value);
+  const isMd = size === "md";
 
   // Close on outside click
   useEffect(() => {
@@ -64,27 +75,57 @@ export function CustomSelect<T extends string = string>({
     };
   }, [isOpen]);
 
+  const hasSelection = Boolean(selectedOption && selectedOption.value !== "");
+  const displayText = hasSelection
+    ? selectedOption!.label
+    : placeholder || options[0]?.label || "";
+
   return (
-    <div ref={containerRef} className={`relative inline-block ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative ${fullWidth ? "w-full block" : "inline-block"} ${className}`}
+    >
       {/* Trigger Button */}
       <button
+        id={id}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className="px-3 py-1.5 bg-white hover:bg-stone-50/80 active:bg-stone-100 border border-stone-200/80 hover:border-stone-300 rounded-xl text-xs font-medium text-stone-700 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none"
+        className={`${
+          isMd
+            ? `w-full px-4 py-3 bg-white hover:bg-stone-50/70 border rounded-xl text-base flex items-center justify-between transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900/15 ${
+                error
+                  ? "border-red-400 focus:border-red-500"
+                  : isOpen
+                  ? "border-stone-900/30 ring-2 ring-stone-900/10"
+                  : "border-black/10 hover:border-black/20"
+              }`
+            : "px-3 py-1.5 bg-white hover:bg-stone-50/80 active:bg-stone-100 border border-stone-200/80 hover:border-stone-300 rounded-xl text-xs font-medium text-stone-700 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none"
+        }`}
       >
-        {labelPrefix && (
-          <span className="text-stone-400 font-normal">{labelPrefix}</span>
-        )}
-        {selectedOption?.icon && (
-          <span className="text-stone-500 shrink-0">{selectedOption.icon}</span>
-        )}
-        <span className="font-semibold text-stone-800">
-          {selectedOption?.label}
-        </span>
+        <div className="flex items-center gap-2 overflow-hidden text-left">
+          {labelPrefix && (
+            <span className="text-stone-400 font-normal shrink-0">{labelPrefix}</span>
+          )}
+          {selectedOption?.icon && (
+            <span className="text-stone-500 shrink-0">{selectedOption.icon}</span>
+          )}
+          <span
+            className={`truncate ${
+              !hasSelection && placeholder
+                ? "text-stone-400 font-normal"
+                : isMd
+                ? "font-medium text-stone-900"
+                : "font-semibold text-stone-800"
+            }`}
+          >
+            {displayText}
+          </span>
+        </div>
+
         <ChevronDown
-          className={`w-3.5 h-3.5 text-stone-400 transition-transform duration-200 ease-out ${
+          className={`${isMd ? "w-4 h-4 ml-2" : "w-3.5 h-3.5"} text-stone-400 shrink-0 transition-transform duration-200 ease-out ${
             isOpen ? "rotate-180 text-stone-700" : ""
           }`}
         />
@@ -94,7 +135,9 @@ export function CustomSelect<T extends string = string>({
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 top-full mt-1.5 min-w-[180px] bg-white border border-stone-200/80 rounded-2xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 origin-top-right divide-y divide-stone-100/60"
+          className={`absolute ${
+            fullWidth ? "left-0 right-0 w-full" : "right-0 min-w-[180px]"
+          } top-full mt-1.5 max-h-64 overflow-y-auto bg-white border border-stone-200/90 rounded-2xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 origin-top divide-y divide-stone-100/60`}
         >
           <div className="space-y-0.5">
             {options.map((option) => {
@@ -109,13 +152,15 @@ export function CustomSelect<T extends string = string>({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-3 py-2 rounded-xl text-xs flex items-center justify-between text-left transition-colors cursor-pointer select-none ${
+                  className={`w-full ${
+                    isMd ? "px-3.5 py-2.5 text-sm" : "px-3 py-2 text-xs"
+                  } rounded-xl flex items-center justify-between text-left transition-colors cursor-pointer select-none ${
                     isSelected
                       ? "bg-stone-100 text-stone-900 font-semibold"
                       : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 overflow-hidden">
                     {option.icon && (
                       <span
                         className={`shrink-0 ${
@@ -125,11 +170,15 @@ export function CustomSelect<T extends string = string>({
                         {option.icon}
                       </span>
                     )}
-                    <span>{option.label}</span>
+                    <span className="truncate">{option.label}</span>
                   </div>
 
                   {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-stone-900 shrink-0 ml-2" />
+                    <Check
+                      className={`${
+                        isMd ? "w-4 h-4" : "w-3.5 h-3.5"
+                      } text-stone-900 shrink-0 ml-2`}
+                    />
                   )}
                 </button>
               );
