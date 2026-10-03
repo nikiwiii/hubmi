@@ -30,7 +30,7 @@ export default function KnowledgePage() {
       } else if (savedTab === "chat") {
         setIsChatOpen(true);
       }
-    } catch {}
+    } catch { }
   }, []);
 
   const handleTabChange = (openChat: boolean) => {
@@ -40,7 +40,7 @@ export default function KnowledgePage() {
         "minno_knowledge_active_tab",
         openChat ? "chat" : "catalog"
       );
-    } catch {}
+    } catch { }
   };
 
   const getIcon = (iconName: string) => {
@@ -69,12 +69,12 @@ export default function KnowledgePage() {
               {isChatOpen ? "Doradca Projektów" : "Katalog Badań"}
             </span>
             <span className="block text-stone-300">
-              {isChatOpen ? "AI" : "Społecznych"}
+              {isChatOpen ? "Z Bazą Raportów" : "Społecznych"}
             </span>
           </div>
           <p className="mt-2.5 text-stone-500 text-xs sm:text-sm font-medium max-w-xl">
             {isChatOpen
-              ? "Tryb skupienia: opisz swój pomysł, a doradca AI wskaże badania ROPS i powiaty o największym zapotrzebowaniu."
+              ? ""
               : "Diagnozy ROPS Kraków – interaktywne kartogramy i szeregi czasowe 2014–2024 dla 22 powiatów."}
           </p>
         </div>
@@ -84,11 +84,10 @@ export default function KnowledgePage() {
           <button
             type="button"
             onClick={() => handleTabChange(true)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              isChatOpen
-                ? "bg-stone-900 text-white shadow-2xs"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/40"
-            }`}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${isChatOpen
+              ? "bg-stone-900 text-white shadow-2xs"
+              : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/40"
+              }`}
           >
             <Sparkles
               className={`w-3.5 h-3.5 ${isChatOpen ? "text-amber-400" : "text-stone-400"}`}
@@ -99,22 +98,20 @@ export default function KnowledgePage() {
           <button
             type="button"
             onClick={() => handleTabChange(false)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              !isChatOpen
-                ? "bg-stone-900 text-white shadow-2xs"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/40"
-            }`}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${!isChatOpen
+              ? "bg-stone-900 text-white shadow-2xs"
+              : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/40"
+              }`}
           >
             <BookOpen
               className={`w-3.5 h-3.5 ${!isChatOpen ? "text-stone-200" : "text-stone-500"}`}
             />
             <span>Katalog Badań</span>
             <span
-              className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${
-                !isChatOpen
-                  ? "bg-white/20 text-white"
-                  : "bg-black/5 text-stone-500"
-              }`}
+              className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${!isChatOpen
+                ? "bg-white/20 text-white"
+                : "bg-black/5 text-stone-500"
+                }`}
             >
               {researches.length}
             </span>
@@ -184,9 +181,8 @@ export default function KnowledgePage() {
                             {research.summary.endAvg} {research.unit}
                           </span>
                           <span
-                            className={`text-[11px] font-bold ${
-                              isPositive ? "text-emerald-700" : "text-rose-700"
-                            }`}
+                            className={`text-[11px] font-bold ${isPositive ? "text-emerald-700" : "text-rose-700"
+                              }`}
                           >
                             {isPositive ? "+" : ""}
                             {research.summary.deltaAvg}
