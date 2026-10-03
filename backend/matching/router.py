@@ -29,15 +29,15 @@ def direct_match(request: MatchRequest):
     return MatchingService.match_and_chat(request)
 
 @router.get("/innovations", summary="Lista wszystkich innowacji w bazie danych")
-def get_innovations():
-    """Zwraca bazę innowacji wraz z ich URL-ami i źródłami."""
+def get_innovations(include_embedding: bool = False):
+    """Zwraca bazę innowacji wraz ze wszystkimi informacjami."""
     innovations = DatabaseRepository.get_all_innovations()
-    # Ukrywamy surowy wektor embeddingu przed odpowiedzią JSON dla czytelności
     sanitized = []
     for item in innovations:
         d = dict(item)
-        if "embedding" in d:
-            d["embedding_dim"] = len(d["embedding"]) if isinstance(d["embedding"], list) else None
+        if not include_embedding and "embedding" in d:
+            if isinstance(d["embedding"], list):
+                d["embedding_dim"] = len(d["embedding"])
             d.pop("embedding", None)
         sanitized.append(d)
     return sanitized
