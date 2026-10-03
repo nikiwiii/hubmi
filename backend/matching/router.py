@@ -1,0 +1,64 @@
+from fastapi import APIRouter, status, HTTPException
+from typing import List
+from supabase_client import DatabaseRepository
+from matching.schemas import MatchRequest, MatchResponse, InnovationCreate
+from matching.service import MatchingService
+from matching.embeddings import compute_embedding
+
+router = APIRouter(prefix="/api/matching", tags=["Matching & RAG Chatbot"])
+
+@router.post("/chat", response_model=MatchResponse, summary="Chatbot RAG: Wyszukiwanie innowacji po problemie z Groq API, Explainability i Tracingiem")
+def chat_matching(request: MatchRequest):
+    """
+    Główny endpoint chatbota dopasowującego innowacje:
+    1. Pobiera zapytanie użytkownika opisujące problem.
+    2. Wyszukuje semantycznie (vector search po embeddingu) najtrafniejsze innowacje w bazie `innovations`.
+    3. Railway / Guardrails:
+       - Jeżeli pytanie jest niepowiązane lub nie ma w bazie takiego projektu -> zwraca komunikat odmowy z informacją guardrails.
+    4. Identyfikuje najlepsze rozwiązanie oraz do 2 innych zbliżonych rozwiązań z podobieństwem w granicy do 5%.
+    5. Wyodrębnia Explainability (dlaczego wybrano to rozwiązanie) oraz wskazuje plik źródłowy i URL.
+    6. Generuje odpowiedź za pomocą Groq API (model LLaMA 3.3).
+    7. Zwraca pełny ślad wykonania (tracing krok po kroku).
+    """
+    return MatchingService.match_and_chat(request)
+
+@router.post("/match", response_model=MatchResponse, summary="Szybkie dopasowanie problemu (alias chatbota)")
+def direct_match(request: MatchRequest):
+    """Alias dla endpointu /chat."""
+    return MatchingService.match_and_chat(request)
+
+@router.get("/innovations", summary="Lista wszystkich innowacji w bazie danych")
+def get_innovations():
+    """Zwraca bazę innowacji wraz z ich URL-ami i źródłami."""
+    innovations = DatabaseRepository.get_all_innovations()
+    # Ukrywamy surowy wektor embeddingu przed odpowiedzią JSON dla czytelności
+    sanitized = []
+    for item in innovations:
+        d = dict(item)
+        if "embedding" in d:
+            d["embedding_dim"] = len(d["embedding"]) if isinstance(d["embedding"], list) else None
+            d.pop("embedding", None)
+        sanitized.append(d)
+    return sanitized
+
+@router.post("/innovations", status_code=status.HTTP_201_CREATED, summary="Dodaj nową innowację do bazy danych")
+def add_innovation(data: InnovationCreate):
+    """Pozwala dodać nową innowację do bazy wraz z adresem URL i plikiem źródłowym."""
+    text_to_embed = f"{data.title}. Problem: {data.addressed_problems}. Opis: {data.description}. Dofinansowanie: {data.funding_info or ''}"
+    embedding = compute_embedding(text_to_embed)
+
+    new_item = {
+        "title": data.title,
+        "description": data.description,
+        "addressed_problems": data.addressed_problems,
+        "funding_info": data.funding_info,
+        "target_group": data.target_group,
+        "beneficiaries": data.beneficiaries,
+        "url": data.url,
+        "file_source": data.file_source,
+        "embedding": embedding
+    }
+    created = DatabaseRepository.create_innovation(new_item)
+    created_copy = dict(created)
+    created_copy.pop("embedding", None)
+    return created_copy

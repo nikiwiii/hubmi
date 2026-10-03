@@ -12,27 +12,27 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
   shape,
   theme,
   className = '',
-  size = 120
+  size = 110
 }) => {
-  // Accent colors for shapes based on theme
+  // Sophisticated, subtle matte palette
   const getFillColors = () => {
     switch (theme) {
       case 'yellow':
-        return { primary: '#B8A61E', secondary: '#968612', accent: '#E0CC34' };
+        return { primary: '#B8A663', secondary: '#968545', accent: '#FAF3D7' };
       case 'slate':
-        return { primary: '#7C7F75', secondary: '#6B6E64', accent: '#B8BBB2' };
+        return { primary: '#86887F', secondary: '#6B6C64', accent: '#EDECE6' };
       case 'lavender':
-        return { primary: '#7A8DF0', secondary: '#6074E4', accent: '#CCD5FC' };
+        return { primary: '#7C89B8', secondary: '#5E6B99', accent: '#ECF0FA' };
       case 'sage':
-        return { primary: '#6FA488', secondary: '#5A8E73', accent: '#C0E2D1' };
+        return { primary: '#76927E', secondary: '#58735F', accent: '#EBF2ED' };
       case 'lilac':
-        return { primary: '#A65BF0', secondary: '#8934E0', accent: '#EAD1FD' };
+        return { primary: '#8E77A3', secondary: '#705A85', accent: '#F3ECF7' };
       case 'pink':
-        return { primary: '#E46788', secondary: '#CF4C6F', accent: '#FDD5E0' };
+        return { primary: '#A6737E', secondary: '#8A5661', accent: '#F8ECEF' };
       case 'cyan':
-        return { primary: '#0284C7', secondary: '#0369A1', accent: '#BAE6FD' };
+        return { primary: '#698B99', secondary: '#4D6F7C', accent: '#EAF3F6' };
       default:
-        return { primary: '#71717A', secondary: '#52525B', accent: '#E4E4E7' };
+        return { primary: '#797A7C', secondary: '#5A5B5C', accent: '#EBECEE' };
     }
   };
 
@@ -47,10 +47,10 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
           viewBox="0 0 100 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-500 hover:scale-105 ${className}`}
+          className={`transition-transform duration-300 hover:scale-103 ${className}`}
         >
-          <circle cx="50" cy="50" r="42" fill={primary} fillOpacity="0.85" />
-          <circle cx="50" cy="50" r="20" fill="currentColor" className="text-current opacity-90" />
+          <circle cx="50" cy="50" r="40" fill={primary} fillOpacity="0.75" />
+          <circle cx="50" cy="50" r="19" fill={accent} fillOpacity="0.95" />
         </svg>
       );
 
@@ -62,14 +62,14 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
           viewBox="0 0 100 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-500 hover:scale-105 ${className}`}
+          className={`transition-transform duration-300 hover:scale-103 ${className}`}
         >
           <path
-            d="M20 25 L45 80 L75 80 L92 35 L76 35 L60 70 L48 40 L38 25 Z"
+            d="M22 28 L46 78 L72 78 L90 38 L76 38 L60 68 L50 42 L40 28 Z"
             fill={primary}
-            fillOpacity="0.85"
+            fillOpacity="0.75"
           />
-          <rect x="18" y="45" width="22" height="35" rx="4" fill={secondary} fillOpacity="0.75" />
+          <rect x="20" y="46" width="20" height="32" rx="3" fill={secondary} fillOpacity="0.65" />
         </svg>
       );
 
@@ -81,17 +81,17 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
           viewBox="0 0 100 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-500 hover:scale-105 ${className}`}
+          className={`transition-transform duration-300 hover:scale-103 ${className}`}
         >
           <path
-            d="M22 65 C22 52 32 45 42 45 C46 36 56 30 68 32 C78 34 86 42 86 52 C91 56 94 62 92 68 C90 74 84 78 78 78 L26 78 C18 78 14 72 16 66 C18 64 20 64 22 65 Z"
+            d="M24 64 C24 53 33 46 42 46 C46 38 55 33 66 35 C75 37 83 44 83 53 C88 57 91 63 89 68 C87 73 82 76 76 76 L28 76 C20 76 17 71 18 65 C20 63 22 63 24 64 Z"
             fill={primary}
-            fillOpacity="0.8"
+            fillOpacity="0.7"
           />
           <path
-            d="M30 75 C30 65 38 60 48 60 C55 52 64 52 70 57 C76 62 76 70 74 75 Z"
+            d="M32 74 C32 65 39 61 48 61 C54 54 62 54 68 58 C73 63 73 70 71 74 Z"
             fill={accent}
-            fillOpacity="0.6"
+            fillOpacity="0.7"
           />
         </svg>
       );
@@ -104,17 +104,17 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
           viewBox="0 0 100 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-500 hover:scale-105 ${className}`}
+          className={`transition-transform duration-300 hover:scale-103 ${className}`}
         >
           <path
-            d="M48 18 C32 18 20 32 20 50 C20 68 32 82 48 82 L48 18 Z"
+            d="M48 20 C33 20 22 33 22 50 C22 67 33 80 48 80 L48 20 Z"
             fill={primary}
-            fillOpacity="0.85"
+            fillOpacity="0.75"
           />
           <path
-            d="M56 22 C68 28 78 40 76 56 C74 70 63 80 54 82 L54 22 Z"
+            d="M56 24 C67 30 76 41 74 55 C72 68 62 78 54 80 L54 24 Z"
             fill={accent}
-            fillOpacity="0.9"
+            fillOpacity="0.85"
           />
         </svg>
       );
@@ -127,11 +127,11 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
           viewBox="0 0 100 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-500 hover:scale-105 ${className}`}
+          className={`transition-transform duration-300 hover:scale-103 ${className}`}
         >
-          <ellipse cx="50" cy="50" rx="38" ry="32" fill={primary} fillOpacity="0.8" />
-          <ellipse cx="50" cy="62" rx="30" ry="18" fill={accent} fillOpacity="0.8" />
-          <ellipse cx="50" cy="70" rx="18" ry="9" fill={secondary} fillOpacity="0.6" />
+          <ellipse cx="50" cy="50" rx="36" ry="30" fill={primary} fillOpacity="0.7" />
+          <ellipse cx="50" cy="61" rx="28" ry="17" fill={accent} fillOpacity="0.7" />
+          <ellipse cx="50" cy="69" rx="17" ry="8" fill={secondary} fillOpacity="0.5" />
         </svg>
       );
 
@@ -144,19 +144,19 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
           viewBox="0 0 100 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`transition-transform duration-500 hover:scale-105 ${className}`}
+          className={`transition-transform duration-300 hover:scale-103 ${className}`}
         >
           <rect
             x="50"
-            y="14"
-            width="50"
-            height="50"
-            rx="12"
-            transform="rotate(45 50 14)"
+            y="16"
+            width="46"
+            height="46"
+            rx="10"
+            transform="rotate(45 50 16)"
             fill={primary}
-            fillOpacity="0.85"
+            fillOpacity="0.75"
           />
-          <circle cx="50" cy="50" r="14" fill={accent} fillOpacity="0.75" />
+          <circle cx="50" cy="50" r="12" fill={accent} fillOpacity="0.8" />
         </svg>
       );
   }
