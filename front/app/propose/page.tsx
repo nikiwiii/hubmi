@@ -62,6 +62,20 @@ const CATEGORIES = [
   'Praca i Finanse',
 ];
 
+const PARTNER_OPTIONS = [
+  'NGO / Stowarzyszenie',
+  'Samorząd / Gmina',
+  'Firma / Biznes',
+  'Uczelnia / Ośrodek B+R',
+];
+
+const TEXT_FIELDS: { key: Exclude<IdeaField, 'etap'>; placeholder: string; rows: number }[] = [
+  { key: 'tytul', placeholder: 'np. Sąsiedzka lodówka', rows: 1 },
+  { key: 'opis', placeholder: 'Jaki problem rozwiązuje projekt i jak działa?', rows: 4 },
+  { key: 'innowacyjnosc', placeholder: 'Czym różni się od istniejących rozwiązań?', rows: 3 },
+  { key: 'odbiorcy', placeholder: 'Kto skorzysta z projektu?', rows: 2 },
+];
+
 function fieldValueLabel(field: IdeaField, fields: IdeaFields): string {
   return field === 'etap' ? stageLabel(fields.etap) : fields[field] || '(puste)';
 }
@@ -76,6 +90,8 @@ export default function ProposePage() {
     }
   }, [currentUser, isLoadingUser, router]);
 
+  const [lookingForPartner, setLookingForPartner] = useState(false);
+  const [partnerTypes, setPartnerTypes] = useState<string[]>([]);
   // 4 KROKI FORMULARZA: 1 -> 2 -> 3 -> 4
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -154,6 +170,8 @@ export default function ProposePage() {
       user_id: currentUser.id,
       author_name: currentUser.name,
       created_at: null,
+      looking_for_partner: lookingForPartner,
+      partner_types: partnerTypes,
     }),
     visualMockupUrl: generatedImage?.image,
   };
@@ -275,7 +293,13 @@ export default function ProposePage() {
     setPublishError(null);
     setIsPublishing(true);
     try {
-      const project = await publishProject(fields, category, generatedImage?.image);
+      const project = await publishProject(
+        fields,
+        category,
+        generatedImage?.image,
+        lookingForPartner,
+        partnerTypes
+      );
       const idea = mapProjectToIdea(project);
       addPublishedIdea(idea);
       selectIdea(idea);

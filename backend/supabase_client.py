@@ -296,6 +296,22 @@ class DatabaseRepository:
         memory_db.reactions = [r for r in memory_db.reactions if r["idea_id"] != idea_id]
         return len(memory_db.ideas) < before_count
 
+    @staticmethod
+    def update_idea(idea_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("ideas").update(updates).eq("id", idea_id).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.error(f"Supabase error update_idea: {e}")
+
+        idea = next((i for i in memory_db.ideas if str(i["id"]) == str(idea_id)), None)
+        if idea:
+            idea.update(updates)
+            return idea
+        return None
+
     # --- REACTIONS ---
     @staticmethod
     def get_reactions_for_idea(idea_id: str) -> List[Dict[str, Any]]:

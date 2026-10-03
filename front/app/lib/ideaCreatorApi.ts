@@ -68,6 +68,11 @@ export interface PublishedProject extends IdeaFields {
   author_name: string | null;
   image_url?: string | null;
   created_at: string | null;
+  looking_for_partner?: boolean;
+  partner_types?: string[];
+  assigned_expert_id?: string | null;
+  assigned_expert_name?: string | null;
+  assigned_expert_specialization?: string | null;
 }
 
 export class IdeaCreatorError extends Error {
@@ -107,10 +112,22 @@ export function refineField(fields: IdeaFields, question: AssistantQuestion, ans
   return request('/assistant/refine', { ...fields, question, answer }, 'Nie udało się przygotować propozycji.');
 }
 
-export function publishProject(fields: IdeaFields, category?: string, image?: string): Promise<PublishedProject> {
+export function publishProject(
+  fields: IdeaFields,
+  category?: string,
+  image?: string,
+  lookingForPartner?: boolean,
+  partnerTypes?: string[]
+): Promise<PublishedProject> {
   return request(
     '/projects',
-    { ...fields, category: category || undefined, image: image || undefined },
+    {
+      ...fields,
+      category: category || undefined,
+      image: image || undefined,
+      looking_for_partner: lookingForPartner || false,
+      partner_types: partnerTypes || [],
+    },
     'Sprawdź, czy wszystkie pola są wypełnione.',
     true
   );
@@ -156,5 +173,10 @@ export function mapProjectToIdea(p: PublishedProject): Idea {
     status: 'active',
     createdAt: p.created_at ? p.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
     commentsCount: 0,
+    lookingForPartner: Boolean(p.looking_for_partner),
+    partnerTypes: p.partner_types || [],
+    assignedExpertId: p.assigned_expert_id || undefined,
+    assignedExpertName: p.assigned_expert_name || undefined,
+    assignedExpertSpecialization: p.assigned_expert_specialization || undefined,
   };
 }

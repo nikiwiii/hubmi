@@ -1,11 +1,15 @@
 
 import os
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from dotenv import load_dotenv
 import jwt
 import bcrypt
 
+_env_path = Path(__file__).resolve().parent / ".env"
+if _env_path.exists():
+    load_dotenv(dotenv_path=_env_path)
 load_dotenv()
 
 SUPABASE_URL: str = os.getenv("SUPABASE_URL", "").strip().rstrip("/")

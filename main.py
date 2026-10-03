@@ -1,9 +1,15 @@
 import sys
 from pathlib import Path
 import importlib.util
+from dotenv import load_dotenv
 
-# Dodaj katalog backend/ do sys.path, aby wszystkie moduły (login, ideas, matching itp.) były widoczne
+# Dodaj katalog backend/ do sys.path oraz wczytaj backend/.env
 backend_dir = Path(__file__).resolve().parent / "backend"
+_backend_env = backend_dir / ".env"
+if _backend_env.exists():
+    load_dotenv(dotenv_path=_backend_env)
+load_dotenv()
+
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
