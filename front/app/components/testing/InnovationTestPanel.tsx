@@ -254,11 +254,10 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
               title={`${star} na 5`}
             >
               <Star
-                className={`w-5 h-5 ${
-                  star <= value
+                className={`w-5 h-5 ${star <= value
                     ? "text-amber-500 fill-amber-400"
                     : "text-stone-300 hover:text-amber-300"
-                }`}
+                  }`}
               />
             </button>
           ))}
@@ -276,11 +275,10 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
         {[1, 2, 3, 4, 5].map((s) => (
           <Star
             key={s}
-            className={`${size} ${
-              s <= Math.round(val)
+            className={`${size} ${s <= Math.round(val)
                 ? "text-amber-500 fill-amber-400"
                 : "text-stone-300"
-            }`}
+              }`}
           />
         ))}
       </div>
@@ -292,10 +290,6 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
       {/* Top Header Banner */}
       <div className="p-6 sm:p-8 bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-white flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1.5 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-bold tracking-wide uppercase text-amber-300">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Moduł IV: Tester Innowacji Społecznych</span>
-          </div>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Ocena Użyteczności & Feedback
           </h2>
@@ -403,11 +397,10 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
       <div className="flex items-center gap-2 px-6 pt-5 pb-2 border-b border-stone-100 overflow-x-auto">
         <button
           onClick={() => setActiveTab("reviews")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === "reviews"
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "reviews"
               ? "bg-stone-900 text-white shadow-2xs"
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
-          }`}
+            }`}
         >
           <ShieldCheck className="w-4 h-4" />
           <span>Opinie i Usprawnienia</span>
@@ -418,11 +411,10 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
 
         <button
           onClick={() => setActiveTab("add_review")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === "add_review"
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "add_review"
               ? "bg-amber-600 text-white shadow-2xs"
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
-          }`}
+            }`}
         >
           <Star className="w-4 h-4" />
           <span>Wystaw Ocenę & Feedback</span>
@@ -430,11 +422,10 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
 
         <button
           onClick={() => setActiveTab("comments")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === "comments"
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "comments"
               ? "bg-stone-900 text-white shadow-2xs"
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
-          }`}
+            }`}
         >
           <MessageSquare className="w-4 h-4" />
           <span>Dyskusja Testerów</span>
@@ -565,11 +556,10 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
         !(isTester || myAppStatus === "approved") ? (
           <div className="p-8 sm:p-12 text-center max-w-lg mx-auto space-y-4">
             <div
-              className={`w-14 h-14 rounded-2xl mx-auto flex items-center justify-center ${
-                myAppStatus === "pending"
+              className={`w-14 h-14 rounded-2xl mx-auto flex items-center justify-center ${myAppStatus === "pending"
                   ? "bg-amber-100 text-amber-800"
                   : "bg-stone-100 text-stone-600"
-              }`}
+                }`}
             >
               {myAppStatus === "pending" ? (
                 <Clock className="w-7 h-7 animate-spin text-amber-700" />
@@ -612,155 +602,155 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
               </p>
             </div>
 
-          {feedbackSuccess && (
-            <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{feedbackSuccess}</span>
-            </div>
-          )}
-
-          {feedbackError && (
-            <div className="p-3 bg-rose-50 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-              <span>{feedbackError}</span>
-            </div>
-          )}
-
-          {/* Tester Role */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-stone-900 block">
-              Twoja rola / perspektywa testowania *
-            </label>
-            <select
-              value={testerRole}
-              onChange={(e) => setTesterRole(e.target.value)}
-              className="w-full sm:w-80 px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs font-semibold text-stone-900 bg-white focus:outline-none focus:border-stone-900"
-            >
-              {TESTER_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 4 Usability & Accessibility Star Selectors */}
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-              Kryteria ewaluacji innowacji (1-5 gwiazdek)
-            </h4>
-            {renderStarsSelector(
-              "1. Ocena ogólna prototypu",
-              "Subiektywna ocena wartości rozwiązania dla mieszkańców",
-              overallRating,
-              setOverallRating
+            {feedbackSuccess && (
+              <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{feedbackSuccess}</span>
+              </div>
             )}
-            {renderStarsSelector(
-              "2. Ocena użyteczności (Usability)",
-              "Intuicyjność obsługi, jasność instrukcji, prostota codziennego użytkowania",
-              usabilityRating,
-              setUsabilityRating
-            )}
-            {renderStarsSelector(
-              "3. Dostępność dla seniorów i WCAG",
-              "Brak barier sensorycznych i ruchowych, wielkość elementów, kontrast",
-              accessibilityRating,
-              setAccessibilityRating
-            )}
-            {renderStarsSelector(
-              "4. Wpływ społeczny i zapotrzebowanie",
-              "Czy to rozwiązanie realnie rozwiązuje zgłoszony problem w Małopolsce",
-              impactRating,
-              setImpactRating
-            )}
-          </div>
 
-          {/* Detailed Structured Feedback Inputs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {feedbackError && (
+              <div className="p-3 bg-rose-50 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{feedbackError}</span>
+              </div>
+            )}
+
+            {/* Tester Role */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-emerald-800 block">
-                Mocne strony (Co działa dobrze?)
+              <label className="text-xs font-bold text-stone-900 block">
+                Twoja rola / perspektywa testowania *
               </label>
-              <textarea
-                rows={3}
-                value={strengths}
-                onChange={(e) => setStrengths(e.target.value)}
-                placeholder="np. Prosty proces zapisu, jasne wskazówki, szybka korzyść..."
-                className="w-full p-3 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900"
-              />
+              <select
+                value={testerRole}
+                onChange={(e) => setTesterRole(e.target.value)}
+                className="w-full sm:w-80 px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs font-semibold text-stone-900 bg-white focus:outline-none focus:border-stone-900"
+              >
+                {TESTER_ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-rose-800 block">
-                Wykryte bariery / trudności
-              </label>
-              <textarea
-                rows={3}
-                value={weaknesses}
-                onChange={(e) => setWeaknesses(e.target.value)}
-                placeholder="np. Zbyt małe litery, skomplikowany formularz, brak kontaktu telefonicznego..."
-                className="w-full p-3 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900"
-              />
-            </div>
-          </div>
-
-          {/* KEY CHALLENGE FEATURE: Proponowane usprawnienia */}
-          <div className="space-y-1.5 p-4 rounded-2xl bg-amber-50/70 border border-amber-200">
-            <label className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
-              <Lightbulb className="w-4 h-4 text-amber-600" />
-              <span>Proponowane usprawnienia dla twórców (Sugestia zmian)</span>
-            </label>
-            <p className="text-[11px] text-amber-800">
-              Co konkretnie autorzy innowacji powinni poprawić, dodać lub zmodyfikować przed wdrożeniem w regionie?
-            </p>
-            <textarea
-              rows={3}
-              value={suggestedImprovements}
-              onChange={(e) => setSuggestedImprovements(e.target.value)}
-              placeholder="np. Rekomenduję dodać opcję powiadomień głosowych lub SMS, a także możliwość wyznaczenia lokalnego opiekuna wolontariusza..."
-              className="w-full p-3 rounded-xl border border-amber-200 bg-white text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-amber-600"
-            />
-          </div>
-
-          {/* General Summary */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-stone-900 block">
-              Ogólny komentarz / podsumowanie testu
-            </label>
-            <textarea
-              rows={2}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Dodatkowe uwagi dotyczące testu w mikroskali..."
-              className="w-full p-3 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900"
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setActiveTab("reviews")}
-              className="px-4 py-2.5 rounded-xl border border-stone-200 text-xs font-bold text-stone-700 hover:bg-stone-50 cursor-pointer"
-            >
-              Anuluj
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmittingFeedback}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {isSubmittingFeedback ? (
-                <span>Wysyłanie...</span>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Zapisz ocenę & prześlij feedback</span>
-                </>
+            {/* 4 Usability & Accessibility Star Selectors */}
+            <div className="space-y-2.5">
+              <h4 className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                Kryteria ewaluacji innowacji (1-5 gwiazdek)
+              </h4>
+              {renderStarsSelector(
+                "1. Ocena ogólna prototypu",
+                "Subiektywna ocena wartości rozwiązania dla mieszkańców",
+                overallRating,
+                setOverallRating
               )}
-            </button>
-          </div>
-        </form>
-      ))}
+              {renderStarsSelector(
+                "2. Ocena użyteczności (Usability)",
+                "Intuicyjność obsługi, jasność instrukcji, prostota codziennego użytkowania",
+                usabilityRating,
+                setUsabilityRating
+              )}
+              {renderStarsSelector(
+                "3. Dostępność dla seniorów i WCAG",
+                "Brak barier sensorycznych i ruchowych, wielkość elementów, kontrast",
+                accessibilityRating,
+                setAccessibilityRating
+              )}
+              {renderStarsSelector(
+                "4. Wpływ społeczny i zapotrzebowanie",
+                "Czy to rozwiązanie realnie rozwiązuje zgłoszony problem w Małopolsce",
+                impactRating,
+                setImpactRating
+              )}
+            </div>
+
+            {/* Detailed Structured Feedback Inputs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-emerald-800 block">
+                  Mocne strony (Co działa dobrze?)
+                </label>
+                <textarea
+                  rows={3}
+                  value={strengths}
+                  onChange={(e) => setStrengths(e.target.value)}
+                  placeholder="np. Prosty proces zapisu, jasne wskazówki, szybka korzyść..."
+                  className="w-full p-3 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-rose-800 block">
+                  Wykryte bariery / trudności
+                </label>
+                <textarea
+                  rows={3}
+                  value={weaknesses}
+                  onChange={(e) => setWeaknesses(e.target.value)}
+                  placeholder="np. Zbyt małe litery, skomplikowany formularz, brak kontaktu telefonicznego..."
+                  className="w-full p-3 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900"
+                />
+              </div>
+            </div>
+
+            {/* KEY CHALLENGE FEATURE: Proponowane usprawnienia */}
+            <div className="space-y-1.5 p-4 rounded-2xl bg-amber-50/70 border border-amber-200">
+              <label className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                <Lightbulb className="w-4 h-4 text-amber-600" />
+                <span>Proponowane usprawnienia dla twórców (Sugestia zmian)</span>
+              </label>
+              <p className="text-[11px] text-amber-800">
+                Co konkretnie autorzy innowacji powinni poprawić, dodać lub zmodyfikować przed wdrożeniem w regionie?
+              </p>
+              <textarea
+                rows={3}
+                value={suggestedImprovements}
+                onChange={(e) => setSuggestedImprovements(e.target.value)}
+                placeholder="np. Rekomenduję dodać opcję powiadomień głosowych lub SMS, a także możliwość wyznaczenia lokalnego opiekuna wolontariusza..."
+                className="w-full p-3 rounded-xl border border-amber-200 bg-white text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-amber-600"
+              />
+            </div>
+
+            {/* General Summary */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-stone-900 block">
+                Ogólny komentarz / podsumowanie testu
+              </label>
+              <textarea
+                rows={2}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Dodatkowe uwagi dotyczące testu w mikroskali..."
+                className="w-full p-3 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("reviews")}
+                className="px-4 py-2.5 rounded-xl border border-stone-200 text-xs font-bold text-stone-700 hover:bg-stone-50 cursor-pointer"
+              >
+                Anuluj
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingFeedback}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {isSubmittingFeedback ? (
+                  <span>Wysyłanie...</span>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Zapisz ocenę & prześlij feedback</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        ))}
 
       {/* TAB CONTENT: 3. COMMENTS & DISCUSSION */}
       {activeTab === "comments" && (
