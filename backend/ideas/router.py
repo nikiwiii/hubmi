@@ -7,7 +7,16 @@ from ideas.schemas import (
     ReactionRequest,
     ReactionResponse,
     AssignExpertRequest,
-    PartnershipRequest
+    PartnershipRequest,
+    FeedbackCreate,
+    FeedbackResponse,
+    CommentCreate,
+    CommentResponse,
+    TestingSummaryResponse,
+    TesterApplicationCreate,
+    TesterApplicationResponse,
+    UpdateTesterApplicationRequest,
+    UpdateIdeaStatusRequest
 )
 from ideas.service import IdeaService
 
@@ -17,10 +26,12 @@ router = APIRouter(prefix="/api/ideas", tags=["Ideas & Reactions"])
 def list_ideas(user_payload: Optional[dict] = Depends(get_optional_user_payload)):
     """
     Pobiera listę pomysłów wraz z licznikami reakcji (like, volunteer, dislike).
-    Jeśli użytkownik jest zalogowany, pole 'my_reactions' zawiera jego aktywne reakcje.
+    Administrator widzi wszystkie pomysły (w tym pending).
+    Użytkownicy widzą aktywne pomysły oraz własne zgłoszenia.
     """
     user_id = user_payload.get("sub") if user_payload else None
-    return IdeaService.list_ideas(current_user_id=user_id)
+    is_admin = bool(user_payload and user_payload.get("role") in ("admin", "expert"))
+    return IdeaService.list_ideas(current_user_id=user_id, is_admin=is_admin)
 
 @router.post("/", response_model=IdeaResponse, status_code=status.HTTP_201_CREATED, summary="Dodaj nowy pomysł / post")
 def create_idea(
@@ -120,4 +131,150 @@ def submit_partnership_request(
     """Pozwala organizacji pozarządowej, firmie lub samorządowi zgłosić chęć partnerstwa przy realizacji pomysłu."""
     sender_name = user_payload.get("name", "Zainteresowany Partner")
     return IdeaService.request_partnership(idea_id=idea_id, data=data, sender_name=sender_name)
+
+# ==========================================
+# TESTER INNOWACJI: Endpointy walidacji, ocen i dyskusji
+# ==========================================
+
+@router.get("/{idea_id}/testing", response_model=TestingSummaryResponse, summary="Pobierz podsumowanie testów, oceny użyteczności i feedback")
+def get_idea_testing_summary(idea_id: str):
+    """
+    Zwraca kompletne statystyki testów innowacji społecznej:
+    - Liczba testerów i recenzji
+    - Średnia ocena ogólna, ocena użyteczności, ocena dostępności (WCAG/seniorzy) i wpływu
+    - Lista ustrukturyzowanych recenzji z mocnymi stronami, barierami i proponowanymi usprawnieniami
+    - Lista komentarzy w wątku dyskusyjnym
+    """
+    return IdeaService.get_testing_summary(idea_id=idea_id)
+
+@router.post("/{idea_id}/feedback", response_model=FeedbackResponse, status_code=status.HTTP_201_CREATED, summary="Dodaj ocenę użyteczności i informację zwrotną (Feedback)")
+def submit_idea_feedback(
+    idea_id: str,
+    feedback_data: FeedbackCreate,
+    user_payload: Optional[dict] = Depends(get_optional_user_payload)
+):
+    """
+    Pozwala testerowi wystawić ocenę użyteczności (1-5 gwiazdek), wskazać mocne strony,
+    bariery oraz zgłosić konkretne propozycje usprawnień dla twórców innowacji.
+    """
+    user_id = user_payload.get("sub") if user_payload else None
+    author_name = user_payload.get("name", "Tester społeczny") if user_payload else "Anonimowy tester"
+    return IdeaService.add_feedback(
+        idea_id=idea_id,
+        data=feedback_data,
+        user_id=user_id,
+        author_name=author_name
+    )
+
+@router.post("/{idea_id}/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED, summary="Dodaj komentarz w wątku dyskusji o testach innowacji")
+def submit_idea_comment(
+    idea_id: str,
+    comment_data: CommentCreate,
+    user_payload: Optional[dict] = Depends(get_optional_user_payload)
+):
+    """
+    Dodaje komentarz w otwartej dyskusji nad pomysłem / prototypem.
+    """
+    user_id = user_payload.get("sub") if user_payload else None
+    author_name = user_payload.get("name", "Użytkownik") if user_payload else "Mieszkaniec Małopolski"
+    return IdeaService.add_comment(
+        idea_id=idea_id,
+        data=comment_data,
+        user_id=user_id,
+        author_name=author_name
+    )
+
+# ==========================================
+# MODERACJA POMYSŁÓW PRZEZ ADMINISTRATORA
+# ==========================================
+
+@router.patch("/{idea_id}/status", response_model=IdeaResponse, summary="Zmień status pomysłu (akceptacja / odrzucenie przez admina)")
+def update_idea_status(
+    idea_id: str,
+    status_data: UpdateIdeaStatusRequest,
+    user_payload: dict = Depends(get_current_user_payload)
+):
+    """
+    Pozwala administratorowi zaakceptować pomysł (status 'active') lub odrzucić go.
+    Tylko zaakceptowane pomysły są widoczne na publicznym feedzie dla innych mieszkańców.
+    Po akceptacji autor pomysłu otrzymuje powiadomienie.
+    """
+    if user_payload.get("role") not in ("admin", "expert"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Brak uprawnień. Tylko administrator lub ekspert może moderować pomysły."
+        )
+
+    admin_name = user_payload.get("name", "Administrator")
+    return IdeaService.update_idea_status(idea_id=idea_id, new_status=status_data.status, admin_name=admin_name)
+
+# ==========================================
+# ZGŁASZANIE SIĘ I WERYFIKACJA TESTERÓW
+# ==========================================
+
+@router.post("/{idea_id}/apply-tester", response_model=TesterApplicationResponse, status_code=status.HTTP_201_CREATED, summary="Zgłoś chęć zostania testerem innowacji")
+def apply_to_become_tester(
+    idea_id: str,
+    app_data: TesterApplicationCreate,
+    user_payload: dict = Depends(get_current_user_payload)
+):
+    """
+    Użytkownik wysyła zapytanie o zostanie testerem prototypu.
+    Zgłoszenie ma status 'pending' i wymaga zatwierdzenia przez administratora.
+    """
+    user_id = user_payload["sub"]
+    user_name = user_payload.get("name", "Mieszkaniec")
+    user_email = user_payload.get("email")
+    return IdeaService.apply_as_tester(
+        idea_id=idea_id,
+        user_id=user_id,
+        user_name=user_name,
+        user_email=user_email,
+        motivation=app_data.motivation
+    )
+
+@router.get("/tester-applications", response_model=List[TesterApplicationResponse], summary="Pobierz zgłoszenia testerów (dla admina lub zalogowanego użytkownika)")
+def list_tester_applications(
+    idea_id: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    user_payload: dict = Depends(get_current_user_payload)
+):
+    """
+    Pobiera listę zgłoszeń testerów.
+    Administrator/ekspert widzi wszystkie zgłoszenia (może filtrować po pomyle i statusie).
+    Zwykły użytkownik widzi wyłącznie swoje własne zgłoszenia.
+    """
+    is_admin = user_payload.get("role") in ("admin", "expert")
+    user_id = None if is_admin else user_payload["sub"]
+    return IdeaService.list_tester_applications(
+        idea_id=idea_id,
+        user_id=user_id,
+        status=status_filter
+    )
+
+@router.patch("/tester-applications/{app_id}/status", response_model=TesterApplicationResponse, summary="Zaakceptuj lub odrzuć zgłoszenie testera (Admin)")
+def update_tester_application_status(
+    app_id: str,
+    status_data: UpdateTesterApplicationRequest,
+    user_payload: dict = Depends(get_current_user_payload)
+):
+    """
+    Pozwala administratorowi zaakceptować ('approved') lub odrzucić ('rejected') zgłoszenie testera.
+    Gdy zgłoszenie zostanie zaakceptowane:
+    - Użytkownik staje się aktywnym testerem projektu
+    - Licznik testerów innowacji wzrasta
+    - Zgłaszający otrzymuje powiadomienie (w systemie i e-mail) o akceptacji
+    """
+    if user_payload.get("role") not in ("admin", "expert"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Brak uprawnień. Tylko administrator lub ekspert może zarządzać wnioskami testerów."
+        )
+
+    admin_name = user_payload.get("name", "Administrator")
+    return IdeaService.update_tester_application_status(
+        app_id=app_id,
+        new_status=status_data.status,
+        admin_name=admin_name
+    )
 

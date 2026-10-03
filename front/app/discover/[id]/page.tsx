@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Idea, getCategoryThemeAndShape } from "../../lib/types";
 import { GeometricIllustration } from "../../components/shared/GeometricIllustration";
 import { getThemeStyles } from "../../components/shared/IdeaCard";
+import { InnovationTestPanel } from "../../components/testing/InnovationTestPanel";
 import { useApp } from "../../context/AppContext";
 import {
   ThumbsUp,
@@ -21,6 +22,7 @@ import {
   ExternalLink,
   Sparkles,
   Eye,
+  Clock,
 } from "lucide-react";
 
 export default function DiscoverIdeaDetailPage() {
@@ -154,6 +156,13 @@ export default function DiscoverIdeaDetailPage() {
               {currentIdea.category}
             </span>
 
+            {currentIdea.status === "pending" && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-900 border border-amber-300 text-xs font-bold">
+                <Clock className="w-3.5 h-3.5 text-amber-700 animate-spin" />
+                <span>Oczekuje na akceptację moderatora ROPS Kraków</span>
+              </div>
+            )}
+
             <h1
               className={`text-3xl sm:text-4xl font-bold tracking-tight leading-tight ${styles.text}`}
             >
@@ -206,8 +215,8 @@ export default function DiscoverIdeaDetailPage() {
               onClick={() => vote(currentIdea.id, "like")}
               title="Polub"
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "like"
-                  ? "bg-stone-900 text-white"
-                  : "bg-stone-100 hover:bg-stone-200 text-stone-800"
+                ? "bg-stone-900 text-white"
+                : "bg-stone-100 hover:bg-stone-200 text-stone-800"
                 }`}
             >
               <ThumbsUp
@@ -220,8 +229,8 @@ export default function DiscoverIdeaDetailPage() {
               onClick={() => vote(currentIdea.id, "dislike")}
               title="Nie podoba mi się"
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "dislike"
-                  ? "bg-stone-800 text-white"
-                  : "bg-stone-100 hover:bg-stone-200 text-stone-600"
+                ? "bg-stone-800 text-white"
+                : "bg-stone-100 hover:bg-stone-200 text-stone-600"
                 }`}
             >
               <ThumbsDown
@@ -242,7 +251,10 @@ export default function DiscoverIdeaDetailPage() {
             </button>
 
             <button
-              onClick={() => toggleTesting(currentIdea.id)}
+              onClick={() => {
+                const el = document.getElementById("test-panel");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${isTester
                   ? "bg-emerald-700 text-white"
                   : "bg-stone-900 hover:bg-stone-800 text-white"
@@ -421,6 +433,16 @@ export default function DiscoverIdeaDetailPage() {
           </div>
         </div>
       )}
+      {/* Moduł IV: Tester innowacji - Usability rating, feedback & comments */}
+      <div id="test-panel">
+        <InnovationTestPanel
+          ideaId={currentIdea.id}
+          ideaTitle={currentIdea.title}
+          currentUser={currentUser}
+          isTester={isTester}
+          onToggleTesting={toggleTesting}
+        />
+      </div>
     </div>
   );
 }

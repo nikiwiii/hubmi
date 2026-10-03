@@ -229,3 +229,65 @@ AS $$
   LIMIT match_count;
 $$;
 
+-- ============================================================
+-- TABELA 8: Tester Innowacji - Oceny użyteczności & Feedback
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.idea_feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    idea_id UUID REFERENCES public.ideas(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID,
+    author_name TEXT NOT NULL,
+    author_role TEXT DEFAULT 'Tester społeczny',
+    overall_rating INT CHECK (overall_rating BETWEEN 1 AND 5),
+    usability_rating INT CHECK (usability_rating BETWEEN 1 AND 5),
+    accessibility_rating INT CHECK (accessibility_rating BETWEEN 1 AND 5),
+    impact_rating INT CHECK (impact_rating BETWEEN 1 AND 5),
+    strengths TEXT,
+    weaknesses TEXT,
+    suggested_improvements TEXT,
+    comment TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_idea_feedback_idea ON public.idea_feedback(idea_id);
+CREATE INDEX IF NOT EXISTS idx_idea_feedback_created ON public.idea_feedback(created_at DESC);
+ALTER TABLE public.idea_feedback DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- TABELA 9: Komentarze i dyskusje testerów innowacji
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.idea_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    idea_id UUID REFERENCES public.ideas(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID,
+    author_name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_idea_comments_idea ON public.idea_comments(idea_id);
+CREATE INDEX IF NOT EXISTS idx_idea_comments_created ON public.idea_comments(created_at ASC);
+ALTER TABLE public.idea_comments DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- TABELA 10: Zgłoszenia testerów innowacji (Tester Applications) & Status Pomysłów
+-- ============================================================
+ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending';
+
+CREATE TABLE IF NOT EXISTS public.tester_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    idea_id UUID REFERENCES public.ideas(id) ON DELETE CASCADE NOT NULL,
+    idea_title TEXT NOT NULL,
+    user_id UUID,
+    user_name TEXT NOT NULL,
+    user_email TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    motivation TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_tester_apps_idea ON public.tester_applications(idea_id);
+CREATE INDEX IF NOT EXISTS idx_tester_apps_user ON public.tester_applications(user_id);
+CREATE INDEX IF NOT EXISTS idx_tester_apps_status ON public.tester_applications(status);
+ALTER TABLE public.tester_applications DISABLE ROW LEVEL SECURITY;
+
