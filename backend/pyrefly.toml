@@ -1,0 +1,5 @@
+search-path = [
+    ".",
+    "idea_creator",
+]
+python-interpreter-path = ".venv/Scripts/python.exe"
