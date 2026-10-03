@@ -5,11 +5,12 @@ from supabase_client import is_supabase_connected, SUPABASE_URL
 from login.router import router as login_router
 from ideas.router import router as ideas_router
 from matching.router import router as matching_router
+from chat.router import router as chat_router
 
 app = FastAPI(
-    title="Hubmi API - Ideas, Community & RAG Matching",
-    description="Backend API z FastAPI, Supabase oraz Groq API RAG do wyszukiwania innowacji (vector search), logowania użytkowników, logowania adminów, profili oraz postów.",
-    version="1.1.0"
+    title="Hubmi API - Ideas, Community, RAG Matching & ROPS Kraków Chat",
+    description="Backend API z FastAPI, Supabase, Groq RAG oraz komunikatorem ROPS Kraków dla ekspertów i mieszkańców (polling co 3s).",
+    version="1.2.0"
 )
 
 # CORS Middleware
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(login_router)
 app.include_router(ideas_router)
 app.include_router(matching_router)
+app.include_router(chat_router)
 
 @app.get("/", tags=["Status"])
 def root():

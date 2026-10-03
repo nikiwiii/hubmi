@@ -16,14 +16,18 @@ backend/
 │   ├── schemas.py             # Modele Pydantic (IdeaCreate, ReactionRequest)
 │   ├── service.py             # Logika postów, usuwanie (autor/admin), liczniki
 │   └── router.py              # Endpointy: /api/ideas/ (CRUD, like, volunteer, dislike)
-├── matching/                  # 🤖 NOWY MODUŁ: RAG Matching & Chatbot
-│   ├── embeddings.py          # Generowanie wektorów (all-MiniLM-L6-v2), cosine similarity, tokenizacja PL
+├── matching/                  # 🤖 RAG Matching & Chatbot (Groq API + vector search)
+│   ├── embeddings.py          # Generowanie wektorów (2880 dim / all-MiniLM), cosine similarity
 │   ├── schemas.py             # Modele Pydantic (MatchRequest, MatchResponse, TraceStep, Explainability)
 │   ├── service.py             # Wyszukiwanie wektorowe, filtr 5%, Railway/Guardrails, Groq API
 │   └── router.py              # Endpointy: /api/matching/chat, /match, /innovations
+├── chat/                      # 💬 NOWY MODUŁ: Komunikator Ekspert ROPS Kraków <-> Użytkownicy
+│   ├── schemas.py             # Modele Pydantic (ConversationCreate, MessageCreate, PollMessagesResponse)
+│   ├── service.py             # Obsługa wątków, przypisywanie ekspertów, polling co 3 sekundy
+│   └── router.py              # Endpointy: /api/chat/conversations, /messages, /status
 ├── config.py                  # Konfiguracja środowiska, JWT, Groq API, progi dopasowania
-├── supabase_client.py         # Klient Supabase z obsługą tabeli innovations i local-fallback
-├── supabase_schema.sql        # Skrypt SQL dla Supabase (profiles, ideas, innovations, match_innovations)
+├── supabase_client.py         # Klient Supabase z obsługą tabel i local-fallback
+├── supabase_schema.sql        # Skrypt SQL dla Supabase (profiles, ideas, innovations, chat)
 ├── main.py                    # Główny serwer FastAPI + CORS + Docs
 ├── requirements.txt           # Zależności Pythona
 └── .env                       # Zmienne środowiskowe (SUPABASE_URL, GROQ_API_KEY)
@@ -62,6 +66,19 @@ backend/
 - **`POST /api/ideas/{id}/like`** – Polubienie.
 - **`POST /api/ideas/{id}/volunteer`** – Zgłoszenie się jako wolontariusz.
 - **`POST /api/ideas/{id}/dislike`** – Negatywny głos.
+
+### 4. Moduł `backend/chat` (Komunikator Ekspert ROPS Kraków <-> Mieszkańcy)
+- **`POST /api/chat/conversations`** – Otwarcie czatu z ekspertem (przycisk *"Napisz do eksperta"* pod postem):
+  - Przyjmuje opcjonalne `idea_id`, `idea_title`, `topic` oraz `initial_message`.
+- **`GET /api/chat/conversations`** – Pobranie listy wątków:
+  - Dla **administratora/eksperta**: pełny dashboard wszystkich zgłoszeń od mieszkańców z licznikami nieprzeczytanych wiadomości.
+  - Dla **mieszkańca**: lista wyłącznie jego aktywnych rozmów.
+- **`GET /api/chat/conversations/{id}`** – Szczegóły danej rozmowy.
+- **`POST /api/chat/conversations/{id}/messages`** – Wysłanie wiadomości (odpowiedź eksperta lub użytkownika).
+- **`GET /api/chat/conversations/{id}/messages`** – **POLLING co 3 sekundy**:
+  - Obsługuje parametr `since` (ISO timestamp) lub `after_id` do pobierania wyłącznie nowych wiadomości.
+  - Zwraca `last_polled_at` oraz automatycznie zeruje licznik nieprzeczytanych wiadomości.
+- **`PATCH /api/chat/conversations/{id}/status`** – Zmiana statusu rozmowy (`open`, `in_progress`, `closed`).
 
 ---
 

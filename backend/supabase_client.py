@@ -33,6 +33,8 @@ class MemoryDB:
         self.ideas: List[Dict[str, Any]] = []
         self.reactions: List[Dict[str, Any]] = []
         self.innovations: List[Dict[str, Any]] = []
+        self.conversations: List[Dict[str, Any]] = []
+        self.messages: List[Dict[str, Any]] = []
         self._seed_default_data()
 
     def _seed_default_data(self):
@@ -153,6 +155,47 @@ class MemoryDB:
             item["embedding"] = compute_embedding(text_to_embed)
             item["created_at"] = datetime.now(timezone.utc).isoformat()
             self.innovations.append(item)
+
+        # ============================================================
+        # Domyślny czat: Ekspert ROPS Kraków <-> Użytkownik
+        # ============================================================
+        sample_conv_id = "c1111111-2222-3333-4444-555555555555"
+        now_iso = datetime.now(timezone.utc).isoformat()
+        self.conversations.append({
+            "id": sample_conv_id,
+            "user_id": user_id,
+            "user_name": "Jan Kowalski",
+            "user_email": "user@hubmi.com",
+            "idea_id": sample_idea_id,
+            "idea_title": "Aplikacja do wspólnego sadzenia drzew w mieście",
+            "topic": "Konsultacja z ekspertem ROPS Kraków ds. dofinansowania",
+            "status": "in_progress",
+            "assigned_admin_id": admin_id,
+            "assigned_admin_name": "Ekspert ROPS Kraków",
+            "unread_by_admin": 0,
+            "unread_by_user": 0,
+            "last_message": "Dzień dobry! Z przyjemnością pomożemy w przygotowaniu wniosku.",
+            "last_message_at": now_iso,
+            "created_at": now_iso
+        })
+        self.messages.append({
+            "id": str(uuid.uuid4()),
+            "conversation_id": sample_conv_id,
+            "sender_id": user_id,
+            "sender_name": "Jan Kowalski",
+            "sender_role": "user",
+            "content": "Dzień dobry, chciałbym skonsultować nasz projekt ekologiczny z ekspertem ROPS Kraków pod kątem dotacji.",
+            "created_at": now_iso
+        })
+        self.messages.append({
+            "id": str(uuid.uuid4()),
+            "conversation_id": sample_conv_id,
+            "sender_id": admin_id,
+            "sender_name": "Ekspert ROPS Kraków",
+            "sender_role": "admin",
+            "content": "Dzień dobry! Z przyjemnością pomożemy w przygotowaniu wniosku. W jakim powiecie planują Państwo realizację?",
+            "created_at": now_iso
+        })
 
 memory_db = MemoryDB()
 
@@ -354,3 +397,155 @@ class DatabaseRepository:
                 logger.error(f"Supabase error create_innovation: {e}")
         memory_db.innovations.append(innovation_data)
         return innovation_data
+
+    # --- CHAT & EXPERT COMMUNICATION ---
+    @staticmethod
+    def create_conversation(conv_data: Dict[str, Any]) -> Dict[str, Any]:
+        conv_data["id"] = conv_data.get("id") or str(uuid.uuid4())
+        now_iso = datetime.now(timezone.utc).isoformat()
+        conv_data["created_at"] = conv_data.get("created_at") or now_iso
+        conv_data["last_message_at"] = conv_data.get("last_message_at") or now_iso
+        conv_data["status"] = conv_data.get("status") or "open"
+        conv_data["unread_by_admin"] = conv_data.get("unread_by_admin", 0)
+        conv_data["unread_by_user"] = conv_data.get("unread_by_user", 0)
+
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("chat_conversations").insert(conv_data).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.error(f"Supabase error create_conversation: {e}")
+        memory_db.conversations.append(conv_data)
+        return conv_data
+
+    @staticmethod
+    def get_conversation_by_id(conv_id: str) -> Optional[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("chat_conversations").select("*").eq("id", conv_id).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.error(f"Supabase error get_conversation_by_id: {e}")
+        return next((c for c in memory_db.conversations if str(c["id"]) == str(conv_id)), None)
+
+    @staticmethod
+    def get_conversations(user_id: Optional[str] = None, status: Optional[str] = None) -> List[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                query = supabase_client.table("chat_conversations").select("*").order("last_message_at", desc=True)
+                if user_id:
+                    query = query.eq("user_id", user_id)
+                if status:
+                    query = query.eq("status", status)
+                res = query.execute()
+                if res.data is not None:
+                    return res.data
+            except Exception as e:
+                logger.error(f"Supabase error get_conversations: {e}")
+
+        # In-memory filter
+        res = memory_db.conversations
+        if user_id:
+            res = [c for c in res if str(c.get("user_id")) == str(user_id)]
+        if status:
+            res = [c for c in res if c.get("status") == status]
+        return sorted(res, key=lambda x: x.get("last_message_at", ""), reverse=True)
+
+    @staticmethod
+    def update_conversation(conv_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("chat_conversations").update(updates).eq("id", conv_id).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.error(f"Supabase error update_conversation: {e}")
+
+        conv = next((c for c in memory_db.conversations if str(c["id"]) == str(conv_id)), None)
+        if conv:
+            conv.update(updates)
+            return conv
+        return None
+
+    @staticmethod
+    def create_message(msg_data: Dict[str, Any]) -> Dict[str, Any]:
+        msg_data["id"] = msg_data.get("id") or str(uuid.uuid4())
+        msg_data["created_at"] = msg_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+
+        conv_id = str(msg_data["conversation_id"])
+        is_user = msg_data.get("sender_role") == "user"
+
+        # Update conversation timestamp & unread counters
+        conv_updates: Dict[str, Any] = {
+            "last_message_at": msg_data["created_at"],
+            "last_message": msg_data["content"][:120]
+        }
+        conv = DatabaseRepository.get_conversation_by_id(conv_id)
+        if conv:
+            if is_user:
+                conv_updates["unread_by_admin"] = conv.get("unread_by_admin", 0) + 1
+            else:
+                conv_updates["unread_by_user"] = conv.get("unread_by_user", 0) + 1
+                # Jeśli admin odpisuje, a nie był przypisany, przypisz go
+                if not conv.get("assigned_admin_id") and msg_data.get("sender_id"):
+                    conv_updates["assigned_admin_id"] = msg_data["sender_id"]
+                    conv_updates["assigned_admin_name"] = msg_data.get("sender_name", "Ekspert ROPS Kraków")
+                    conv_updates["status"] = "in_progress"
+            DatabaseRepository.update_conversation(conv_id, conv_updates)
+
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("chat_messages").insert(msg_data).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.error(f"Supabase error create_message: {e}")
+        memory_db.messages.append(msg_data)
+        return msg_data
+
+    @staticmethod
+    def get_messages_for_conversation(
+        conv_id: str,
+        since: Optional[str] = None,
+        after_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Pobiera wiadomości czatu z obsługą pollingu co 3 sekundy."""
+        if is_supabase_connected and supabase_client:
+            try:
+                query = supabase_client.table("chat_messages").select("*").eq("conversation_id", conv_id).order("created_at", desc=False)
+                if since:
+                    query = query.gt("created_at", since)
+                res = query.execute()
+                if res.data is not None:
+                    msgs = res.data
+                    if after_id:
+                        idx = next((i for i, m in enumerate(msgs) if str(m.get("id")) == str(after_id)), -1)
+                        if idx != -1:
+                            msgs = msgs[idx + 1:]
+                    return msgs
+            except Exception as e:
+                logger.error(f"Supabase error get_messages_for_conversation: {e}")
+
+        # In-memory filter
+        matched = [m for m in memory_db.messages if str(m["conversation_id"]) == str(conv_id)]
+        sorted_msgs = sorted(matched, key=lambda x: x.get("created_at", ""))
+        if since:
+            sorted_msgs = [m for m in sorted_msgs if m.get("created_at", "") > since]
+        if after_id:
+            idx = next((i for i, m in enumerate(sorted_msgs) if str(m.get("id")) == str(after_id)), -1)
+            if idx != -1:
+                sorted_msgs = sorted_msgs[idx + 1:]
+        return sorted_msgs
+
+    @staticmethod
+    def mark_conversation_read(conv_id: str, reader_role: str) -> None:
+        """Resetuje licznik nieprzeczytanych wiadomości dla danego czytelnika."""
+        updates = {}
+        if reader_role in ("admin", "expert"):
+            updates["unread_by_admin"] = 0
+        else:
+            updates["unread_by_user"] = 0
+        DatabaseRepository.update_conversation(conv_id, updates)
+
