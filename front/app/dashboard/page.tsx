@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { IdeaCard } from "../components/shared/IdeaCard";
-import { Lightbulb, Users, Plus } from "lucide-react";
+import { Lightbulb, Users, Plus, RefreshCw } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 export default function DashboardPage() {
@@ -14,7 +15,24 @@ export default function DashboardPage() {
     navigate,
     isLargeFont,
     toggleFontSize,
+    isLoadingUser,
   } = useApp();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoadingUser && !currentUser) {
+      router.push('/auth');
+    }
+  }, [currentUser, isLoadingUser, router]);
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center h-96 text-stone-400">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+        <span className="text-sm font-medium">Wczytywanie profilu...</span>
+      </div>
+    );
+  }
 
   const user = currentUser || {
     id: "user-anna-2",

@@ -38,6 +38,27 @@ function getHeaders(includeAuth = true): Record<string, string> {
   return headers;
 }
 
+/**
+ * Centralny wrapper fetch z automatyczną obsługą błędu 401 (wygaśnięcie tokenu).
+ * Przy statusie 401 czyści token i przekierowuje do /auth.
+ */
+async function apiFetch(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const res = await fetch(url, options);
+
+  if (res.status === 401) {
+    // Token wygasł lub jest nieprawidłowy
+    setAuthToken(null);
+    if (typeof window !== 'undefined') {
+      window.location.href = '/auth';
+    }
+  }
+
+  return res;
+}
+
 // ==========================================
 // 1. AUTH & PROFILES API (/api/login)
 // ==========================================
@@ -51,7 +72,7 @@ export interface LoginResponse {
 }
 
 export async function loginUser(email: string, password: string): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/login/user`, {
+  const res = await apiFetch(`${API_BASE}/api/login/user`, {
     method: 'POST',
     headers: getHeaders(false),
     body: JSON.stringify({ email, password }),
@@ -77,7 +98,7 @@ export async function loginUser(email: string, password: string): Promise<User> 
 }
 
 export async function loginAdmin(email: string, password: string): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/login/admin`, {
+  const res = await apiFetch(`${API_BASE}/api/login/admin`, {
     method: 'POST',
     headers: getHeaders(false),
     body: JSON.stringify({ email, password }),
@@ -103,7 +124,7 @@ export async function loginAdmin(email: string, password: string): Promise<User>
 }
 
 export async function registerUser(email: string, password: string, name: string, role: string = 'user'): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/login/register`, {
+  const res = await apiFetch(`${API_BASE}/api/login/register`, {
     method: 'POST',
     headers: getHeaders(false),
     body: JSON.stringify({ email, password, full_name: name, role }),
@@ -126,7 +147,7 @@ export async function fetchCurrentProfile(): Promise<User | null> {
   if (!token) return null;
 
   try {
-    const res = await fetch(`${API_BASE}/api/login/me`, {
+    const res = await apiFetch(`${API_BASE}/api/login/me`, {
       method: 'GET',
       headers: getHeaders(true),
     });
@@ -193,22 +214,17 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
 }
 
 export async function fetchIdeasFromBackend(): Promise<Idea[]> {
-  try {
-    const res = await fetch(`${API_BASE}/api/ideas/`, {
-      method: 'GET',
-      headers: getHeaders(true),
-    });
+  const res = await apiFetch(`${API_BASE}/api/ideas/`, {
+    method: 'GET',
+    headers: getHeaders(true),
+  });
 
-    if (!res.ok) {
-      throw new Error('Failed to load ideas from backend');
-    }
-
-    const data: BackendIdea[] = await res.json();
-    return data.map(mapBackendIdeaToFrontend);
-  } catch (err) {
-    console.warn('Backend unavailable, using local ideas fallback:', err);
-    throw err;
+  if (!res.ok) {
+    throw new Error('Failed to load ideas from backend');
   }
+
+  const data: BackendIdea[] = await res.json();
+  return data.map(mapBackendIdeaToFrontend);
 }
 
 export async function createIdeaOnBackend(data: {
@@ -216,7 +232,7 @@ export async function createIdeaOnBackend(data: {
   description: string;
   category?: string;
 }): Promise<Idea> {
-  const res = await fetch(`${API_BASE}/api/ideas/`, {
+  const res = await apiFetch(`${API_BASE}/api/ideas/`, {
     method: 'POST',
     headers: getHeaders(true),
     body: JSON.stringify(data),
@@ -232,7 +248,7 @@ export async function createIdeaOnBackend(data: {
 }
 
 export async function deleteIdeaOnBackend(ideaId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/ideas/${ideaId}`, {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}`, {
     method: 'DELETE',
     headers: getHeaders(true),
   });
@@ -247,7 +263,7 @@ export async function toggleIdeaReaction(
   ideaId: string,
   reactionType: 'like' | 'volunteer' | 'dislike'
 ): Promise<{ likes: number; volunteers: number; dislikes: number; active: boolean }> {
-  const res = await fetch(`${API_BASE}/api/ideas/${ideaId}/react`, {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/react`, {
     method: 'POST',
     headers: getHeaders(true),
     body: JSON.stringify({ reaction_type: reactionType }),
@@ -274,7 +290,7 @@ export async function sendMatchingChat(
   message: string,
   history: Array<{ role: 'user' | 'assistant'; content: string }> = []
 ): Promise<MatchResponse> {
-  const res = await fetch(`${API_BASE}/api/matching/chat`, {
+  const res = await apiFetch(`${API_BASE}/api/matching/chat`, {
     method: 'POST',
     headers: getHeaders(false),
     body: JSON.stringify({
@@ -292,7 +308,7 @@ export async function sendMatchingChat(
 }
 
 export async function fetchInnovations(): Promise<any[]> {
-  const res = await fetch(`${API_BASE}/api/matching/innovations`, {
+  const res = await apiFetch(`${API_BASE}/api/matching/innovations`, {
     method: 'GET',
     headers: getHeaders(false),
   });
@@ -313,7 +329,7 @@ export async function startExpertConversation(data: {
   topic?: string;
   initial_message?: string;
 }): Promise<BackendConversation> {
-  const res = await fetch(`${API_BASE}/api/chat/conversations`, {
+  const res = await apiFetch(`${API_BASE}/api/chat/conversations`, {
     method: 'POST',
     headers: getHeaders(true),
     body: JSON.stringify(data),
@@ -331,13 +347,26 @@ export async function fetchConversations(statusFilter?: string): Promise<Backend
   const url = new URL(`${API_BASE}/api/chat/conversations`);
   if (statusFilter) url.searchParams.set('status', statusFilter);
 
-  const res = await fetch(url.toString(), {
+  const res = await apiFetch(url.toString(), {
     method: 'GET',
     headers: getHeaders(true),
   });
 
   if (!res.ok) {
     throw new Error('Błąd pobierania listy rozmów.');
+  }
+
+  return await res.json();
+}
+
+export async function fetchConversationDetails(conversationId: string): Promise<BackendConversation> {
+  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}`, {
+    method: 'GET',
+    headers: getHeaders(true),
+  });
+
+  if (!res.ok) {
+    throw new Error('Błąd pobierania szczegółów rozmowy.');
   }
 
   return await res.json();
@@ -357,7 +386,7 @@ export async function pollConversationMessages(
   if (afterId) url.searchParams.set('after_id', afterId);
   if (since) url.searchParams.set('since', since);
 
-  const res = await fetch(url.toString(), {
+  const res = await apiFetch(url.toString(), {
     method: 'GET',
     headers: getHeaders(true),
   });
@@ -373,7 +402,7 @@ export async function sendConversationMessage(
   conversationId: string,
   content: string
 ): Promise<BackendMessage> {
-  const res = await fetch(`${API_BASE}/api/chat/conversations/${conversationId}/messages`, {
+  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}/messages`, {
     method: 'POST',
     headers: getHeaders(true),
     body: JSON.stringify({ content }),
@@ -391,7 +420,7 @@ export async function updateConversationStatus(
   conversationId: string,
   status: 'open' | 'in_progress' | 'closed'
 ): Promise<BackendConversation> {
-  const res = await fetch(`${API_BASE}/api/chat/conversations/${conversationId}/status`, {
+  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}/status`, {
     method: 'PATCH',
     headers: getHeaders(true),
     body: JSON.stringify({ status }),
@@ -404,4 +433,3 @@ export async function updateConversationStatus(
 
   return await res.json();
 }
-
