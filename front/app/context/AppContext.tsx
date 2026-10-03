@@ -16,6 +16,7 @@ import {
   fetchIdeasFromBackend,
   createIdeaOnBackend,
   deleteIdeaOnBackend,
+  updateIdeaStatusBackend,
   toggleIdeaReaction,
   fetchCurrentProfile,
   setAuthToken,
@@ -35,7 +36,7 @@ interface AppContextType {
   addIdea: (ideaData: any) => Promise<Idea>;
   addPublishedIdea: (idea: Idea) => void;
   deleteIdea: (id: string) => Promise<void>;
-  updateIdeaStatus: (id: string, status: 'active' | 'testing' | 'archived') => void;
+  updateIdeaStatus: (id: string, status: 'active' | 'testing' | 'archived' | 'pending' | 'rejected') => Promise<void>;
   navigate: (screen: ScreenId | string) => void;
   selectIdea: (idea: Idea) => void;
   openChatWithAuthor: (authorId: string) => void;
@@ -206,9 +207,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIdeas(updated);
   };
 
-  const handleUpdateIdeaStatus = (id: string, status: 'active' | 'testing' | 'archived') => {
-    const updated = storeUpdateIdea(id, { status });
-    setIdeas(updated);
+  const handleUpdateIdeaStatus = async (
+    id: string,
+    status: 'active' | 'testing' | 'archived' | 'pending' | 'rejected'
+  ) => {
+    try {
+      const updatedIdea = await updateIdeaStatusBackend(id, status);
+      setIdeas((prev) => prev.map((i) => (i.id === id ? updatedIdea : i)));
+    } catch (e) {
+      console.warn('Backend status update fallback:', e);
+      const updated = storeUpdateIdea(id, { status: status as any });
+      setIdeas(updated);
+    }
   };
 
   const handleNavigate = (screen: ScreenId | string) => {

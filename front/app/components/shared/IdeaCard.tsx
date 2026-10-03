@@ -1,7 +1,7 @@
 import React from "react";
 import { Idea, ColorTheme, getCategoryThemeAndShape } from "../../lib/types";
 import { GeometricIllustration } from "./GeometricIllustration";
-import { ThumbsUp, Users, Check, MessageSquare, Handshake, GraduationCap } from "lucide-react";
+import { ThumbsUp, Users, Check, MessageSquare, Handshake, GraduationCap, Clock } from "lucide-react";
 
 interface IdeaCardProps {
   idea: Idea;
@@ -107,6 +107,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           </span>
 
           <div className="flex flex-wrap items-center gap-1">
+            {idea.status === "pending" && (
+              <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full shadow-2xs">
+                <Clock className="w-3 h-3" />
+                <span>Oczekuje na akceptację</span>
+              </span>
+            )}
+
             {idea.lookingForPartner && (
               <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-100/90 text-amber-900 border border-amber-300/60 px-2 py-0.5 rounded-full shadow-2xs">
                 <Handshake className="w-3 h-3 text-amber-700" />

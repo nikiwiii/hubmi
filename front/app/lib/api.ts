@@ -12,6 +12,11 @@ import {
   NotificationItem,
   SimulatedEmail,
   RopsExpert,
+  IdeaFeedback,
+  IdeaComment,
+  TestingSummary,
+  FeedbackSubmitPayload,
+  TesterApplication,
 } from "./types";
 import { setCurrentUser } from "./auth";
 
@@ -341,6 +346,7 @@ export interface BackendIdea {
   assigned_expert_id?: string | null;
   assigned_expert_name?: string | null;
   assigned_expert_specialization?: string | null;
+  status?: string;
 }
 
 export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
@@ -376,7 +382,7 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
     colorTheme: theme,
     geometricShape: shape,
     visualMockupUrl: b.image_url || undefined,
-    status: "active",
+    status: (b.status as any) || "active",
     createdAt: b.created_at ? b.created_at.split("T")[0] : "2026-03-01",
     commentsCount: 0,
     lookingForPartner: Boolean(b.looking_for_partner),
@@ -460,6 +466,85 @@ export async function toggleIdeaReaction(
     dislikes: data.dislikes_count,
     active: data.active,
   };
+}
+
+export async function updateIdeaStatusBackend(
+  ideaId: string,
+  status: "active" | "testing" | "rejected" | "archived" | "pending"
+): Promise<Idea> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/status`, {
+    method: "PATCH",
+    headers: getHeaders(true),
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Nie udało się zaktualizować statusu pomysłu.");
+  }
+
+  const updated: BackendIdea = await res.json();
+  return mapBackendIdeaToFrontend(updated);
+}
+
+export async function applyAsTester(
+  ideaId: string,
+  motivation?: string
+): Promise<TesterApplication> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/apply-tester`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify({ motivation }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Nie udało się złożyć zgłoszenia testera.");
+  }
+
+  return await res.json();
+}
+
+export async function fetchTesterApplications(
+  ideaId?: string,
+  statusFilter?: string
+): Promise<TesterApplication[]> {
+  const params = new URLSearchParams();
+  if (ideaId) params.append("idea_id", ideaId);
+  if (statusFilter) params.append("status_filter", statusFilter);
+  const q = params.toString() ? `?${params.toString()}` : "";
+
+  const res = await apiFetch(`${API_BASE}/api/ideas/tester-applications${q}`, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+
+  if (!res.ok) {
+    return [];
+  }
+
+  return await res.json();
+}
+
+export async function updateTesterApplicationStatus(
+  appId: string,
+  status: "approved" | "rejected" | "pending"
+): Promise<TesterApplication> {
+  const res = await apiFetch(
+    `${API_BASE}/api/ideas/tester-applications/${appId}/status`,
+    {
+      method: "PATCH",
+      headers: getHeaders(true),
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Nie udało się zaktualizować statusu zgłoszenia testera.");
+  }
+
+  return await res.json();
 }
 
 // ==========================================
@@ -820,6 +905,51 @@ export async function submitPartnershipRequest(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || "Błąd wysyłania zgłoszenia partnerstwa.");
+  }
+  return await res.json();
+}
+
+// ==========================================
+// 7. TESTER INNOWACJI API (/api/ideas/{id}/testing, /feedback, /comments)
+// ==========================================
+export async function fetchIdeaTestingSummary(ideaId: string): Promise<TestingSummary> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/testing`, {
+    headers: getHeaders(false),
+  });
+  if (!res.ok) {
+    throw new Error("Błąd pobierania podsumowania testów.");
+  }
+  return await res.json();
+}
+
+export async function submitIdeaFeedback(
+  ideaId: string,
+  payload: FeedbackSubmitPayload
+): Promise<IdeaFeedback> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/feedback`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd wysyłania opinii i oceny użyteczności.");
+  }
+  return await res.json();
+}
+
+export async function submitIdeaComment(
+  ideaId: string,
+  content: string
+): Promise<IdeaComment> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/comments`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify({ content }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd dodawania komentarza.");
   }
   return await res.json();
 }

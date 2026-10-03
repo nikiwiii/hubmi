@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, UserRole } from "../lib/types";
+import { User, UserRole, TesterApplication } from "../lib/types";
 import { getUsers, saveUsers, setCurrentUser } from "../lib/auth";
 import {
   ShieldAlert,
@@ -13,9 +13,20 @@ import {
   Search,
   RefreshCw,
   Lock,
+  Check,
+  X,
+  ExternalLink,
+  Clock,
+  Sparkles,
+  Users,
+  AlertCircle,
 } from "lucide-react";
 import { CustomSelect } from "../components/shared/CustomSelect";
 import { useApp } from "../context/AppContext";
+import {
+  fetchTesterApplications,
+  updateTesterApplicationStatus,
+} from "../lib/api";
 
 export default function AdminPage() {
   const {
@@ -30,7 +41,15 @@ export default function AdminPage() {
 
   const [usersList, setUsersList] = useState<User[]>(getUsers());
   const [searchUserQuery, setSearchUserQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"users" | "ideas">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "ideas" | "testers">("users");
+
+  // Moderation filter states
+  const [ideaStatusFilter, setIdeaStatusFilter] = useState<"all" | "pending" | "active" | "testing">("all");
+  const [testerAppFilter, setTesterAppFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
+
+  // Tester applications state
+  const [testerApps, setTesterApps] = useState<TesterApplication[]>([]);
+  const [isLoadingTesterApps, setIsLoadingTesterApps] = useState(false);
 
   // Modal / Form states for Create/Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -160,6 +179,70 @@ export default function AdminPage() {
     }
   };
 
+  const loadTesterApps = async () => {
+    setIsLoadingTesterApps(true);
+    try {
+      const apps = await fetchTesterApplications();
+      setTesterApps(apps);
+    } catch {
+      // Local fallback
+    } finally {
+      setIsLoadingTesterApps(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadTesterApps();
+    }
+  }, [isAdmin, activeTab]);
+
+  const handleApproveIdea = async (ideaId: string, ideaTitle: string) => {
+    try {
+      await updateIdeaStatus(ideaId, "active");
+      setAdminFeedback(`Zaakceptowano i opublikowano pomysł "${ideaTitle}". Autor otrzymał powiadomienie.`);
+    } catch (err: any) {
+      setAdminFeedback(err.message || "Błąd akceptacji pomysłu.");
+    }
+  };
+
+  const handleRejectIdea = async (ideaId: string, ideaTitle: string) => {
+    try {
+      await updateIdeaStatus(ideaId, "rejected");
+      setAdminFeedback(`Odrzucono pomysł "${ideaTitle}".`);
+    } catch (err: any) {
+      setAdminFeedback(err.message || "Błąd odrzucenia pomysłu.");
+    }
+  };
+
+  const handleApproveTester = async (appId: string, userName: string, ideaTitle: string) => {
+    try {
+      await updateTesterApplicationStatus(appId, "approved");
+      setTesterApps((prev) =>
+        prev.map((a) => (a.id === appId ? { ...a, status: "approved" } : a))
+      );
+      setAdminFeedback(`Zaakceptowano ${userName} jako testera dla "${ideaTitle}". Wysłano powiadomienie do użytkownika.`);
+    } catch (err: any) {
+      setAdminFeedback(err.message || "Błąd akceptacji testera.");
+    }
+  };
+
+  const handleRejectTester = async (appId: string, userName: string) => {
+    try {
+      await updateTesterApplicationStatus(appId, "rejected");
+      setTesterApps((prev) =>
+        prev.map((a) => (a.id === appId ? { ...a, status: "rejected" } : a))
+      );
+      setAdminFeedback(`Odrzucono wniosek testera: ${userName}.`);
+    } catch (err: any) {
+      setAdminFeedback(err.message || "Błąd odrzucenia testera.");
+    }
+  };
+
+  const pendingIdeasCount = ideas.filter((i) => i.status === "pending").length;
+  const pendingTesterAppsCount = testerApps.filter((a) => a.status === "pending").length;
+  const approvedTesterAppsCount = testerApps.filter((a) => a.status === "approved").length;
+
   if (!isAdmin) {
     return (
       <div className="py-16 px-4 max-w-md mx-auto text-center space-y-4">
@@ -205,10 +288,10 @@ export default function AdminPage() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-stone-200/50 p-1 rounded-xl self-start sm:self-auto">
+        <div className="flex flex-wrap bg-stone-200/50 p-1 rounded-xl self-start sm:self-auto gap-1">
           <button
             onClick={() => setActiveTab("users")}
-            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "users"
                 ? "bg-white text-stone-900 shadow-2xs"
                 : "text-stone-600 hover:text-stone-900"
@@ -216,15 +299,41 @@ export default function AdminPage() {
           >
             Użytkownicy ({usersList.length})
           </button>
+
           <button
             onClick={() => setActiveTab("ideas")}
-            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "ideas"
                 ? "bg-white text-stone-900 shadow-2xs"
                 : "text-stone-600 hover:text-stone-900"
             }`}
           >
-            Pomysły ({ideas.length})
+            <span>Pomysły & Moderacja</span>
+            {pendingIdeasCount > 0 ? (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                {pendingIdeasCount} do akceptacji
+              </span>
+            ) : (
+              <span className="text-[11px] text-stone-400">({ideas.length})</span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("testers")}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "testers"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-600 hover:text-stone-900"
+            }`}
+          >
+            <span>Zgłoszenia Testerów</span>
+            {pendingTesterAppsCount > 0 ? (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                {pendingTesterAppsCount} do weryfikacji
+              </span>
+            ) : (
+              <span className="text-[11px] text-stone-400">({testerApps.length})</span>
+            )}
           </button>
         </div>
       </div>
@@ -344,52 +453,392 @@ export default function AdminPage() {
 
       {/* TAB 2: IDEAS MODERATION */}
       {activeTab === "ideas" && (
-        <div className="bg-white rounded-2xl border border-black/5 shadow-2xs overflow-hidden p-5 space-y-3">
-          <div className="divide-y divide-stone-100">
-            {ideas.map((idea) => (
-              <div
-                key={idea.id}
-                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-              >
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
-                      {idea.category}
-                    </span>
-                    <span className="text-[11px] text-stone-400">
-                      {idea.authorName}
-                    </span>
-                  </div>
-                  <h4 className="text-sm font-semibold text-stone-900">
-                    {idea.title}
-                  </h4>
-                </div>
+        <div className="space-y-4">
+          {/* Moderation Filter bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-2xl border border-black/5 shadow-2xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-stone-500 mr-1">Filtruj status:</span>
+              {(
+                [
+                  { id: "all", label: `Wszystkie (${ideas.length})` },
+                  { id: "pending", label: `Oczekujące (${pendingIdeasCount})` },
+                  { id: "active", label: `Aktywne (${ideas.filter((i) => i.status === "active").length})` },
+                  { id: "testing", label: `Testy (${ideas.filter((i) => i.status === "testing").length})` },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setIdeaStatusFilter(tab.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    ideaStatusFilter === tab.id
+                      ? tab.id === "pending" && pendingIdeasCount > 0
+                        ? "bg-amber-600 text-white shadow-2xs"
+                        : "bg-stone-900 text-white shadow-2xs"
+                      : "bg-stone-100 hover:bg-stone-200 text-stone-700"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-                <div className="flex items-center gap-2">
-                  <CustomSelect
-                    value={idea.status}
-                    onChange={(val) => updateIdeaStatus(idea.id, val as any)}
-                    options={[
-                      { value: "active", label: "Aktywny" },
-                      { value: "testing", label: "Testy" },
-                      { value: "archived", label: "Archiwum" },
-                    ]}
-                  />
+            <div className="text-xs text-stone-500">
+              {pendingIdeasCount > 0 ? (
+                <span className="inline-flex items-center gap-1.5 text-amber-700 font-semibold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                  <Clock className="w-3.5 h-3.5 animate-spin" />
+                  Wymaga weryfikacji: {pendingIdeasCount} pomysłów
+                </span>
+              ) : (
+                <span className="text-emerald-700 font-medium inline-flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Wszystkie pomysły zweryfikowane
+                </span>
+              )}
+            </div>
+          </div>
 
-                  <button
-                    onClick={() => {
-                      if (confirm(`Usunąć pomysł "${idea.title}"?`)) {
-                        deleteIdea(idea.id);
-                        setAdminFeedback("Usunięto pomysł.");
-                      }
-                    }}
-                    className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+          {/* Ideas List */}
+          <div className="bg-white rounded-2xl border border-black/5 shadow-2xs overflow-hidden p-5 space-y-3">
+            <div className="divide-y divide-stone-100">
+              {ideas
+                .filter((idea) => {
+                  if (ideaStatusFilter === "all") return true;
+                  if (ideaStatusFilter === "pending") return idea.status === "pending";
+                  if (ideaStatusFilter === "active") return idea.status === "active";
+                  if (ideaStatusFilter === "testing") return idea.status === "testing";
+                  return true;
+                })
+                .map((idea) => {
+                  const isPending = idea.status === "pending";
+
+                  return (
+                    <div
+                      key={idea.id}
+                      className={`py-4 px-3 sm:px-4 rounded-2xl transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                        isPending
+                          ? "bg-amber-50/60 border border-amber-200/80 my-2"
+                          : "hover:bg-stone-50/60"
+                      }`}
+                    >
+                      <div className="space-y-1.5 max-w-xl">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
+                            {idea.category}
+                          </span>
+                          <span className="text-[11px] text-stone-500">
+                            Autor: <strong>{idea.authorName}</strong>
+                          </span>
+                          <span className="text-[11px] text-stone-400">
+                            {idea.createdAt}
+                          </span>
+
+                          {/* Status Pill */}
+                          {isPending ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                              <Clock className="w-3 h-3 text-amber-700" />
+                              Oczekuje na akceptację
+                            </span>
+                          ) : idea.status === "active" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Aktywny (na feedzie)
+                            </span>
+                          ) : idea.status === "testing" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-100 text-sky-800">
+                              <Users className="w-3 h-3" />
+                              Testy społeczne ({idea.testersCount} testerów)
+                            </span>
+                          ) : idea.status === "rejected" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-800">
+                              <X className="w-3 h-3" />
+                              Odrzucony
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <h4 className="text-sm sm:text-base font-bold text-stone-900 flex items-center gap-2">
+                          <span>{idea.title}</span>
+                          <button
+                            onClick={() => router.push(`/discover/${idea.id}`)}
+                            className="text-stone-400 hover:text-stone-700 p-0.5 cursor-pointer"
+                            title="Zobacz podgląd pomysłu"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                        </h4>
+
+                        <p className="text-xs text-stone-600 line-clamp-2 leading-relaxed">
+                          {idea.description}
+                        </p>
+                      </div>
+
+                      {/* Moderation Controls */}
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        {isPending && (
+                          <>
+                            <button
+                              onClick={() => handleApproveIdea(idea.id, idea.title)}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                              title="Zatwierdź pomysł i opublikuj na feedzie głównym"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Zaakceptuj i opublikuj</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleRejectIdea(idea.id, idea.title)}
+                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-stone-100 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                              title="Odrzuć zgłoszenie"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>Odrzuć</span>
+                            </button>
+                          </>
+                        )}
+
+                        <CustomSelect
+                          value={idea.status}
+                          onChange={(val) => updateIdeaStatus(idea.id, val as any)}
+                          options={[
+                            { value: "active", label: "Aktywny" },
+                            { value: "pending", label: "Oczekujący" },
+                            { value: "testing", label: "Testy" },
+                            { value: "rejected", label: "Odrzucony" },
+                            { value: "archived", label: "Archiwum" },
+                          ]}
+                          className="text-xs"
+                        />
+
+                        <button
+                          onClick={() => {
+                            if (confirm(`Usunąć pomysł "${idea.title}"?`)) {
+                              deleteIdea(idea.id);
+                              setAdminFeedback("Usunięto pomysł.");
+                            }
+                          }}
+                          className="p-2 hover:bg-rose-50 text-rose-600 rounded-xl cursor-pointer transition-colors"
+                          title="Usuń całkowicie"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+              {ideas.length === 0 && (
+                <div className="py-12 text-center text-xs text-stone-500">
+                  Brak pomysłów spełniających wybrane kryteria.
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: TESTER APPLICATIONS */}
+      {activeTab === "testers" && (
+        <div className="space-y-4">
+          {/* Summary Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-4 rounded-2xl bg-white border border-black/5 shadow-2xs space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">
+                Oczekujące na akceptację
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-stone-900">{pendingTesterAppsCount}</span>
+                <span className="text-xs text-stone-400">zgłoszeń</span>
               </div>
-            ))}
+              <p className="text-[11px] text-stone-500">
+                Wymaga decyzji administratora przed przyznaniem roli testera
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-black/5 shadow-2xs space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">
+                Zatwierdzeni Testerzy
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-stone-900">{approvedTesterAppsCount}</span>
+                <span className="text-xs text-stone-400">aktywnych</span>
+              </div>
+              <p className="text-[11px] text-stone-500">
+                Mają dostęp do oceny użyteczności prototypów
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-black/5 shadow-2xs space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+                Łącznie zgłoszeń
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-stone-900">{testerApps.length}</span>
+                <span className="text-xs text-stone-400">wszystkich</span>
+              </div>
+              <p className="text-[11px] text-stone-500">
+                Wszystkie aplikacje mieszkańców do pilotaży innowacji
+              </p>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-2xl border border-black/5 shadow-2xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-stone-500 mr-1">Status wniosku:</span>
+              {(
+                [
+                  { id: "all", label: `Wszystkie (${testerApps.length})` },
+                  { id: "pending", label: `Oczekujące (${pendingTesterAppsCount})` },
+                  { id: "approved", label: `Zaakceptowani (${approvedTesterAppsCount})` },
+                  { id: "rejected", label: `Odrzuceni (${testerApps.filter((a) => a.status === "rejected").length})` },
+                ] as const
+              ).map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setTesterAppFilter(f.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    testerAppFilter === f.id
+                      ? f.id === "pending" && pendingTesterAppsCount > 0
+                        ? "bg-amber-600 text-white shadow-2xs"
+                        : "bg-stone-900 text-white shadow-2xs"
+                      : "bg-stone-100 hover:bg-stone-200 text-stone-700"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={loadTesterApps}
+              className="p-2 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl cursor-pointer text-xs font-medium inline-flex items-center gap-1.5"
+              title="Odśwież zgłoszenia"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingTesterApps ? "animate-spin" : ""}`} />
+              <span>Odśwież</span>
+            </button>
+          </div>
+
+          {/* Tester Applications Table / Cards */}
+          <div className="bg-white rounded-2xl border border-black/5 shadow-2xs overflow-hidden">
+            {isLoadingTesterApps && testerApps.length === 0 ? (
+              <div className="p-8 text-center text-xs text-stone-400 flex items-center justify-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-stone-500" />
+                <span>Wczytywanie zgłoszeń testerów...</span>
+              </div>
+            ) : (
+              <div className="divide-y divide-stone-100">
+                {testerApps
+                  .filter((app) => {
+                    if (testerAppFilter === "all") return true;
+                    return app.status === testerAppFilter;
+                  })
+                  .map((app) => {
+                    const isAppPending = app.status === "pending";
+
+                    return (
+                      <div
+                        key={app.id}
+                        className={`p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${
+                          isAppPending ? "bg-amber-50/40" : "hover:bg-stone-50/60"
+                        }`}
+                      >
+                        <div className="space-y-1.5 max-w-xl">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-bold text-stone-900">
+                              {app.user_name}
+                            </span>
+                            {app.user_email && (
+                              <span className="text-xs text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                                {app.user_email}
+                              </span>
+                            )}
+                            <span className="text-[11px] text-stone-400">
+                              {app.created_at ? app.created_at.split("T")[0] : ""}
+                            </span>
+
+                            {/* Status badge */}
+                            {isAppPending ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                <Clock className="w-3 h-3 text-amber-700" />
+                                Oczekuje na decyzję admina
+                              </span>
+                            ) : app.status === "approved" ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                                Zaakceptowany tester
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+                                <X className="w-3 h-3 text-rose-700" />
+                                Odrzucony
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-xs text-stone-800 flex items-center gap-1.5 pt-0.5">
+                            <span className="text-stone-400">Zgłoszenie do projektu:</span>
+                            <button
+                              onClick={() => router.push(`/discover/${app.idea_id}`)}
+                              className="font-bold text-stone-900 hover:text-amber-700 underline underline-offset-2 flex items-center gap-1 cursor-pointer text-left"
+                            >
+                              <span>{app.idea_title}</span>
+                              <ExternalLink className="w-3 h-3 text-stone-400" />
+                            </button>
+                          </div>
+
+                          {app.motivation && (
+                            <p className="text-xs text-stone-600 bg-white/80 p-2.5 rounded-xl border border-stone-200/80 leading-relaxed italic">
+                              &ldquo;{app.motivation}&rdquo;
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {isAppPending ? (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleApproveTester(app.id, app.user_name, app.idea_title)
+                                }
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                                title="Zaakceptuj użytkownika jako testera"
+                              >
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                <span>Zaakceptuj testera</span>
+                              </button>
+
+                              <button
+                                onClick={() => handleRejectTester(app.id, app.user_name)}
+                                className="inline-flex items-center gap-1 px-3 py-2 bg-stone-100 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                                title="Odrzuć aplikację"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                <span>Odrzuć</span>
+                              </button>
+                            </>
+                          ) : app.status === "approved" ? (
+                            <div className="inline-flex items-center gap-1.5 text-xs text-emerald-700 font-semibold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>Tester ma aktywny dostęp</span>
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-1.5 text-xs text-rose-700 font-medium bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200">
+                              <span>Wniosek odrzucony</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                {testerApps.length === 0 && (
+                  <div className="py-12 text-center text-xs text-stone-500">
+                    Brak zgłoszeń testerów w systemie.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

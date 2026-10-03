@@ -1,7 +1,17 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 
-NotificationType = Literal["new_idea", "chat_message", "grant_call", "partnership", "expert_assigned"]
+NotificationType = Literal[
+    "new_idea",
+    "chat_message",
+    "grant_call",
+    "partnership",
+    "expert_assigned",
+    "idea_approved",
+    "tester_application",
+    "tester_approved",
+    "system"
+]
 
 class NotificationResponse(BaseModel):
     id: str

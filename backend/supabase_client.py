@@ -23,6 +23,23 @@ if SUPABASE_URL and SUPABASE_KEY and not SUPABASE_URL.startswith("https://your-p
 else:
     logger.info("Supabase credentials not configured. Using local in-memory storage fallback. Add SUPABASE_URL and SUPABASE_KEY in .env to connect to your database.")
 
+try:
+    from local_db import (
+        local_save_feedback, local_get_feedback,
+        local_save_comment, local_get_comments,
+        local_save_tester_application, local_get_tester_applications,
+        local_get_tester_application_by_id, local_update_tester_application,
+        local_save_idea_status, local_get_all_idea_statuses
+    )
+except ImportError:
+    from backend.local_db import (
+        local_save_feedback, local_get_feedback,
+        local_save_comment, local_get_comments,
+        local_save_tester_application, local_get_tester_applications,
+        local_get_tester_application_by_id, local_update_tester_application,
+        local_save_idea_status, local_get_all_idea_statuses
+    )
+
 
 # ==========================================
 # In-memory database fallback implementation
@@ -36,6 +53,9 @@ class MemoryDB:
         self.conversations: List[Dict[str, Any]] = []
         self.messages: List[Dict[str, Any]] = []
         self.reported_problems: List[Dict[str, Any]] = []
+        self.feedback: List[Dict[str, Any]] = []
+        self.comments: List[Dict[str, Any]] = []
+        self.tester_applications: List[Dict[str, Any]] = []
         self._seed_default_data()
 
     def _seed_default_data(self):
@@ -67,6 +87,19 @@ class MemoryDB:
             "category": "Ekologia",
             "user_id": user_id,
             "author_name": "Jan Kowalski",
+            "status": "active",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        # Idea oczekująca na moderację przez administratora (pending)
+        pending_idea_id = str(uuid.uuid4())
+        self.ideas.append({
+            "id": pending_idea_id,
+            "title": "Sąsiedzki Mobilny Bank Narzędzi dla Seniorów",
+            "description": "Zgłoszenie pilotażowe: wypożyczalnia narzędzi ogrodowych i domowych prowadzona przez sołectwo dla starszych mieszkańców.",
+            "category": "Społeczność & Życie",
+            "user_id": user_id,
+            "author_name": "Jan Kowalski",
+            "status": "pending",
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         self.reactions.append({
@@ -74,6 +107,72 @@ class MemoryDB:
             "idea_id": sample_idea_id,
             "user_id": admin_id,
             "reaction_type": "like",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+
+        # Domyślne zgłoszenia testerów oczekujące na akceptację administratora
+        self.tester_applications.append({
+            "id": "app-tester-1",
+            "idea_id": sample_idea_id,
+            "idea_title": "Aplikacja do wspólnego sadzenia drzew w mieście",
+            "user_id": user_id,
+            "user_name": "Katarzyna Wiśniewska",
+            "user_email": "kasia.wisniewska@tarnow.pl",
+            "status": "pending",
+            "motivation": "Mieszkam blisko parku i mogę pomóc seniorom w testach terenowych.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        self.tester_applications.append({
+            "id": "app-tester-2",
+            "idea_id": sample_idea_id,
+            "idea_title": "Aplikacja do wspólnego sadzenia drzew w mieście",
+            "user_id": admin_id,
+            "user_name": "Piotr Kowalczyk",
+            "user_email": "piotr.kowalczyk@krakow.pl",
+            "status": "pending",
+            "motivation": "Jestem koordynatorem wolontariatu w Nowym Sączu.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+
+        # Domyślny feedback i komentarze testowe dla demonstracji modułu Testera
+        self.feedback.append({
+            "id": "fb-sample-1",
+            "idea_id": sample_idea_id,
+            "user_id": admin_id,
+            "author_name": "Barbara Nowak",
+            "author_role": "Opiekunka osoby starszej / Tester",
+            "overall_rating": 5,
+            "usability_rating": 4,
+            "accessibility_rating": 5,
+            "impact_rating": 5,
+            "strengths": "Bardzo prosta rejestracja uczestników, czytelny podział zadań na etapy.",
+            "weaknesses": "Przyciski potwierdzenia mogłyby mieć nieco większy kontrast na urządzeniach mobilnych.",
+            "suggested_improvements": "Warto dodać opcję przypomnień SMS dla osób, które rzadziej korzystają z poczty e-mail.",
+            "comment": "Przetestowałam prototyp z grupą 6 sąsiadów – rozwiązanie ma ogromny potencjał integracyjny w małych miejscowościach.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        self.feedback.append({
+            "id": "fb-sample-2",
+            "idea_id": sample_idea_id,
+            "user_id": user_id,
+            "author_name": "Piotr Wiśniewski",
+            "author_role": "Ekspert ds. Dostępności Społecznej",
+            "overall_rating": 4,
+            "usability_rating": 5,
+            "accessibility_rating": 4,
+            "impact_rating": 5,
+            "strengths": "Świetna koncepcja budowania zaangażowania lokalnego, intuicyjny proces zgłaszania się.",
+            "weaknesses": "Brak bezpośredniego powiadomienia koordynatora o osobach z ograniczeniami ruchowymi.",
+            "suggested_improvements": "Dodać pole wyboru: 'potrzebuję asystenta' lub 'dostępne dla wózków'.",
+            "comment": "Rekomenduję do dalszego skalowania w subregionie tarnowskim po drobnych korektach.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        self.comments.append({
+            "id": "cmt-sample-1",
+            "idea_id": sample_idea_id,
+            "user_id": admin_id,
+            "author_name": "Marek Zarządca",
+            "content": "Dziękujemy za pierwsze uwagi z testów terenowych! Wprowadzamy większe fonty i kontrast w kolejnej aktualizacji.",
             "created_at": datetime.now(timezone.utc).isoformat()
         })
 
@@ -243,43 +342,68 @@ class DatabaseRepository:
         memory_db.profiles.append(profile_data)
         return profile_data
 
-    # --- IDEAS ---
-    @staticmethod
-    def get_all_ideas() -> List[Dict[str, Any]]:
+    # --- IDEAS & MODERATION ---
+    _idea_statuses: Dict[str, str] = local_get_all_idea_statuses()
+
+    @classmethod
+    def get_all_ideas(cls) -> List[Dict[str, Any]]:
+        raw = []
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("ideas").select("*").order("created_at", desc=True).execute()
-                if res.data is not None:
-                    return res.data
+                if res.data is not None and len(res.data) > 0:
+                    raw = res.data
             except Exception as e:
                 logger.error(f"Supabase error get_all_ideas: {e}")
-        return sorted(memory_db.ideas, key=lambda x: x["created_at"], reverse=True)
 
-    @staticmethod
-    def get_idea_by_id(idea_id: str) -> Optional[Dict[str, Any]]:
+        # If Supabase has data, also merge any memory_db ideas not present in Supabase
+        existing_ids = {str(item.get("id")) for item in raw}
+        for mem in memory_db.ideas:
+            if str(mem.get("id")) not in existing_ids:
+                raw.append(mem)
+
+        if not raw:
+            raw = sorted(memory_db.ideas, key=lambda x: x["created_at"], reverse=True)
+
+        for item in raw:
+            iid = str(item.get("id"))
+            item["status"] = cls._idea_statuses.get(iid, item.get("status", "active"))
+        return raw
+
+    @classmethod
+    def get_idea_by_id(cls, idea_id: str) -> Optional[Dict[str, Any]]:
+        item = None
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("ideas").select("*").eq("id", idea_id).execute()
                 if res.data and len(res.data) > 0:
-                    return res.data[0]
-                return None
+                    item = res.data[0]
             except Exception as e:
                 logger.error(f"Supabase error get_idea_by_id: {e}")
-        return next((i for i in memory_db.ideas if i["id"] == idea_id), None)
+        if not item:
+            item = next((i for i in memory_db.ideas if str(i["id"]) == str(idea_id)), None)
+        if item:
+            iid = str(item.get("id"))
+            item["status"] = cls._idea_statuses.get(iid, item.get("status", "active"))
+        return item
 
-    @staticmethod
-    def create_idea(idea_data: Dict[str, Any]) -> Dict[str, Any]:
+    @classmethod
+    def create_idea(cls, idea_data: Dict[str, Any]) -> Dict[str, Any]:
         idea_data["id"] = idea_data.get("id") or str(uuid.uuid4())
         idea_data["created_at"] = idea_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+        idea_data["status"] = idea_data.get("status") or "pending"
+        cls._idea_statuses[str(idea_data["id"])] = idea_data["status"]
+        local_save_idea_status(str(idea_data["id"]), idea_data["status"])
 
         if is_supabase_connected and supabase_client:
             try:
-                res = supabase_client.table("ideas").insert(idea_data).execute()
+                payload = {k: v for k, v in idea_data.items() if k != "status"}
+                res = supabase_client.table("ideas").insert(payload).execute()
                 if res.data and len(res.data) > 0:
-                    return res.data[0]
+                    return {**res.data[0], "status": idea_data["status"]}
             except Exception as e:
                 logger.error(f"Supabase error create_idea: {e}")
-        memory_db.ideas.append(idea_data)
+        memory_db.ideas.insert(0, idea_data)
         return idea_data
 
     @staticmethod
@@ -292,25 +416,133 @@ class DatabaseRepository:
             except Exception as e:
                 logger.error(f"Supabase error delete_idea: {e}")
         before_count = len(memory_db.ideas)
-        memory_db.ideas = [i for i in memory_db.ideas if i["id"] != idea_id]
-        memory_db.reactions = [r for r in memory_db.reactions if r["idea_id"] != idea_id]
+        memory_db.ideas = [i for i in memory_db.ideas if str(i["id"]) != str(idea_id)]
+        memory_db.reactions = [r for r in memory_db.reactions if str(r["idea_id"]) != str(idea_id)]
         return len(memory_db.ideas) < before_count
 
-    @staticmethod
-    def update_idea(idea_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    @classmethod
+    def update_idea(cls, idea_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        iid = str(idea_id)
+        if "status" in updates:
+            cls._idea_statuses[iid] = updates["status"]
+            local_save_idea_status(iid, updates["status"])
+
+        item = None
         if is_supabase_connected and supabase_client:
             try:
-                res = supabase_client.table("ideas").update(updates).eq("id", idea_id).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                payload = {k: v for k, v in updates.items() if k != "status"}
+                if payload:
+                    res = supabase_client.table("ideas").update(payload).eq("id", idea_id).execute()
+                    if res.data and len(res.data) > 0:
+                        item = res.data[0]
             except Exception as e:
                 logger.error(f"Supabase error update_idea: {e}")
 
-        idea = next((i for i in memory_db.ideas if str(i["id"]) == str(idea_id)), None)
-        if idea:
-            idea.update(updates)
-            return idea
+        mem = next((i for i in memory_db.ideas if str(i["id"]) == iid), None)
+        if mem:
+            mem.update(updates)
+            if not item:
+                item = mem
+
+        if item:
+            item["status"] = cls._idea_statuses.get(iid, updates.get("status", "active"))
+        return item
+
+    # --- TESTER APPLICATIONS (Weryfikacja i akceptacja testerów) ---
+    @staticmethod
+    def get_tester_applications(
+        idea_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        status: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        remote_data = None
+        if is_supabase_connected and supabase_client:
+            try:
+                q = supabase_client.table("tester_applications").select("*").order("created_at", desc=True)
+                if idea_id:
+                    q = q.eq("idea_id", idea_id)
+                if user_id:
+                    q = q.eq("user_id", user_id)
+                if status:
+                    q = q.eq("status", status)
+                res = q.execute()
+                if res.data is not None and len(res.data) > 0:
+                    remote_data = res.data
+            except Exception as e:
+                logger.info(f"Supabase tester_applications fallback: {e}")
+
+        if remote_data is not None and len(remote_data) > 0:
+            for itm in remote_data:
+                local_save_tester_application(itm)
+            return remote_data
+
+        local_data = local_get_tester_applications(idea_id=idea_id, user_id=user_id, status=status)
+        if local_data:
+            return local_data
+
+        res = memory_db.tester_applications
+        if idea_id:
+            res = [a for a in res if str(a.get("idea_id")) == str(idea_id)]
+        if user_id:
+            res = [a for a in res if str(a.get("user_id")) == str(user_id)]
+        if status:
+            res = [a for a in res if a.get("status") == status]
+        return sorted(res, key=lambda x: str(x.get("created_at", "")), reverse=True)
+
+    @staticmethod
+    def create_tester_application(app_data: Dict[str, Any]) -> Dict[str, Any]:
+        app_data["id"] = app_data.get("id") or str(uuid.uuid4())
+        app_data["created_at"] = app_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+        app_data["status"] = app_data.get("status") or "pending"
+
+        # Zapisz w lokalnej trwałej bazie SQLite (gwarancja braku utraty danych)
+        local_save_tester_application(app_data)
+
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("tester_applications").insert(app_data).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.info(f"Supabase tester_applications insert fallback: {e}")
+
+        memory_db.tester_applications.insert(0, app_data)
+        return app_data
+
+    @staticmethod
+    def get_tester_application_by_id(app_id: str) -> Optional[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("tester_applications").select("*").eq("id", app_id).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.info(f"Supabase get_tester_application_by_id fallback: {e}")
+        local = local_get_tester_application_by_id(app_id)
+        if local:
+            return local
+        return next((a for a in memory_db.tester_applications if str(a.get("id")) == str(app_id)), None)
+
+    @staticmethod
+    def update_tester_application(app_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        local_up = local_update_tester_application(app_id, updates)
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("tester_applications").update(updates).eq("id", app_id).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.info(f"Supabase update_tester_application fallback: {e}")
+
+        if local_up:
+            return local_up
+
+        app = next((a for a in memory_db.tester_applications if str(a.get("id")) == str(app_id)), None)
+        if app:
+            app.update(updates)
+            return app
         return None
+
 
     # --- REACTIONS ---
     @staticmethod
@@ -372,6 +604,87 @@ class DatabaseRepository:
             }
             memory_db.reactions.append(new_r)
             return {"active": True, "reaction_type": reaction_type}
+
+    # --- TESTING FEEDBACK, USABILITY RATINGS & COMMENTS ---
+    @staticmethod
+    def get_feedback_for_idea(idea_id: str) -> List[Dict[str, Any]]:
+        remote_data = None
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("idea_feedback").select("*").eq("idea_id", idea_id).order("created_at", desc=True).execute()
+                if res.data is not None and len(res.data) > 0:
+                    remote_data = res.data
+            except Exception as e:
+                logger.info(f"Supabase idea_feedback fetch fallback: {e}")
+
+        if remote_data is not None and len(remote_data) > 0:
+            for itm in remote_data:
+                local_save_feedback(itm)
+            return remote_data
+
+        local_data = local_get_feedback(idea_id)
+        if local_data:
+            return local_data
+
+        return [f for f in memory_db.feedback if str(f.get("idea_id")) == str(idea_id)]
+
+    @staticmethod
+    def create_feedback(feedback_data: Dict[str, Any]) -> Dict[str, Any]:
+        feedback_data["id"] = feedback_data.get("id") or str(uuid.uuid4())
+        feedback_data["created_at"] = feedback_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+        
+        # Trwały zapis w lokalnej bazie SQLite (dane nigdy nie znikną przy restartach serwera)
+        local_save_feedback(feedback_data)
+
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("idea_feedback").insert(feedback_data).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.info(f"Supabase idea_feedback insert fallback: {e}")
+        memory_db.feedback.insert(0, feedback_data)
+        return feedback_data
+
+    @staticmethod
+    def get_comments_for_idea(idea_id: str) -> List[Dict[str, Any]]:
+        remote_data = None
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("idea_comments").select("*").eq("idea_id", idea_id).order("created_at", desc=False).execute()
+                if res.data is not None and len(res.data) > 0:
+                    remote_data = res.data
+            except Exception as e:
+                logger.info(f"Supabase idea_comments fetch fallback: {e}")
+
+        if remote_data is not None and len(remote_data) > 0:
+            for itm in remote_data:
+                local_save_comment(itm)
+            return remote_data
+
+        local_data = local_get_comments(idea_id)
+        if local_data:
+            return local_data
+
+        return [c for c in memory_db.comments if str(c.get("idea_id")) == str(idea_id)]
+
+    @staticmethod
+    def create_comment(comment_data: Dict[str, Any]) -> Dict[str, Any]:
+        comment_data["id"] = comment_data.get("id") or str(uuid.uuid4())
+        comment_data["created_at"] = comment_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+
+        # Trwały zapis w lokalnej bazie SQLite (dane nigdy nie znikną przy restartach serwera)
+        local_save_comment(comment_data)
+
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("idea_comments").insert(comment_data).execute()
+                if res.data and len(res.data) > 0:
+                    return res.data[0]
+            except Exception as e:
+                logger.info(f"Supabase idea_comments insert fallback: {e}")
+        memory_db.comments.append(comment_data)
+        return comment_data
 
     # --- INNOVATIONS (RAG Database) ---
     @staticmethod
