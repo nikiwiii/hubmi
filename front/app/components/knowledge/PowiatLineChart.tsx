@@ -1,0 +1,321 @@
+'use client';
+
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ReferenceLine
+} from 'recharts';
+import {
+  ResearchInfo,
+  PowiatTimeSeries,
+  getAllPowiatTimeSeries,
+  getRegionalAverageTimeSeries
+} from '../../lib/researchData';
+import { POWIATY_DATA } from '../../lib/malopolskaMapData';
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Layers,
+  MapPin,
+  ChevronDown,
+  Check,
+  Award,
+  Sparkles
+} from 'lucide-react';
+
+interface PowiatLineChartProps {
+  research: ResearchInfo;
+  selectedPowiatId: string | null;
+  onSelectPowiat: (powiatId: string) => void;
+}
+
+export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
+  research,
+  selectedPowiatId,
+  onSelectPowiat
+}) => {
+  const [isMounted, setIsMounted] = useState(false);
+  const [comparePowiatId, setComparePowiatId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Wszystkie serie czasowe
+  const allSeries = useMemo(() => {
+    return getAllPowiatTimeSeries(research.id);
+  }, [research.id]);
+
+  // Seria czasowa średniej regionalnej
+  const regionalAvg = useMemo(() => {
+    return getRegionalAverageTimeSeries(research.id);
+  }, [research.id]);
+
+  // Główny wybrany powiat (jeśli brak, domyślnie pierwszy na liście np. Kraków lub bocheński)
+  const activeSeries = useMemo(() => {
+    if (selectedPowiatId) {
+      const found = allSeries.find((s) => s.powiatId === selectedPowiatId);
+      if (found) return found;
+    }
+    return allSeries[0] || null;
+  }, [selectedPowiatId, allSeries]);
+
+  // Powiat do porównania (opcjonalny)
+  const compareSeries = useMemo(() => {
+    if (!comparePowiatId) return null;
+    return allSeries.find((s) => s.powiatId === comparePowiatId) || null;
+  }, [comparePowiatId, allSeries]);
+
+  // Formatowanie danych do Recharts
+  const chartData = useMemo(() => {
+    if (!activeSeries) return [];
+
+    return research.years.map((year, idx) => {
+      const activePoint = activeSeries.history.find((h) => h.year === year)?.value ?? 0;
+      const avgPoint = regionalAvg.find((h) => h.year === year)?.value ?? 0;
+
+      const row: Record<string, string | number> = {
+        year,
+        [activeSeries.powiatName]: activePoint,
+        'Średnia Małopolski': avgPoint
+      };
+
+      if (compareSeries) {
+        const compPoint = compareSeries.history.find((h) => h.year === year)?.value ?? 0;
+        row[compareSeries.powiatName] = compPoint;
+      }
+
+      return row;
+    });
+  }, [activeSeries, compareSeries, regionalAvg, research.years]);
+
+  if (!isMounted || !activeSeries) {
+    return (
+      <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm p-6 min-h-[360px] flex items-center justify-center">
+        <div className="flex items-center gap-2 text-stone-400 text-sm">
+          <Activity className="w-5 h-5 animate-pulse" />
+          <span>Wczytywanie wykresu serii czasowej...</span>
+        </div>
+      </div>
+    );
+  }
+
+  const isPositiveTrend = activeSeries.delta >= 0;
+
+  // Custom Tooltip dla Recharts
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-stone-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl border border-white/10 text-xs space-y-1.5 min-w-[200px]">
+          <div className="font-bold text-amber-400 text-sm font-mono border-b border-white/10 pb-1">
+            Rok {label}
+          </div>
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-3">
+              <span className="flex items-center gap-1.5 text-stone-300">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="truncate max-w-[130px]">{entry.name}:</span>
+              </span>
+              <span className="font-bold text-stone-100 font-mono">
+                {entry.value} {research.unit}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-6">
+      {/* Nagłówek i przełączniki powiatów */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5" style={{ color: research.theme.accent }} />
+            <h3 className="text-base font-bold text-stone-900">
+              Analiza Trendu Liniowego – {activeSeries.powiatName}
+            </h3>
+          </div>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Dynamika zmian w latach {research.years[0]}–{research.years[research.years.length - 1]} w porównaniu ze średnią całego województwa.
+          </p>
+        </div>
+
+        {/* Selektory powiatu */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Wybór głównego powiatu */}
+          <div className="relative">
+            <select
+              value={activeSeries.powiatId}
+              onChange={(e) => onSelectPowiat(e.target.value)}
+              className="bg-stone-50 border border-stone-200 text-stone-900 text-xs font-bold rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-stone-900 cursor-pointer shadow-2xs"
+            >
+              {allSeries.map((s) => (
+                <option key={s.powiatId} value={s.powiatId}>
+                  {s.powiatName} ({s.endValue} {research.unit})
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 text-stone-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
+          {/* Opcja porównania z drugim powiatem */}
+          <div className="relative">
+            <select
+              value={comparePowiatId || ''}
+              onChange={(e) => setComparePowiatId(e.target.value || null)}
+              className="bg-white border border-stone-200 text-stone-700 text-xs font-medium rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-stone-900 cursor-pointer shadow-2xs"
+            >
+              <option value="">+ Porównaj z innym powiatem</option>
+              {allSeries
+                .filter((s) => s.powiatId !== activeSeries.powiatId)
+                .map((s) => (
+                  <option key={s.powiatId} value={s.powiatId}>
+                    Porównaj z: {s.powiatName}
+                  </option>
+                ))}
+            </select>
+            <ChevronDown className="w-4 h-4 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* Karty podsumowujące statystyki wybranego powiatu */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70">
+          <span className="text-[11px] font-medium text-stone-500 block">
+            Początek ({research.years[0]})
+          </span>
+          <span className="text-xl font-extrabold text-stone-900 font-mono mt-0.5 block">
+            {activeSeries.startValue} {research.unit}
+          </span>
+        </div>
+
+        <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70">
+          <span className="text-[11px] font-medium text-stone-500 block">
+            Ostatni pomiar ({research.years[research.years.length - 1]})
+          </span>
+          <span className="text-xl font-extrabold text-stone-900 font-mono mt-0.5 block">
+            {activeSeries.endValue} {research.unit}
+          </span>
+        </div>
+
+        <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70">
+          <span className="text-[11px] font-medium text-stone-500 block">
+            Zmiana całkowita (11 lat)
+          </span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {isPositiveTrend ? (
+              <TrendingUp className="w-4 h-4 text-emerald-600" />
+            ) : (
+              <TrendingDown className="w-4 h-4 text-rose-600" />
+            )}
+            <span
+              className={`text-xl font-extrabold font-mono ${
+                isPositiveTrend ? 'text-emerald-700' : 'text-rose-700'
+              }`}
+            >
+              {activeSeries.delta > 0 ? `+${activeSeries.delta}` : activeSeries.delta}{' '}
+              {research.unit}
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70">
+          <span className="text-[11px] font-medium text-stone-500 block">
+            Pozycja w Małopolsce
+          </span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <Award className="w-4 h-4 text-amber-500" />
+            <span className="text-xl font-extrabold text-stone-900 font-mono">
+              #{activeSeries.latestRank}{' '}
+              <span className="text-xs font-normal text-stone-500">/ 22</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Główny Wykres Liniowy Recharts */}
+      <div className="w-full h-[340px] sm:h-[400px] pt-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+            <XAxis
+              dataKey="year"
+              tickLine={false}
+              axisLine={{ stroke: '#e2e8f0' }}
+              tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={{ stroke: '#e2e8f0' }}
+              tick={{ fill: '#64748b', fontSize: 12 }}
+              unit={research.unit === '%' ? '%' : ''}
+              domain={['auto', 'auto']}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend
+              wrapperStyle={{ paddingTop: 16 }}
+              iconType="circle"
+              iconSize={8}
+            />
+
+            {/* Linia głównego powiatu */}
+            <Line
+              type="monotone"
+              dataKey={activeSeries.powiatName}
+              stroke={research.theme.chartColor}
+              strokeWidth={3.5}
+              dot={{ r: 4.5, fill: research.theme.chartColor, stroke: '#ffffff', strokeWidth: 1.5 }}
+              activeDot={{ r: 7, strokeWidth: 2, fill: research.theme.chartColor }}
+            />
+
+            {/* Opcjonalna linia drugiego powiatu do porównania */}
+            {compareSeries && (
+              <Line
+                type="monotone"
+                dataKey={compareSeries.powiatName}
+                stroke="#10B981"
+                strokeWidth={3}
+                dot={{ r: 4, fill: '#10B981', stroke: '#ffffff', strokeWidth: 1.5 }}
+                activeDot={{ r: 6 }}
+              />
+            )}
+
+            {/* Linia średniej regionalnej (przerywana) */}
+            <Line
+              type="monotone"
+              dataKey="Średnia Małopolski"
+              stroke="#94A3B8"
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="flex items-center justify-between text-[11px] text-stone-500 bg-stone-50 px-4 py-2.5 rounded-xl border border-stone-200/60">
+        <span>
+          Wskazówka: Linia przerywana reprezentuje średnią arytmetyczną wszystkich 22 powiatów Małopolski.
+        </span>
+        <span className="font-semibold text-stone-700 hidden sm:inline">
+          {activeSeries.subregion}
+        </span>
+      </div>
+    </div>
+  );
+};

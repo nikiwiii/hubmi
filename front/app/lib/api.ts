@@ -40,7 +40,7 @@ function getHeaders(includeAuth = true): Record<string, string> {
 
 /**
  * Centralny wrapper fetch z automatyczną obsługą błędu 401 (wygaśnięcie tokenu).
- * Przy statusie 401 czyści token i przekierowuje do /auth.
+ * Przy statusie 401 czyści token i przekierowuje do /auth (z pominięciem endpointów logowania).
  */
 async function apiFetch(
   url: string,
@@ -48,10 +48,15 @@ async function apiFetch(
 ): Promise<Response> {
   const res = await fetch(url, options);
 
-  if (res.status === 401) {
-    // Token wygasł lub jest nieprawidłowy
+  const isAuthEndpoint =
+    url.includes('/api/login/user') ||
+    url.includes('/api/login/admin') ||
+    url.includes('/api/login/register');
+
+  if (res.status === 401 && !isAuthEndpoint) {
+    // Token wygasł lub jest nieprawidłowy w zapytaniach wymagających autoryzacji
     setAuthToken(null);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
       window.location.href = '/auth';
     }
   }
@@ -65,9 +70,17 @@ async function apiFetch(
 export interface LoginResponse {
   access_token: string;
   token_type: string;
-  role: string;
-  user_id: string;
-  name: string;
+  user?: {
+    id: string;
+    email: string;
+    full_name: string;
+    role: string;
+    created_at?: string;
+  };
+  role?: string;
+  user_id?: string;
+  name?: string;
+  full_name?: string;
   email?: string;
 }
 
@@ -86,13 +99,19 @@ export async function loginUser(email: string, password: string): Promise<User> 
   const data: LoginResponse = await res.json();
   setAuthToken(data.access_token);
 
+  const userId = data.user?.id || data.user_id || `user-${Date.now()}`;
+  const userEmail = data.user?.email || data.email || email;
+  const userName = data.user?.full_name || data.name || data.full_name || userEmail.split('@')[0];
+  const userRole = data.user?.role || data.role;
+  const isAdmin = userRole === 'admin' || userEmail.toLowerCase().includes('admin');
+
   return {
-    id: data.user_id,
-    email: data.email || email,
-    name: data.name,
-    role: (data.role === 'admin' ? 'admin' : 'creator'),
-    avatarBg: '#A4B3F6',
-    createdAt: new Date().toISOString().split('T')[0],
+    id: userId,
+    email: userEmail,
+    name: userName,
+    role: isAdmin ? 'admin' : 'creator',
+    avatarBg: isAdmin ? '#F5E85A' : '#A4B3F6',
+    createdAt: data.user?.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
     status: 'active',
   };
 }
@@ -112,13 +131,17 @@ export async function loginAdmin(email: string, password: string): Promise<User>
   const data: LoginResponse = await res.json();
   setAuthToken(data.access_token);
 
+  const userId = data.user?.id || data.user_id || `admin-${Date.now()}`;
+  const userEmail = data.user?.email || data.email || email;
+  const userName = data.user?.full_name || data.name || data.full_name || 'Główny Administrator';
+
   return {
-    id: data.user_id,
-    email: data.email || email,
-    name: data.name,
+    id: userId,
+    email: userEmail,
+    name: userName,
     role: 'admin',
     avatarBg: '#F5E85A',
-    createdAt: new Date().toISOString().split('T')[0],
+    createdAt: data.user?.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
     status: 'active',
   };
 }
@@ -155,12 +178,14 @@ export async function fetchCurrentProfile(): Promise<User | null> {
     if (!res.ok) return null;
 
     const data = await res.json();
+    const userRole = data.role === 'admin' ? 'admin' : 'creator';
+    const userName = data.full_name || data.name || data.email?.split('@')[0] || 'Użytkownik';
     return {
       id: data.id,
       email: data.email,
-      name: data.full_name,
-      role: data.role === 'admin' ? 'admin' : 'creator',
-      avatarBg: data.role === 'admin' ? '#F5E85A' : '#A4B3F6',
+      name: userName,
+      role: userRole,
+      avatarBg: userRole === 'admin' ? '#F5E85A' : '#A4B3F6',
       createdAt: data.created_at?.split('T')[0] || '2026-03-01',
       status: 'active',
     };

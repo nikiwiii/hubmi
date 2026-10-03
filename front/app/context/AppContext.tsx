@@ -76,10 +76,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setCurrentUserState(profile);
           setStoredCurrentUser(profile);
         } else {
-          setCurrentUserState(getCurrentUser());
+          setCurrentUserState(null);
+          setStoredCurrentUser(null);
         }
       } catch {
-        setCurrentUserState(getCurrentUser());
+        setCurrentUserState(null);
+        setStoredCurrentUser(null);
       } finally {
         setIsLoadingUser(false);
       }
