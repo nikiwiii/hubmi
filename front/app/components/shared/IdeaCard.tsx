@@ -89,13 +89,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer ${styles.bg} min-h-[280px] border border-black/[0.04] select-none`}
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer ${styles.bg} min-h-70 border border-black/4 select-none`}
     >
       {/* Top Header */}
       <div className="z-10 flex flex-col space-y-1">
         <div className="flex items-center justify-between gap-2">
           <span
-            className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${styles.badge}`}
+            className={`text-[10px] font-semibold uppercase tracking-wide px-2.5 py-0.5 rounded-full ${styles.badge}`}
           >
             {idea.category}
           </span>
@@ -120,12 +120,12 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
       {/* Center: generated visualization or Geometric Illustration */}
       {idea.visualMockupUrl ? (
-        <div className="my-4 overflow-hidden rounded-2xl border border-black/[0.06] bg-white/40">
+        <div className="my-4 overflow-hidden rounded-2xl border border-black/6 bg-white/40">
           {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
           <img
             src={idea.visualMockupUrl}
             alt={`Wizualizacja: ${idea.title}`}
-            className="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-103"
+            className="w-full aspect-4/3 object-cover transition-transform duration-300 group-hover:scale-103"
           />
         </div>
       ) : (
@@ -135,7 +135,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
       )}
 
       {/* Bottom Footer with Author and Stats */}
-      <div className="z-10 mt-auto flex items-center justify-between pt-3 border-t border-black/[0.06]">
+      <div className="z-10 mt-auto flex items-center justify-between pt-3 border-t border-black/6">
         <p className={`text-xs font-bold ${styles.text}`}>{idea.authorName}</p>
 
         {/* Minimal Action Counters */}

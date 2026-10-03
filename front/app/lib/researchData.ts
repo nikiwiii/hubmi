@@ -222,8 +222,367 @@ const RESEARCH_CONFIGS: Record<
       border: '#C1C9E4',
       text: '#1D2235'
     }
+  },
+  urbanization_rate: {
+    titlePl: 'Wskaźnik urbanizacji',
+    titleEn: 'Urbanization rate',
+    unitPl: '%',
+    category: 'Demografia',
+    descriptionPl:
+      'Odsetek ludności zamieszkującej tereny miejskie w ogólnej populacji powiatu. Miernik stopnia zurbanizowania regionu.',
+    iconName: 'activity',
+    theme: {
+      accent: '#698B99',
+      chartColor: '#698B99',
+      chartSecondary: '#CEE0E6',
+      badgeBg: 'bg-[#CEE0E6] text-[#1A282E] border-[#B9D2DB]',
+      badgeText: 'text-[#1A282E]',
+      cardBorder: 'border-[#B9D2DB] hover:border-[#698B99]',
+      gradient: 'from-[#698B99] to-[#4D6F7C]',
+      colorScale: ['#EAF3F6', '#87A6B4', '#3E5D6B'],
+      pastelBg: '#CEE0E6',
+      border: '#B9D2DB',
+      text: '#1A282E'
+    }
+  },
+  kindergarten_availability: {
+    titlePl: 'Dostępność miejsc w przedszkolach',
+    titleEn: 'Kindergarten availability',
+    unitPl: 'dzieci/miejsce',
+    category: 'Edukacja',
+    descriptionPl:
+      'Liczba dzieci przypadających na jedno miejsce w placówce wychowania przedszkolnego. Kluczowy wskaźnik wsparcia młodych rodziców.',
+    iconName: 'users',
+    theme: {
+      accent: '#698B99',
+      chartColor: '#698B99',
+      chartSecondary: '#CEE0E6',
+      badgeBg: 'bg-[#CEE0E6] text-[#1A282E] border-[#B9D2DB]',
+      badgeText: 'text-[#1A282E]',
+      cardBorder: 'border-[#B9D2DB] hover:border-[#698B99]',
+      gradient: 'from-[#698B99] to-[#4D6F7C]',
+      colorScale: ['#EAF3F6', '#87A6B4', '#3E5D6B'],
+      pastelBg: '#CEE0E6',
+      border: '#B9D2DB',
+      text: '#1A282E'
+    }
+  },
+  pharmacy_availability: {
+    titlePl: 'Dostępność aptek',
+    titleEn: 'Pharmacy availability',
+    unitPl: 'mieszkańców/aptekę',
+    category: 'Zdrowie',
+    descriptionPl:
+      'Liczba mieszkańców przypadających na jedną czynną aptekę ogólnodostępną w powiecie. Obrazuje dostęp do opieki farmaceutycznej.',
+    iconName: 'activity',
+    theme: {
+      accent: '#7C89B8',
+      chartColor: '#7C89B8',
+      chartSecondary: '#D2D8EE',
+      badgeBg: 'bg-[#D2D8EE] text-[#1D2235] border-[#C1C9E4]',
+      badgeText: 'text-[#1D2235]',
+      cardBorder: 'border-[#C1C9E4] hover:border-[#7C89B8]',
+      gradient: 'from-[#7C89B8] to-[#5E6B99]',
+      colorScale: ['#ECF0FA', '#9AA6D1', '#445182'],
+      pastelBg: '#D2D8EE',
+      border: '#C1C9E4',
+      text: '#1D2235'
+    }
+  },
+  cancer_incidence: {
+    titlePl: 'Zapadalność na nowotwory',
+    titleEn: 'Cancer incidence',
+    unitPl: 'na 1 000 osób',
+    category: 'Zdrowie',
+    descriptionPl:
+      'Liczba nowo zarejestrowanych zachorowań na nowotwory złośliwe w przeliczeniu na 1 000 mieszkańców. Wskaźnik obciążenia zdrowotnego.',
+    iconName: 'activity',
+    theme: {
+      accent: '#7C89B8',
+      chartColor: '#7C89B8',
+      chartSecondary: '#D2D8EE',
+      badgeBg: 'bg-[#D2D8EE] text-[#1D2235] border-[#C1C9E4]',
+      badgeText: 'text-[#1D2235]',
+      cardBorder: 'border-[#C1C9E4] hover:border-[#7C89B8]',
+      gradient: 'from-[#7C89B8] to-[#5E6B99]',
+      colorScale: ['#ECF0FA', '#9AA6D1', '#445182'],
+      pastelBg: '#D2D8EE',
+      border: '#C1C9E4',
+      text: '#1D2235'
+    }
+  },
+  care_and_education_centers: {
+    titlePl: 'Placówki opiekuńczo-wychowawcze',
+    titleEn: 'Care and education centers',
+    unitPl: 'placówek',
+    category: 'Piecza Zastępcza',
+    descriptionPl:
+      'Liczba placówek opiekuńczo-wychowawczych wspierających dzieci pozbawione opieki rodzicielskiej lub w trudnej sytuacji życiowej.',
+    iconName: 'heart',
+    theme: {
+      accent: '#8E77A3',
+      chartColor: '#8E77A3',
+      chartSecondary: '#DCD0E6',
+      badgeBg: 'bg-[#DCD0E6] text-[#291D33] border-[#CCBCDB]',
+      badgeText: 'text-[#291D33]',
+      cardBorder: 'border-[#CCBCDB] hover:border-[#8E77A3]',
+      gradient: 'from-[#8E77A3] to-[#705A85]',
+      colorScale: ['#F3ECF7', '#AB96BF', '#56416A'],
+      pastelBg: '#DCD0E6',
+      border: '#CCBCDB',
+      text: '#291D33'
+    }
+  },
+  residents_per_social_worker: {
+    titlePl: 'Mieszkańcy na pracownika socjalnego',
+    titleEn: 'Residents per social worker',
+    unitPl: 'mieszkańców/pracownika',
+    category: 'Pomoc Społeczna',
+    descriptionPl:
+      'Obciążenie kadr służb społecznych. Mniejsza liczba oznacza wyższy poziom dostępności wsparcia i lepszy kontakt z podopiecznymi.',
+    iconName: 'banknote',
+    theme: {
+      accent: '#B8A663',
+      chartColor: '#B8A663',
+      chartSecondary: '#EFE5C6',
+      badgeBg: 'bg-[#EFE5C6] text-[#2A271E] border-[#DFD3AE]',
+      badgeText: 'text-[#2A271E]',
+      cardBorder: 'border-[#DFD3AE] hover:border-[#B8A663]',
+      gradient: 'from-[#B8A663] to-[#968545]',
+      colorScale: ['#FAF3D7', '#D1C083', '#7A6B32'],
+      pastelBg: '#EFE5C6',
+      border: '#DFD3AE',
+      text: '#2A271E'
+    }
+  },
+  large_families_share: {
+    titlePl: 'Udział rodzin wielodzietnych',
+    titleEn: 'Large families share',
+    unitPl: '%',
+    category: 'Rodzina',
+    descriptionPl:
+      'Odsetek rodzin z trojgiem i więcej dzieci w ogólnej strukturze gospodarstw domowych. Wskaźnik dzietności i wyzwań opiekuńczych.',
+    iconName: 'heart',
+    theme: {
+      accent: '#8E77A3',
+      chartColor: '#8E77A3',
+      chartSecondary: '#DCD0E6',
+      badgeBg: 'bg-[#DCD0E6] text-[#291D33] border-[#CCBCDB]',
+      badgeText: 'text-[#291D33]',
+      cardBorder: 'border-[#CCBCDB] hover:border-[#8E77A3]',
+      gradient: 'from-[#8E77A3] to-[#705A85]',
+      colorScale: ['#F3ECF7', '#AB96BF', '#56416A'],
+      pastelBg: '#DCD0E6',
+      border: '#CCBCDB',
+      text: '#291D33'
+    }
+  },
+  municipal_budget_expenditures: {
+    titlePl: 'Wydatki budżetów gmin na mieszkańca',
+    titleEn: 'Municipal budget expenditures per capita',
+    unitPl: 'zł/mieszkańca',
+    category: 'Finanse',
+    descriptionPl:
+      'Średnia kwota wydatków samorządowych per capita. Odzwierciedla zamożność i potencjał inwestycyjny lokalnych wspólnot.',
+    iconName: 'banknote',
+    theme: {
+      accent: '#A6737E',
+      chartColor: '#A6737E',
+      chartSecondary: '#EAD4D9',
+      badgeBg: 'bg-[#EAD4D9] text-[#311E22] border-[#DFC1C8]',
+      badgeText: 'text-[#311E22]',
+      cardBorder: 'border-[#DFC1C8] hover:border-[#A6737E]',
+      gradient: 'from-[#A6737E] to-[#8A5661]',
+      colorScale: ['#F8ECEF', '#C4919C', '#6E3C47'],
+      pastelBg: '#EAD4D9',
+      border: '#DFC1C8',
+      text: '#311E22'
+    }
+  },
+  museum_availability: {
+    titlePl: 'Dostępność muzeów',
+    titleEn: 'Museum availability',
+    unitPl: 'mieszkańców/muzeum',
+    category: 'Kultura',
+    descriptionPl:
+      'Dostęp do instytucji muzealnych i dziedzictwa kulturowego regionu w relacji do liczby ludności powiatu.',
+    iconName: 'activity',
+    theme: {
+      accent: '#7C89B8',
+      chartColor: '#7C89B8',
+      chartSecondary: '#D2D8EE',
+      badgeBg: 'bg-[#D2D8EE] text-[#1D2235] border-[#C1C9E4]',
+      badgeText: 'text-[#1D2235]',
+      cardBorder: 'border-[#C1C9E4] hover:border-[#7C89B8]',
+      gradient: 'from-[#7C89B8] to-[#5E6B99]',
+      colorScale: ['#ECF0FA', '#9AA6D1', '#445182'],
+      pastelBg: '#D2D8EE',
+      border: '#C1C9E4',
+      text: '#1D2235'
+    }
   }
 };
+
+export const RESEARCH_THEMES: Record<string, ResearchTheme> = {
+  cyan: {
+    accent: '#698B99',
+    chartColor: '#698B99',
+    chartSecondary: '#CEE0E6',
+    badgeBg: 'bg-[#CEE0E6] text-[#1A282E] border-[#B9D2DB]',
+    badgeText: 'text-[#1A282E]',
+    cardBorder: 'border-[#B9D2DB] hover:border-[#698B99]',
+    gradient: 'from-[#698B99] to-[#4D6F7C]',
+    colorScale: ['#EAF3F6', '#87A6B4', '#3E5D6B'],
+    pastelBg: '#CEE0E6',
+    border: '#B9D2DB',
+    text: '#1A282E'
+  },
+  pink: {
+    accent: '#A6737E',
+    chartColor: '#A6737E',
+    chartSecondary: '#EAD4D9',
+    badgeBg: 'bg-[#EAD4D9] text-[#311E22] border-[#DFC1C8]',
+    badgeText: 'text-[#311E22]',
+    cardBorder: 'border-[#DFC1C8] hover:border-[#A6737E]',
+    gradient: 'from-[#A6737E] to-[#8A5661]',
+    colorScale: ['#F8ECEF', '#C4919C', '#6E3C47'],
+    pastelBg: '#EAD4D9',
+    border: '#DFC1C8',
+    text: '#311E22'
+  },
+  yellow: {
+    accent: '#B8A663',
+    chartColor: '#B8A663',
+    chartSecondary: '#EFE5C6',
+    badgeBg: 'bg-[#EFE5C6] text-[#2A271E] border-[#DFD3AE]',
+    badgeText: 'text-[#2A271E]',
+    cardBorder: 'border-[#DFD3AE] hover:border-[#B8A663]',
+    gradient: 'from-[#B8A663] to-[#968545]',
+    colorScale: ['#FAF3D7', '#D1C083', '#7A6B32'],
+    pastelBg: '#EFE5C6',
+    border: '#DFD3AE',
+    text: '#2A271E'
+  },
+  lilac: {
+    accent: '#8E77A3',
+    chartColor: '#8E77A3',
+    chartSecondary: '#DCD0E6',
+    badgeBg: 'bg-[#DCD0E6] text-[#291D33] border-[#CCBCDB]',
+    badgeText: 'text-[#291D33]',
+    cardBorder: 'border-[#CCBCDB] hover:border-[#8E77A3]',
+    gradient: 'from-[#8E77A3] to-[#705A85]',
+    colorScale: ['#F3ECF7', '#AB96BF', '#56416A'],
+    pastelBg: '#DCD0E6',
+    border: '#CCBCDB',
+    text: '#291D33'
+  },
+  lavender: {
+    accent: '#7C89B8',
+    chartColor: '#7C89B8',
+    chartSecondary: '#D2D8EE',
+    badgeBg: 'bg-[#D2D8EE] text-[#1D2235] border-[#C1C9E4]',
+    badgeText: 'text-[#1D2235]',
+    cardBorder: 'border-[#C1C9E4] hover:border-[#7C89B8]',
+    gradient: 'from-[#7C89B8] to-[#5E6B99]',
+    colorScale: ['#ECF0FA', '#9AA6D1', '#445182'],
+    pastelBg: '#D2D8EE',
+    border: '#C1C9E4',
+    text: '#1D2235'
+  },
+  sage: {
+    accent: '#76927E',
+    chartColor: '#76927E',
+    chartSecondary: '#CAD7CE',
+    badgeBg: 'bg-[#CAD7CE] text-[#1B271F] border-[#B6C7BA]',
+    badgeText: 'text-[#1B271F]',
+    cardBorder: 'border-[#B6C7BA] hover:border-[#76927E]',
+    gradient: 'from-[#76927E] to-[#58735F]',
+    colorScale: ['#EBF2ED', '#9CB6A4', '#4D6B55'],
+    pastelBg: '#CAD7CE',
+    border: '#B6C7BA',
+    text: '#1B271F'
+  },
+  slate: {
+    accent: '#86887F',
+    chartColor: '#86887F',
+    chartSecondary: '#D7D8D1',
+    badgeBg: 'bg-[#D7D8D1] text-[#242522] border-[#C6C7BD]',
+    badgeText: 'text-[#242522]',
+    cardBorder: 'border-[#C6C7BD] hover:border-[#86887F]',
+    gradient: 'from-[#86887F] to-[#565752]',
+    colorScale: ['#EDECE6', '#9CA096', '#4F524A'],
+    pastelBg: '#D7D8D1',
+    border: '#C6C7BD',
+    text: '#242522'
+  }
+};
+
+export function getResearchThemeForCategory(category: string): ResearchTheme {
+  const cat = (category || '').toLowerCase();
+  if (
+    cat.includes('technol') ||
+    cat.includes('cyfr') ||
+    cat.includes('ai') ||
+    cat.includes('demograf') ||
+    cat.includes('ludno') ||
+    cat.includes('edukacj') ||
+    cat.includes('przedszkol') ||
+    cat.includes('urbanizacj')
+  ) {
+    return RESEARCH_THEMES.cyan;
+  }
+  if (
+    cat.includes('społecz') ||
+    cat.includes('pomoc') ||
+    cat.includes('pracownik') ||
+    cat.includes('świadczen') ||
+    cat.includes('senior') ||
+    cat.includes('młodz')
+  ) {
+    return RESEARCH_THEMES.yellow;
+  }
+  if (
+    cat.includes('kultur') ||
+    cat.includes('sztuk') ||
+    cat.includes('muzyk') ||
+    cat.includes('muze') ||
+    cat.includes('zdrow') ||
+    cat.includes('szpital') ||
+    cat.includes('apte') ||
+    cat.includes('nowotwor') ||
+    cat.includes('onkolog')
+  ) {
+    return RESEARCH_THEMES.lavender;
+  }
+  if (
+    cat.includes('ekolog') ||
+    cat.includes('klimat') ||
+    cat.includes('zielon') ||
+    cat.includes('środowisk')
+  ) {
+    return RESEARCH_THEMES.sage;
+  }
+  if (
+    cat.includes('piecz') ||
+    cat.includes('rodzin') ||
+    cat.includes('placówk') ||
+    cat.includes('dziec') ||
+    cat.includes('opiekuń')
+  ) {
+    return RESEARCH_THEMES.lilac;
+  }
+  if (
+    cat.includes('prac') ||
+    cat.includes('biznes') ||
+    cat.includes('finans') ||
+    cat.includes('budżet') ||
+    cat.includes('bezrobot') ||
+    cat.includes('gospodar')
+  ) {
+    return RESEARCH_THEMES.pink;
+  }
+  return RESEARCH_THEMES.slate;
+}
 
 let dynamicRawData: RawResearchData = { ...(rawData as unknown as RawResearchData) };
 
@@ -348,19 +707,7 @@ export function getAllResearches(): ResearchInfo[] {
       category: 'Badanie Społeczne',
       descriptionPl: raw.description,
       iconName: 'activity' as const,
-      theme: {
-        accent: '#86887F',
-        chartColor: '#86887F',
-        chartSecondary: '#D7D8D1',
-        badgeBg: 'bg-[#D7D8D1] text-[#242522] border-[#C6C7BD]',
-        badgeText: 'text-[#242522]',
-        cardBorder: 'border-[#C6C7BD] hover:border-[#86887F]',
-        gradient: 'from-[#86887F] to-[#565752]',
-        colorScale: ['#EDECE6', '#9CA096', '#4F524A'] as [string, string, string],
-        pastelBg: '#D7D8D1',
-        border: '#C6C7BD',
-        text: '#242522'
-      }
+      theme: getResearchThemeForCategory(raw.name)
     };
 
     const years = raw.years;
