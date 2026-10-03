@@ -157,19 +157,16 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs overflow-hidden">
       {/* Header paska mapy */}
-      <div className="px-5 py-4 sm:px-6 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-50/60">
+      <div className="px-5 py-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-50/60">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: research.theme.accent }} />
             <h3 className="text-base font-bold text-stone-900">
-              Mapa Kartogramu – Województwo Małopolskie ({selectedYear})
+              Województwo Małopolskie
             </h3>
           </div>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Intensywność barwy odzwierciedla wartość wskaźnika w {selectedYear} roku (jednostka: {research.unit}).
-          </p>
         </div>
 
         {/* Wskaźnik wybranego powiatu */}
@@ -190,7 +187,7 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
         )}
       </div>
 
-      <div className="p-4 sm:p-6 space-y-5">
+      <div className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-5">
         {/* Kontroler osi czasu / Year Scrubber */}
         <div className="bg-stone-50 rounded-2xl p-3 sm:p-4 border border-stone-200/70 space-y-3">
           <div className="flex items-center justify-between gap-2">
@@ -198,11 +195,10 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
               {/* Przycisk Play / Pause */}
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
-                  isPlaying
-                    ? 'bg-rose-600 text-white hover:bg-rose-700'
-                    : 'bg-stone-900 text-white hover:bg-stone-800'
-                }`}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${isPlaying
+                  ? 'bg-rose-600 text-white hover:bg-rose-700'
+                  : 'bg-stone-900 text-white hover:bg-stone-800'
+                  }`}
               >
                 {isPlaying ? (
                   <>
@@ -245,9 +241,6 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
                   {stats.avg} {research.unit}
                 </strong>
               </span>
-              <div className="px-3 py-1 bg-white border border-stone-200/80 rounded-xl font-mono text-sm font-extrabold text-stone-900 shadow-2xs">
-                Rok {selectedYear}
-              </div>
             </div>
           </div>
 
@@ -259,11 +252,10 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
                 <button
                   key={year}
                   onClick={() => onSelectYear(year)}
-                  className={`flex-1 min-w-[58px] py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer border ${
-                    isCurrent
-                      ? 'bg-stone-900 text-white border-stone-900 shadow-xs scale-102'
-                      : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100 hover:text-stone-900'
-                  }`}
+                  className={`flex-1 min-w-[58px] py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer border ${isCurrent
+                    ? 'bg-stone-900 text-white border-stone-900 shadow-xs scale-102'
+                    : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100 hover:text-stone-900'
+                    }`}
                 >
                   {year}
                 </button>
@@ -281,11 +273,10 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
                 <button
                   key={sub.key}
                   onClick={() => setActiveSubregion(sub.key)}
-                  className={`whitespace-nowrap px-3 py-1.5 rounded-xl font-semibold transition-all cursor-pointer border ${
-                    isActive
-                      ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-                      : 'bg-white text-stone-600 hover:bg-stone-50 border-stone-200/80'
-                  }`}
+                  className={`whitespace-nowrap px-3 py-1.5 rounded-xl font-semibold transition-all cursor-pointer border ${isActive
+                    ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
+                    : 'bg-white text-stone-600 hover:bg-stone-50 border-stone-200/80'
+                    }`}
                 >
                   {sub.label}
                 </button>
@@ -347,8 +338,8 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
                         isSelected
                           ? 'url(#choropleth-selected-glow)'
                           : isHovered
-                          ? 'url(#choropleth-hover-glow)'
-                          : undefined
+                            ? 'url(#choropleth-hover-glow)'
+                            : undefined
                       }
                       onMouseEnter={() => {
                         if (powiat) setHoveredPowiatId(powiat.id);
