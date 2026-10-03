@@ -170,3 +170,62 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
 
 CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation ON public.chat_messages(conversation_id, created_at ASC);
 ALTER TABLE public.chat_messages DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- TABELA 7: Zgłoszone problemy mieszkańców i gmin (Baza Wyzwań Regionu)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.reported_problems (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    problem_text TEXT NOT NULL,
+    category VARCHAR(100), -- np. 'samotność', 'opieka nad seniorem', 'bariery architektoniczne'
+    powiat VARCHAR(100), -- np. 'powiat tarnowski', 'powiat krakowski'
+    reporter_type VARCHAR(100) DEFAULT 'Mieszkaniec', -- 'Senior', 'Opiekun', 'Mieszkaniec', 'Pracownik socjalny'
+    matched_innovation_id UUID,
+    matched_innovation_title VARCHAR(255),
+    similarity_score FLOAT,
+    status VARCHAR(50) DEFAULT 'matched', -- 'matched', 'needs_solution', 'in_progress', 'solved'
+    embedding vector(384),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_reported_problems_cat ON public.reported_problems(category);
+CREATE INDEX IF NOT EXISTS idx_reported_problems_powiat ON public.reported_problems(powiat);
+CREATE INDEX IF NOT EXISTS idx_reported_problems_status ON public.reported_problems(status);
+CREATE INDEX IF NOT EXISTS idx_reported_problems_created ON public.reported_problems(created_at DESC);
+ALTER TABLE public.reported_problems DISABLE ROW LEVEL SECURITY;
+
+-- Funkcja RPC dla dopasowywania podobnych problemów
+CREATE OR REPLACE FUNCTION match_reported_problems (
+  query_embedding vector(384),
+  match_threshold float,
+  match_count int
+)
+RETURNS TABLE (
+  id uuid,
+  problem_text text,
+  category varchar,
+  powiat varchar,
+  reporter_type varchar,
+  status varchar,
+  created_at timestamptz,
+  similarity float
+)
+LANGUAGE sql STABLE
+AS $$
+  SELECT
+    reported_problems.id,
+    reported_problems.problem_text,
+    reported_problems.category,
+    reported_problems.powiat,
+    reported_problems.reporter_type,
+    reported_problems.status,
+    reported_problems.created_at,
+    1 - (reported_problems.embedding <=> query_embedding) AS similarity
+  FROM reported_problems
+  WHERE reported_problems.embedding IS NOT NULL
+    AND 1 - (reported_problems.embedding <=> query_embedding) >= match_threshold
+  ORDER BY similarity DESC
+  LIMIT match_count;
+$$;
+

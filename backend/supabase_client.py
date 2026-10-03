@@ -35,6 +35,7 @@ class MemoryDB:
         self.innovations: List[Dict[str, Any]] = []
         self.conversations: List[Dict[str, Any]] = []
         self.messages: List[Dict[str, Any]] = []
+        self.reported_problems: List[Dict[str, Any]] = []
         self._seed_default_data()
 
     def _seed_default_data(self):
@@ -397,6 +398,64 @@ class DatabaseRepository:
                 logger.error(f"Supabase error create_innovation: {e}")
         memory_db.innovations.append(innovation_data)
         return innovation_data
+
+    @staticmethod
+    def match_innovations_pgvector(
+        query_vector: List[float],
+        match_threshold: float = 0.20,
+        match_count: int = 10
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Wywołuje natywną funkcję RPC pgvector match_innovations w Supabase."""
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.rpc(
+                    "match_innovations",
+                    {
+                        "query_embedding": query_vector,
+                        "match_threshold": match_threshold,
+                        "match_count": match_count
+                    }
+                ).execute()
+                if res.data is not None and len(res.data) > 0:
+                    return res.data
+            except Exception as e:
+                logger.info(f"RPC match_innovations niedostępne ({e}), używam hybrydowego wyszukiwania.")
+        return None
+
+    @staticmethod
+    def save_reported_problem(problem_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Zapisuje zgłoszony problem użytkownika do bazy wyzwań społecznych."""
+        problem_data["id"] = problem_data.get("id") or str(uuid.uuid4())
+        problem_data["created_at"] = problem_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+
+        if is_supabase_connected and supabase_client:
+            try:
+                payload = {
+                    "id": problem_data["id"],
+                    "user_id": problem_data.get("user_id") or "938a7411-2c60-451d-88a5-5dab8fe2c23f",
+                    "problem_description": problem_data.get("problem_description", ""),
+                    "embedding": problem_data.get("embedding")
+                }
+                res = supabase_client.table("reported_problems").insert(payload).execute()
+                if res.data and len(res.data) > 0:
+                    return {**problem_data, **res.data[0]}
+            except Exception as e:
+                logger.error(f"Supabase error save_reported_problem: {e}")
+
+        memory_db.reported_problems.append(problem_data)
+        return problem_data
+
+    @staticmethod
+    def get_reported_problems(limit: int = 50) -> List[Dict[str, Any]]:
+        """Pobiera zgłoszone problemy z bazy."""
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("reported_problems").select("*").order("created_at", desc=True).limit(limit).execute()
+                if res.data is not None:
+                    return res.data
+            except Exception as e:
+                logger.error(f"Supabase error get_reported_problems: {e}")
+        return memory_db.reported_problems[:limit]
 
     # --- CHAT & EXPERT COMMUNICATION ---
     @staticmethod

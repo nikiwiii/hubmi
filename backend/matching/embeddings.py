@@ -8,16 +8,18 @@ logger = logging.getLogger("hubmi.embeddings")
 
 _model = None
 
+MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
+
 def get_embedding_model():
     global _model
     if _model is None:
         try:
             from sentence_transformers import SentenceTransformer
-            logger.info("Ładowanie modelu embeddingów all-MiniLM-L6-v2...")
-            _model = SentenceTransformer("all-MiniLM-L6-v2")
-            logger.info("Model all-MiniLM-L6-v2 załadowany pomyślnie.")
+            logger.info(f"Ładowanie wielojęzycznego modelu embeddingów {MODEL_NAME}...")
+            _model = SentenceTransformer(MODEL_NAME)
+            logger.info(f"Model {MODEL_NAME} załadowany pomyślnie.")
         except Exception as e:
-            logger.warning(f"Nie udało się załadować SentenceTransformer: {e}. Zastosowany fallback.")
+            logger.warning(f"Nie udało się załadować SentenceTransformer ({MODEL_NAME}): {e}. Zastosowany fallback.")
             _model = None
     return _model
 
