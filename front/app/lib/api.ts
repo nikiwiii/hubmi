@@ -511,11 +511,13 @@ export async function fetchInnovations(): Promise<any[]> {
 
 export async function searchInnovations(
   search: string,
-  limit = 30,
+  limit?: number,
 ): Promise<InnovationRecord[]> {
   const url = new URL(`${API_BASE}/api/innovations`);
   if (search.trim()) url.searchParams.set("search", search.trim());
-  url.searchParams.set("limit", String(limit));
+  if (limit !== undefined && limit > 0) {
+    url.searchParams.set("limit", String(limit));
+  }
   const res = await apiFetch(url.toString(), {
     method: "GET",
     headers: getHeaders(false),
