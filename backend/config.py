@@ -7,7 +7,9 @@ import bcrypt
 
 load_dotenv()
 
-SUPABASE_URL: str = os.getenv("SUPABASE_URL", "").strip()
+SUPABASE_URL: str = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+if SUPABASE_URL.endswith("/rest/v1"):
+    SUPABASE_URL = SUPABASE_URL[: -len("/rest/v1")]
 SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "").strip()
 
 JWT_SECRET: str = os.getenv("JWT_SECRET", "super-secret-default-hubmi-security-key-32chars-min")

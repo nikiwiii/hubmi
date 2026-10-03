@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import Optional
 from config import decode_access_token
 from supabase_client import DatabaseRepository
@@ -12,38 +13,32 @@ from login.schemas import (
 from login.service import AuthService
 
 router = APIRouter(prefix="/api/login", tags=["Authentication & Profiles"])
+bearer_scheme = HTTPBearer(auto_error=False)
 
-def get_current_user_payload(authorization: Optional[str] = Header(None)) -> dict:
-    if not authorization:
+def get_current_user_payload(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+) -> dict:
+    if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Brak nagłówka autoryzacji Bearer token."
+            detail="Brak nagłówka autoryzacji Bearer token.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-    parts = authorization.split()
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Nieprawidłowy format nagłówka autoryzacji (oczekiwano 'Bearer <token>')."
-        )
-    token = parts[1]
-    payload = decode_access_token(token)
+    payload = decode_access_token(credentials.credentials)
     if not payload or "sub" not in payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token jest nieprawidłowy lub wygasł."
+            detail="Token jest nieprawidłowy lub wygasł.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     return payload
 
-def get_optional_user_payload(authorization: Optional[str] = Header(None)) -> Optional[dict]:
-    if not authorization:
+def get_optional_user_payload(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+) -> Optional[dict]:
+    if credentials is None or not credentials.credentials:
         return None
-    try:
-        parts = authorization.split()
-        if len(parts) == 2 and parts[0].lower() == "bearer":
-            return decode_access_token(parts[1])
-    except Exception:
-        return None
-    return None
+    return decode_access_token(credentials.credentials)
 
 # 1) Endpoint do logowania userów
 @router.post("/user", response_model=TokenResponse, summary="1) Logowanie zwykłego użytkownika")

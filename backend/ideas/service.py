@@ -22,8 +22,8 @@ class IdeaService:
             title=idea["title"],
             description=idea["description"],
             category=idea.get("category", "general"),
-            author_id=idea["author_id"],
-            author_name=idea["author_name"],
+            user_id=idea["user_id"],
+            author_name=idea.get("author_name") or "Anonim",
             created_at=str(idea["created_at"]),
             likes_count=likes,
             volunteers_count=volunteers,
@@ -37,16 +37,16 @@ class IdeaService:
         return [cls._compute_stats(i, current_user_id) for i in ideas]
 
     @classmethod
-    def create_idea(cls, data: IdeaCreate, author_id: str, author_name: str) -> IdeaResponse:
+    def create_idea(cls, data: IdeaCreate, user_id: str, author_name: str) -> IdeaResponse:
         new_data = {
             "title": data.title,
             "description": data.description,
             "category": data.category or "general",
-            "author_id": author_id,
+            "user_id": user_id,
             "author_name": author_name
         }
         created = DatabaseRepository.create_idea(new_data)
-        return cls._compute_stats(created, author_id)
+        return cls._compute_stats(created, user_id)
 
     @classmethod
     def delete_idea(cls, idea_id: str, user_id: str, is_admin: bool = False) -> bool:
@@ -58,7 +58,7 @@ class IdeaService:
             )
         
         # Check permissions: author or admin
-        if idea["author_id"] != user_id and not is_admin:
+        if idea["user_id"] != user_id and not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Brak uprawnień. Tylko autor posta lub administrator może go usunąć."

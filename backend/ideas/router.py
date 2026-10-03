@@ -23,9 +23,9 @@ def create_idea(
     """
     Tworzy nowy pomysł w aplikacji. Wymaga zalogowanego użytkownika.
     """
-    author_id = user_payload["sub"]
+    user_id = user_payload["sub"]
     author_name = user_payload.get("name", "Anonim")
-    return IdeaService.create_idea(idea_data, author_id=author_id, author_name=author_name)
+    return IdeaService.create_idea(idea_data, user_id=user_id, author_name=author_name)
 
 @router.delete("/{idea_id}", summary="Usuń pomysł (przez autora lub admina)")
 def delete_idea(

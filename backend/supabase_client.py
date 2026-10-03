@@ -62,7 +62,7 @@ class MemoryDB:
             "title": "Aplikacja do wspólnego sadzenia drzew w mieście",
             "description": "Organizujemy akcję sadzenia 100 drzew w miejskim parku w najbliższą sobotę. Szukamy chętnych do pomocy!",
             "category": "Ekologia",
-            "author_id": user_id,
+            "user_id": user_id,
             "author_name": "Jan Kowalski",
             "created_at": datetime.now(timezone.utc).isoformat()
         })
@@ -87,7 +87,7 @@ class DatabaseRepository:
     def get_profile_by_email(email: str) -> Optional[Dict[str, Any]]:
         if is_supabase_connected and supabase_client:
             try:
-                res = supabase_client.table("profiles").select("*").eq("email", email.lower()).execute()
+                res = supabase_client.table("users").select("*").eq("email", email.lower()).execute()
                 if res.data and len(res.data) > 0:
                     return res.data[0]
                 return None
@@ -100,7 +100,7 @@ class DatabaseRepository:
     def get_profile_by_id(user_id: str) -> Optional[Dict[str, Any]]:
         if is_supabase_connected and supabase_client:
             try:
-                res = supabase_client.table("profiles").select("*").eq("id", user_id).execute()
+                res = supabase_client.table("users").select("*").eq("id", user_id).execute()
                 if res.data and len(res.data) > 0:
                     return res.data[0]
                 return None
@@ -116,7 +116,7 @@ class DatabaseRepository:
         
         if is_supabase_connected and supabase_client:
             try:
-                res = supabase_client.table("profiles").insert(profile_data).execute()
+                res = supabase_client.table("users").insert(profile_data).execute()
                 if res.data and len(res.data) > 0:
                     return res.data[0]
             except Exception as e:

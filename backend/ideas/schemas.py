@@ -13,7 +13,7 @@ class IdeaResponse(BaseModel):
     title: str
     description: str
     category: Optional[str] = "general"
-    author_id: str
+    user_id: str
     author_name: str
     created_at: str
     likes_count: int = 0
