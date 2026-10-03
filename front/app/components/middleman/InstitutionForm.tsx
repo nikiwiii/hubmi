@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, Sparkles, RefreshCw } from "lucide-react";
 import { InstitutionProfile } from "../../lib/types";
+import { CustomSelect, SelectOption } from "../shared/CustomSelect";
 import {
   BUDGET_OPTIONS,
   HORIZON_OPTIONS,
@@ -16,6 +17,11 @@ interface InstitutionFormProps {
   onBack: () => void;
   onSubmit: (profile: InstitutionProfile) => void;
 }
+
+const POWIAT_SELECT_OPTIONS: SelectOption<string>[] = POWIAT_OPTIONS.map((p) => ({
+  value: p,
+  label: p,
+}));
 
 const inputClass =
   "w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900/30";
@@ -110,35 +116,28 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Field label="1. Jaką instytucję reprezentujesz?" htmlFor="mm-type">
-        <select
+        <CustomSelect
           id="mm-type"
           value={profile.institution_type}
-          onChange={(e) => update("institution_type", e.target.value as InstitutionProfile["institution_type"])}
-          className={inputClass}
-        >
-          {INSTITUTION_TYPE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => update("institution_type", val as InstitutionProfile["institution_type"])}
+          options={INSTITUTION_TYPE_OPTIONS}
+          fullWidth
+          size="md"
+        />
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="2. Powiat w Małopolsce" htmlFor="mm-powiat">
-          <select
+          <CustomSelect
             id="mm-powiat"
             value={profile.powiat}
-            onChange={(e) => update("powiat", e.target.value)}
-            className={inputClass}
-          >
-            <option value="">– wybierz powiat –</option>
-            {POWIAT_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => update("powiat", val)}
+            options={POWIAT_SELECT_OPTIONS}
+            placeholder="– wybierz powiat –"
+            error={showErrors && missing.powiat}
+            fullWidth
+            size="md"
+          />
           {errorText(missing.powiat, "Wybierz powiat.")}
         </Field>
         <Field label="Nazwa gminy lub instytucji (opcjonalnie)" htmlFor="mm-name">
