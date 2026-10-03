@@ -1,0 +1,12 @@
+[tool.pyrefly]
+search-path = [
+    "backend",
+    "backend/idea_creator",
+]
+python-interpreter-path = "backend/.venv/Scripts/python.exe"
+
+[tool.pyright]
+extraPaths = [
+    "backend",
+    "backend/idea_creator",
+]

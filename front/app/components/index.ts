@@ -11,4 +11,5 @@ export * from "./shared/CustomSelect";
 // Screen subcomponents
 export * from "./knowledge/MalopolskaMap";
 export * from "./knowledge/RagChatSection";
+export * from "./knowledge/ResearchAIChat";
 export * from "./propose/IdeaMockupVisualizer";

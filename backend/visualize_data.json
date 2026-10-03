@@ -1,8 +1,8 @@
 {
   "working_age_population": {
-    "name": "Working-age population",
+    "name": "Ludność w wieku produkcyjnym",
     "unit": "%",
-    "description": "Share of working-age population in the total population (women 18-59, men 18-64).",
+    "description": "Udział ludności w wieku produkcyjnym w ogólnej liczbie ludności (kobiety 18–59 lat, mężczyźni 18–64 lata).",
     "years": [
       "2014",
       "2015",
@@ -609,9 +609,9 @@
     }
   },
   "unemployed_longer_than_1_year": {
-    "name": "Unemployed for more than 1 year",
+    "name": "Bezrobotni powyżej 1 roku",
     "unit": "%",
-    "description": "Share of unemployed persons registered for more than 1 year in the total number of unemployed.",
+    "description": "Udział osób bezrobotnych zarejestrowanych powyżej 1 roku w ogólnej liczbie bezrobotnych.",
     "years": [
       "2014",
       "2015",
@@ -1218,9 +1218,9 @@
     }
   },
   "cash_social_assistance_benefits": {
-    "name": "Cash social assistance benefits",
+    "name": "Pieniężne świadczenia z pomocy społecznej",
     "unit": "%",
-    "description": "Share of cash benefits in the total number of social assistance benefits granted.",
+    "description": "Udział świadczeń pieniężnych w ogólnej liczbie przyznanych świadczeń z pomocy społecznej.",
     "years": [
       "2014",
       "2015",
@@ -1827,9 +1827,9 @@
     }
   },
   "foster_families_count": {
-    "name": "Number of foster families",
-    "unit": "count",
-    "description": "Number of active foster families (related, non-professional, professional).",
+    "name": "Liczba rodzin zastępczych",
+    "unit": "rodzin",
+    "description": "Liczba aktywnych rodzin zastępczych (spokrewnionych, niezawodowych oraz zawodowych).",
     "years": [
       "2014",
       "2015",
@@ -2436,9 +2436,9 @@
     }
   },
   "average_hospital_stay": {
-    "name": "Average hospital stay duration",
-    "unit": "days",
-    "description": "Average length of patient stay in a hospital ward (in days).",
+    "name": "Średni czas pobytu w szpitalu",
+    "unit": "dni",
+    "description": "Przeciętna długość pobytu pacjenta na oddziale szpitalnym (w dniach).",
     "years": [
       "2014",
       "2015",
@@ -2999,9 +2999,9 @@
     }
   },
   "urbanization_rate": {
-    "name": "Urbanization rate",
+    "name": "Wskaźnik urbanizacji",
     "unit": "%",
-    "description": "Share of urban population in the total population.",
+    "description": "Udział ludności miejskiej w ogólnej liczbie mieszkańców danego powiatu.",
     "years": [
       "2014",
       "2015",
@@ -3608,9 +3608,9 @@
     }
   },
   "kindergarten_availability": {
-    "name": "Kindergarten availability",
-    "unit": "children/place",
-    "description": "Number of children aged 3-5 per one place in kindergarten.",
+    "name": "Dostępność miejsc w przedszkolach",
+    "unit": "dzieci/miejsce",
+    "description": "Liczba dzieci w wieku 3–5 lat przypadających na jedno miejsce w przedszkolu.",
     "years": [
       "2014",
       "2015",
@@ -3987,9 +3987,9 @@
     }
   },
   "pharmacy_availability": {
-    "name": "Pharmacy availability",
-    "unit": "persons/pharmacy",
-    "description": "Number of residents per public pharmacy.",
+    "name": "Dostępność aptek",
+    "unit": "mieszkańców/aptekę",
+    "description": "Liczba mieszkańców przypadających na jedną aptekę ogólnodostępną.",
     "years": [
       "2014",
       "2015",
@@ -4596,9 +4596,9 @@
     }
   },
   "cancer_incidence": {
-    "name": "Cancer incidence",
-    "unit": "per 1,000",
-    "description": "Number of diagnosed cancer patients aged 19+ under primary healthcare per 1,000 residents aged 19+.",
+    "name": "Zapadalność na nowotwory",
+    "unit": "na 1 000 osób",
+    "description": "Liczba pacjentów w wieku 19+ ze zdiagnozowanym nowotworem pod opieką POZ na 1 000 mieszkańców w wieku 19+.",
     "years": [
       "2014",
       "2015",
@@ -5159,9 +5159,9 @@
     }
   },
   "care_and_education_centers": {
-    "name": "Care and education centers",
-    "unit": "count",
-    "description": "Number of active institutional care and education centers for children.",
+    "name": "Placówki opiekuńczo-wychowawcze",
+    "unit": "placówek",
+    "description": "Liczba aktywnych instytucjonalnych placówek opiekuńczo-wychowawczych dla dzieci i młodzieży.",
     "years": [
       "2014",
       "2015",
@@ -5768,9 +5768,9 @@
     }
   },
   "residents_per_social_worker": {
-    "name": "Residents per social worker",
-    "unit": "residents/worker",
-    "description": "Number of residents per social worker employed in a social assistance center.",
+    "name": "Mieszkańcy na pracownika socjalnego",
+    "unit": "mieszkańców/pracownika",
+    "description": "Liczba mieszkańców przypadających na jednego pracownika socjalnego zatrudnionego w ośrodku pomocy społecznej.",
     "years": [
       "2014",
       "2015",
@@ -6377,9 +6377,9 @@
     }
   },
   "large_families_share": {
-    "name": "Share of large families",
+    "name": "Udział rodzin wielodzietnych",
     "unit": "%",
-    "description": "Share of families with 3 or more dependent children up to 24 years old in all families with children (National Census).",
+    "description": "Udział rodzin z 3 lub większą liczbą dzieci na utrzymaniu do 24 roku życia we wszystkich rodzinach z dziećmi (NSP).",
     "years": [
       "2011"
     ],
@@ -6526,9 +6526,9 @@
     }
   },
   "municipal_budget_expenditures": {
-    "name": "Total municipal budget expenditures",
-    "unit": "PLN/capita",
-    "description": "Total budget expenditures of municipalities and cities with powiat status per capita (in PLN).",
+    "name": "Wydatki budżetów gmin na mieszkańca",
+    "unit": "zł/mieszkańca",
+    "description": "Łączne wydatki budżetów gmin i miast na prawach powiatu w przeliczeniu na 1 mieszkańca (w zł).",
     "years": [
       "2014",
       "2015",
@@ -7135,9 +7135,9 @@
     }
   },
   "museum_availability": {
-    "name": "Museum availability",
-    "unit": "residents/museum",
-    "description": "Number of residents per museum or museum branch.",
+    "name": "Dostępność muzeów",
+    "unit": "mieszkańców/muzeum",
+    "description": "Liczba mieszkańców przypadających na jedno muzeum lub oddział muzealny.",
     "years": [
       "2014",
       "2015",

@@ -104,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : "text-stone-600 hover:text-stone-900"
                 }`}
             >
-              Zasobnik
+              Raporty
             </button>
             <button
               onClick={() => navigateTo("propose")}
@@ -177,7 +177,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-stone-800"
                   style={{ backgroundColor: currentUser.avatarBg || "#A4B3F6" }}
                 >
-                  {(currentUser.name || currentUser.email || "U").charAt(0).toUpperCase()}
+                  {(currentUser.name || currentUser.email || "U")
+                    .charAt(0)
+                    .toUpperCase()}
                 </div>
               </div>
             ) : (
@@ -226,7 +228,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
           >
             <BookOpen className="w-5 h-5" />
-            <span className="text-[10px]">Zasobnik</span>
+            <span className="text-[10px]">Raporty</span>
           </button>
 
           <button
@@ -239,7 +241,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <PlusCircle className="w-5 h-5" />
             <span className="text-[10px]">Zaproponuj</span>
           </button>
-
 
           <button
             onClick={() => navigateTo("chat")}

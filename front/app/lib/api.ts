@@ -88,6 +88,63 @@ export interface LoginResponse {
   email?: string;
 }
 
+export function extractErrorMessage(errData: any, fallback: string): string {
+  if (!errData) return fallback;
+  if (typeof errData === "string") {
+    if (errData.includes("[object Object]") || errData.includes("object Object")) {
+      return fallback;
+    }
+    return errData;
+  }
+  if (typeof errData.detail === "string") {
+    const detailLower = errData.detail.toLowerCase();
+    if (
+      detailLower.includes("password") ||
+      (detailLower.includes("hasło") && (detailLower.includes("krótki") || detailLower.includes("znaki")))
+    ) {
+      return "Za krótkie hasło!";
+    }
+    return errData.detail;
+  }
+  if (Array.isArray(errData.detail)) {
+    const isPasswordError = errData.detail.some((item: any) => {
+      const loc = item?.loc;
+      const type = item?.type;
+      const msg = item?.msg;
+      const locMatch = Array.isArray(loc)
+        ? loc.some((l: any) => String(l).toLowerCase().includes("password"))
+        : String(loc).toLowerCase().includes("password");
+      const typeMatch = String(type).toLowerCase().includes("string_too_short");
+      const msgMatch =
+        String(msg).toLowerCase().includes("password") ||
+        String(msg).toLowerCase().includes("hasło") ||
+        String(msg).toLowerCase().includes("least 4 characters");
+      return locMatch || (typeMatch && locMatch) || msgMatch;
+    });
+    if (isPasswordError) {
+      return "Za krótkie hasło!";
+    }
+    const firstMsg = errData.detail[0]?.msg;
+    if (typeof firstMsg === "string") {
+      return firstMsg;
+    }
+    if (typeof errData.detail[0] === "string") {
+      return errData.detail[0];
+    }
+  }
+  if (typeof errData.detail === "object" && errData.detail !== null) {
+    if (typeof errData.detail.msg === "string") return errData.detail.msg;
+    if (typeof errData.detail.message === "string") return errData.detail.message;
+  }
+  if (typeof errData.message === "string") {
+    if (errData.message.includes("[object Object]") || errData.message.includes("object Object")) {
+      return fallback;
+    }
+    return errData.message;
+  }
+  return fallback;
+}
+
 export async function loginUser(
   email: string,
   password: string,
@@ -100,7 +157,7 @@ export async function loginUser(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "Błąd logowania użytkownika.");
+    throw new Error(extractErrorMessage(err, "Błąd logowania użytkownika."));
   }
 
   const data: LoginResponse = await res.json();
@@ -142,7 +199,7 @@ export async function loginAdmin(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "Błąd logowania administratora.");
+    throw new Error(extractErrorMessage(err, "Błąd logowania administratora."));
   }
 
   const data: LoginResponse = await res.json();
@@ -183,7 +240,7 @@ export async function registerUser(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "Błąd rejestracji konta.");
+    throw new Error(extractErrorMessage(err, "Błąd rejestracji konta."));
   }
 
   // After registration, log the user in to get JWT token

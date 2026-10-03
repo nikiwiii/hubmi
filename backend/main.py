@@ -2,7 +2,9 @@ import sys
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from supabase_client import is_supabase_connected, SUPABASE_URL
 from login.router import router as login_router
@@ -20,6 +22,30 @@ app = FastAPI(
     description="Backend API z FastAPI, Supabase, Groq RAG oraz komunikatorem ROPS Kraków dla ekspertów i mieszkańców (polling co 3s).",
     version="1.3.0"
 )
+
+# Custom validation error handler
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    for err in exc.errors():
+        loc = err.get("loc", [])
+        if "password" in loc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "Za krótkie hasło!"}
+            )
+        if "email" in loc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "Niepoprawny format adresu e-mail."}
+            )
+        if "full_name" in loc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "Wprowadź poprawne imię (minimum 2 znaki)."}
+            )
+    first_err = exc.errors()[0] if exc.errors() else {}
+    msg = first_err.get("msg", "Błąd walidacji danych.")
+    return JSONResponse(status_code=422, content={"detail": msg})
 
 # CORS Middleware
 app.add_middleware(
