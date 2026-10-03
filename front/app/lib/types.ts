@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "creator" | "tester";
+export type UserRole = "admin" | "creator" | "tester" | "expert";
 
 export interface User {
   id: string;
@@ -52,6 +52,46 @@ export interface Idea {
   status: "active" | "draft" | "testing" | "archived";
   createdAt: string;
   commentsCount: number;
+  lookingForPartner?: boolean;
+  partnerTypes?: string[];
+  assignedExpertId?: string;
+  assignedExpertName?: string;
+  assignedExpertSpecialization?: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  type: "new_idea" | "chat_message" | "grant_call" | "partnership" | "expert_assigned";
+  read: boolean;
+  created_at: string;
+  link?: string | null;
+  email_sent: boolean;
+  email_recipient?: string | null;
+  email_subject?: string | null;
+  email_preview_html?: string | null;
+}
+
+export interface SimulatedEmail {
+  notification_id: string;
+  sender: string;
+  recipient: string;
+  subject: string;
+  sent_at: string;
+  body_text: string;
+  body_html: string;
+}
+
+export interface RopsExpert {
+  id: string;
+  name: string;
+  title: string;
+  department: string;
+  specialization: string;
+  avatar_bg?: string;
+  available_for_mentoring?: boolean;
+  email?: string;
 }
 
 export interface ChatMessage {

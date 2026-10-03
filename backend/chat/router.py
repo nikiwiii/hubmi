@@ -150,3 +150,62 @@ def update_conversation_status(
         current_user_id=user_id,
         is_admin=is_admin
     )
+
+ROPS_EXPERTS = [
+    {
+        "id": "expert-anna-kowalska",
+        "name": "mgr Anna Kowalska",
+        "title": "Koordynator ds. Polityki Senioralnej i Wolontariatu",
+        "department": "Zespół ds. Polityki Senioralnej i Wolontariatu ROPS Kraków",
+        "specialization": "Opieka senioralna, teleopieka, dofinansowania PFRON i FESM, integracja międzypokoleniowa",
+        "avatar_bg": "#FAF4E5",
+        "available_for_mentoring": True,
+        "email": "a.kowalska@rops.krakow.pl"
+    },
+    {
+        "id": "expert-michal-stankiewicz",
+        "name": "dr inż. Michał Stankiewicz",
+        "title": "Doradca ds. Dostępności i Nowych Technologii",
+        "department": "Dział Innowacji i Dostępności ROPS Kraków",
+        "specialization": "Projektowanie uniwersalne, usuwanie barier architektonicznych, cyfryzacja usług dla osób ze szczególnymi potrzebami",
+        "avatar_bg": "#E8F0FE",
+        "available_for_mentoring": True,
+        "email": "m.stankiewicz@rops.krakow.pl"
+    },
+    {
+        "id": "expert-magdalena-wojcik",
+        "name": "mgr Magdalena Wójcik",
+        "title": "Ekspert ds. Pieczy Zastępczej i Wsparcia Rodzin",
+        "department": "Zespół Deinstytucjonalizacji Pieczy ROPS Kraków",
+        "specialization": "Rodzicielstwo zastępcze, wsparcie kryzysowe, placówki opiekuńcze, mediacje rodzinne",
+        "avatar_bg": "#FCE8E6",
+        "available_for_mentoring": True,
+        "email": "m.wojcik@rops.krakow.pl"
+    },
+    {
+        "id": "expert-tomasz-lewandowski",
+        "name": "mgr Tomasz Lewandowski",
+        "title": "Konsultant ds. Ekonomii Społecznej i Pracy",
+        "department": "Małopolskie Obserwatorium Polityki Społecznej",
+        "specialization": "Centra integracji społecznej, spółdzielnie socjalne, zatrudnienie wspierane, przedsiębiorstwa społeczne",
+        "avatar_bg": "#E6F4EA",
+        "available_for_mentoring": True,
+        "email": "t.lewandowski@rops.krakow.pl"
+    },
+    {
+        "id": "expert-krzysztof-maj",
+        "name": "dr hab. Krzysztof Maj",
+        "title": "Główny Ekspert ds. Innowacji Społecznych",
+        "department": "Regionalny Ośrodek Polityki Społecznej w Krakowie",
+        "specialization": "Projektowanie innowacji, granty regionalne, skalowanie dobrych praktyk, ewaluacja projektów",
+        "avatar_bg": "#FEF7E0",
+        "available_for_mentoring": True,
+        "email": "k.maj@rops.krakow.pl"
+    }
+]
+
+@router.get("/experts", summary="Katalog ekspertów i mentorów ROPS Kraków")
+def list_experts():
+    """Zwraca oficjalny katalog ekspertów i mentorów Regionalnego Ośrodka Polityki Społecznej w Krakowie."""
+    return ROPS_EXPERTS
+

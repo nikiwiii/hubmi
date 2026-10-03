@@ -1,7 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
 from login.router import get_current_user_payload, get_optional_user_payload
-from ideas.schemas import IdeaCreate, IdeaResponse, ReactionRequest, ReactionResponse
+from ideas.schemas import (
+    IdeaCreate,
+    IdeaResponse,
+    ReactionRequest,
+    ReactionResponse,
+    AssignExpertRequest,
+    PartnershipRequest
+)
 from ideas.service import IdeaService
 
 router = APIRouter(prefix="/api/ideas", tags=["Ideas & Reactions"])
@@ -92,3 +99,25 @@ def dislike_idea(
         user_id=user_payload["sub"],
         reaction_type="dislike"
     )
+
+@router.post("/{idea_id}/assign-expert", response_model=IdeaResponse, summary="Przypisz eksperta/mentora ROPS do pomysłu")
+def assign_expert_to_idea(
+    idea_id: str,
+    data: AssignExpertRequest,
+    user_payload: dict = Depends(get_current_user_payload)
+):
+    """Pozwala administratorowi lub autorowi przypisać dedykowanego mentora ROPS Kraków do pomysłu."""
+    user_id = user_payload["sub"]
+    is_admin = user_payload.get("role") in ("admin", "expert")
+    return IdeaService.assign_expert(idea_id=idea_id, data=data, user_id=user_id, is_admin=is_admin)
+
+@router.post("/{idea_id}/partnership-request", summary="Zgłoś chęć partnerstwa (NGO, samorząd, firma)")
+def submit_partnership_request(
+    idea_id: str,
+    data: PartnershipRequest,
+    user_payload: dict = Depends(get_current_user_payload)
+):
+    """Pozwala organizacji pozarządowej, firmie lub samorządowi zgłosić chęć partnerstwa przy realizacji pomysłu."""
+    sender_name = user_payload.get("name", "Zainteresowany Partner")
+    return IdeaService.request_partnership(idea_id=idea_id, data=data, sender_name=sender_name)
+

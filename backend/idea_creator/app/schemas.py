@@ -182,6 +182,8 @@ class ProjectCreate(BaseModel):
     etap: Stage
     category: Optional[str] = None
     image: Optional[str] = Field(None, description="Visualization from /generate_image (data URL); stored on publish.")
+    looking_for_partner: Optional[bool] = False
+    partner_types: Optional[list[str]] = Field(default_factory=list)
 
     @field_validator("category", "image", mode="before")
     @classmethod
@@ -208,6 +210,11 @@ class ProjectOut(BaseModel):
     author_name: Optional[str] = None
     image_url: Optional[str] = None
     created_at: Optional[str] = None
+    looking_for_partner: Optional[bool] = False
+    partner_types: Optional[list[str]] = Field(default_factory=list)
+    assigned_expert_id: Optional[str] = None
+    assigned_expert_name: Optional[str] = None
+    assigned_expert_specialization: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod

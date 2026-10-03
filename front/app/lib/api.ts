@@ -9,6 +9,9 @@ import {
   ServiceCard,
   ServiceCardResponse,
   getCategoryThemeAndShape,
+  NotificationItem,
+  SimulatedEmail,
+  RopsExpert,
 } from "./types";
 
 export const API_BASE =
@@ -267,7 +270,7 @@ export async function fetchCurrentProfile(): Promise<User | null> {
     if (!res.ok) return null;
 
     const data = await res.json();
-    const userRole = data.role === "admin" ? "admin" : "creator";
+    const userRole = data.role === "admin" ? "admin" : data.role === "expert" ? "expert" : "creator";
     const userName =
       data.full_name || data.name || data.email?.split("@")[0] || "Użytkownik";
     return {
@@ -275,7 +278,7 @@ export async function fetchCurrentProfile(): Promise<User | null> {
       email: data.email,
       name: userName,
       role: userRole,
-      avatarBg: userRole === "admin" ? "#F5E85A" : "#A4B3F6",
+      avatarBg: userRole === "admin" ? "#F5E85A" : userRole === "expert" ? "#CAD7CE" : "#A4B3F6",
       createdAt: data.created_at?.split("T")[0] || "2026-03-01",
       status: "active",
     };
@@ -300,6 +303,11 @@ export interface BackendIdea {
   volunteers_count: number;
   dislikes_count: number;
   my_reactions: string[];
+  looking_for_partner?: boolean;
+  partner_types?: string[];
+  assigned_expert_id?: string | null;
+  assigned_expert_name?: string | null;
+  assigned_expert_specialization?: string | null;
 }
 
 export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
@@ -338,6 +346,11 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
     status: "active",
     createdAt: b.created_at ? b.created_at.split("T")[0] : "2026-03-01",
     commentsCount: 0,
+    lookingForPartner: Boolean(b.looking_for_partner),
+    partnerTypes: b.partner_types || [],
+    assignedExpertId: b.assigned_expert_id || undefined,
+    assignedExpertName: b.assigned_expert_name || undefined,
+    assignedExpertSpecialization: b.assigned_expert_specialization || undefined,
   };
 }
 
@@ -689,4 +702,91 @@ export async function refreshIndicatorsCache(): Promise<void> {
     headers: getHeaders(false),
   });
 }
+
+// ==========================================
+// 5. NOTIFICATIONS & EMAIL SIMULATION API (/api/notifications)
+// ==========================================
+export async function fetchNotifications(role: string = "creator"): Promise<NotificationItem[]> {
+  const res = await apiFetch(`${API_BASE}/api/notifications?role=${encodeURIComponent(role)}`, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+  if (!res.ok) {
+    console.warn("Błąd pobierania powiadomień");
+    return [];
+  }
+  return await res.json();
+}
+
+export async function markNotificationRead(notificationId: string): Promise<void> {
+  await apiFetch(`${API_BASE}/api/notifications/${notificationId}/read`, {
+    method: "POST",
+    headers: getHeaders(true),
+  });
+}
+
+export async function markAllNotificationsRead(): Promise<void> {
+  await apiFetch(`${API_BASE}/api/notifications/read-all`, {
+    method: "POST",
+    headers: getHeaders(true),
+  });
+}
+
+export async function fetchSimulatedEmail(notificationId: string): Promise<SimulatedEmail> {
+  const res = await apiFetch(`${API_BASE}/api/notifications/${notificationId}/email`, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+  if (!res.ok) {
+    throw new Error("Błąd pobierania szczegółów symulowanego e-maila.");
+  }
+  return await res.json();
+}
+
+// ==========================================
+// 6. EXPERTS & MENTORSHIP API (/api/chat/experts, /api/ideas)
+// ==========================================
+export async function fetchExpertsDirectory(): Promise<RopsExpert[]> {
+  const res = await apiFetch(`${API_BASE}/api/chat/experts`, {
+    method: "GET",
+    headers: getHeaders(false),
+  });
+  if (!res.ok) {
+    throw new Error("Błąd pobierania katalogu ekspertów.");
+  }
+  return await res.json();
+}
+
+export async function assignExpertToIdea(
+  ideaId: string,
+  expert: { expert_id: string; expert_name: string; expert_specialization?: string }
+): Promise<any> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/assign-expert`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify(expert),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd przypisywania eksperta do pomysłu.");
+  }
+  return await res.json();
+}
+
+export async function submitPartnershipRequest(
+  ideaId: string,
+  data: { partner_name: string; partner_type: string; contact_email: string; message: string }
+): Promise<any> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/partnership-request`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd wysyłania zgłoszenia partnerstwa.");
+  }
+  return await res.json();
+}
+
 

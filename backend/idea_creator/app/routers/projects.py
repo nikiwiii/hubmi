@@ -29,7 +29,21 @@ def publish_project(
                 detail="Nie udało się zapisać obrazu. Spróbuj ponownie albo opublikuj projekt bez obrazu.",
             )
     try:
-        return repo.create(project, user_id=user.id, author_name=user.full_name, image_url=image_url)
+        created = repo.create(project, user_id=user.id, author_name=user.full_name, image_url=image_url)
+        try:
+            from notifications.service import NotificationService
+            NotificationService.create_notification(
+                title=f"Nowy pomysł w Hubie: {project.tytul}",
+                message=f"Mieszkaniec {user.full_name} opublikował nowy pomysł w Kreatorze: '{project.tytul}'. Zapoznaj się z koncepcją i zaproponuj wsparcie mentoringowe.",
+                notif_type="new_idea",
+                role_target="admin",
+                link="/admin",
+                recipient_email="admin@rops.krakow.pl",
+                subject=f"[minno / ROPS Kraków] Nowe zgłoszenie w Kreatorze Pomysłów: {project.tytul}"
+            )
+        except Exception:
+            pass
+        return created
     except RepositoryError:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=DB_ERROR_DETAIL)
 

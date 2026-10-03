@@ -5,7 +5,7 @@ class ProfileCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=4, description="Hasło użytkownika")
     full_name: str = Field(..., min_length=2, description="Imię i nazwisko lub nick")
-    role: Literal["user", "admin"] = "user"
+    role: Literal["user", "admin", "expert"] = "user"
 
 class UserLoginRequest(BaseModel):
     email: EmailStr

@@ -15,6 +15,7 @@ import {
   Search,
   Handshake,
 } from "lucide-react";
+import { NotificationBell } from "./NotificationBell";
 
 interface NavbarProps {
   currentScreen?: ScreenId;
@@ -165,8 +166,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </nav>
 
-          {/* Right Controls: Font Size Accessibility, User Profile */}
+          {/* Right Controls: Notifications, Font Size Accessibility, User Profile */}
           <div className="flex items-center gap-2">
+            <NotificationBell currentUser={currentUser} />
+
             <button
               onClick={onToggleFontSize}
               title={

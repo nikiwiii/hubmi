@@ -23,7 +23,10 @@ FIELD_TO_COLUMN: dict[str, str] = {
     "etap": "stage",
 }
 
-PASSTHROUGH_COLUMNS = ("id", "category", "user_id", "author_name", "image_url", "created_at")
+PASSTHROUGH_COLUMNS = (
+    "id", "category", "user_id", "author_name", "image_url", "created_at",
+    "looking_for_partner", "partner_types", "assigned_expert_id", "assigned_expert_name", "assigned_expert_specialization"
+)
 
 
 class RepositoryError(Exception):
@@ -65,6 +68,8 @@ class IdeasRepository:
         row["category"] = project.category or DEFAULT_CATEGORY
         row["user_id"] = user_id
         row["author_name"] = author_name
+        row["looking_for_partner"] = bool(project.looking_for_partner)
+        row["partner_types"] = project.partner_types or []
         # Omitted when absent, so publishing without an image works before the image_url migration.
         if image_url:
             row["image_url"] = image_url
