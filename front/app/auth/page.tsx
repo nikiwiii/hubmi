@@ -152,10 +152,10 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex-1 flex flex-col items-center justify-center p-4 sm:p-6 bg-[#F4F4F0]">
+    <div className="flex-1 min-h-screen flex flex-col items-center justify-center p-4 bg-[#F4F4F0]">
       {/* App Logo */}
-      <div className="flex flex-col items-center justify-center mb-8 select-none text-center">
-        <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-sm mb-3">
+      <div className="flex flex-col items-center justify-center mb-4 select-none text-center">
+        <div className="w-11 h-11 rounded-xl overflow-hidden shadow-xs mb-2">
           <img
             src="/logo.svg"
             alt="minno logo"
@@ -163,20 +163,20 @@ export default function AuthPage() {
           />
         </div>
         <span
-          className="text-2xl font-bold text-stone-900 tracking-tight font-ubuntu"
+          className="text-xl font-bold text-stone-900 tracking-tight font-ubuntu"
           style={{ fontFamily: "var(--font-ubuntu), 'Ubuntu', sans-serif" }}
         >
           minno
         </span>
-        <p className="text-xs text-stone-500 font-medium mt-1">
+        <p className="text-[11px] text-stone-500 font-medium mt-0.5">
           Małopolskie Innowacje Społeczne &amp; ROPS Kraków
         </p>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs flex flex-col gap-4">
+      <div className="w-full max-w-[360px] bg-white rounded-2xl p-5 border border-stone-200/80 shadow-xs flex flex-col gap-3">
         <div>
           {/* Przełącznik Logowanie / Rejestracja */}
-          <div className="flex bg-stone-100 p-1 rounded-xl mb-3 shrink-0">
+          <div className="flex bg-stone-100 p-0.5 rounded-lg mb-2.5 shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -184,7 +184,7 @@ export default function AuthPage() {
                 setErrorMsg("");
                 setSuccessMsg("");
               }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                 !isRegister
                   ? "bg-white text-stone-900 shadow-2xs"
                   : "text-stone-500 hover:text-stone-800"
@@ -199,7 +199,7 @@ export default function AuthPage() {
                 setErrorMsg("");
                 setSuccessMsg("");
               }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                 isRegister
                   ? "bg-white text-stone-900 shadow-2xs"
                   : "text-stone-500 hover:text-stone-800"
@@ -209,89 +209,91 @@ export default function AuthPage() {
             </button>
           </div>
 
-          {/* Komunikaty błędów i sukcesów */}
-          <div className="min-h-5 mb-1 flex flex-col justify-center">
-            {errorMsg && (
-              <div className="p-2.5 bg-rose-50 border border-rose-200/60 text-rose-700 rounded-xl text-xs font-medium flex items-start gap-2 animate-in fade-in duration-150">
-                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span>{errorMsg}</span>
-              </div>
-            )}
+          {/* Komunikaty błędów i sukcesów - tylko gdy istnieją */}
+          {(errorMsg || successMsg) && (
+            <div className="mb-2">
+              {errorMsg && (
+                <div className="p-2 bg-rose-50 border border-rose-200/60 text-rose-700 rounded-lg text-xs font-medium flex items-start gap-2 animate-in fade-in duration-150">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
 
-            {successMsg && (
-              <div className="p-2.5 bg-emerald-50 border border-emerald-200/60 text-emerald-800 rounded-xl text-xs font-medium flex items-center gap-2 animate-in fade-in duration-150">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{successMsg}</span>
-              </div>
-            )}
-          </div>
+              {successMsg && (
+                <div className="p-2 bg-emerald-50 border border-emerald-200/60 text-emerald-800 rounded-lg text-xs font-medium flex items-center gap-2 animate-in fade-in duration-150">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <form
           onSubmit={handleLoginOrRegister}
-          className="flex flex-col gap-3.5"
+          className="flex flex-col gap-2.5"
         >
           {isRegister && (
             <div>
-              <label className="block text-xs font-medium text-stone-700 mb-1">
+              <label className="block text-[11px] font-medium text-stone-600 mb-1">
                 Imię i nazwisko
               </label>
               <div className="relative">
-                <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Anna Kowalska"
                   disabled={isSubmitting}
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
+                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-stone-700 mb-1">
+            <label className="block text-[11px] font-medium text-stone-600 mb-1">
               E-mail
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="twoj@email.pl"
                 disabled={isSubmitting}
-                className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-stone-700 mb-1">
+            <label className="block text-[11px] font-medium text-stone-600 mb-1">
               Hasło
             </label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Hasło"
                 disabled={isSubmitting}
-                className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
+                className="w-full pl-9 pr-9 py-2 rounded-lg border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 disabled={isSubmitting}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 transition-colors p-1 rounded-lg cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 transition-colors p-1 rounded-md cursor-pointer"
                 title={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
               >
                 {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
+                  <EyeOff className="w-3.5 h-3.5" />
                 ) : (
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-3.5 h-3.5" />
                 )}
               </button>
             </div>
@@ -300,17 +302,17 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 shadow-2xs"
+            className="w-full py-2.5 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 shadow-2xs"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 <span>Trwa weryfikacja...</span>
               </>
             ) : (
               <>
                 <span>{isRegister ? "Utwórz konto" : "Zaloguj się"}</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </>
             )}
           </button>
