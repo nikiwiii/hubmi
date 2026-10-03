@@ -1,6 +1,91 @@
 import { Idea, getCategoryThemeAndShape } from './types';
 
-export const INITIAL_IDEAS: Idea[] = [];
+export const INITIAL_IDEAS: Idea[] = [
+  {
+    id: "idea-test-1",
+    title: "Mobilny Asystent Bezpiecznego Domu Seniora",
+    subtitle: "Audyt ergonomiczny i likwidacja barier w mieszkaniach osób 65+",
+    authorId: "user-1",
+    authorName: "Barbara Nowak",
+    authorEmail: "barbara.nowak@malopolska.pl",
+    category: "Zdrowie i Bezpieczeństwo",
+    summary: "Mobilny zespół doradców montujący listwy antypoślizgowe, poręcze i oświetlenie zmierzchowe w domach seniorów.",
+    description: "Innowacyjny model wsparcia domowego dla seniorów o ograniczonej sprawności ruchowej w subregionie tarnowskim. Zespół wolontariuszy i monterów wykonuje bezpłatny audyt bezpieczeństwa i w 60 minut usuwa niebezpieczne progi, montuje uchwyty łazienkowe oraz czujniki ruchu.",
+    targetAudience: "Samotni seniorzy 65+, osoby z problemami motorycznymi i ich opiekunowie",
+    keyBenefits: [
+      "Redukcja ryzyka upadków w domu o 70%",
+      "Bezpłatny montaż w 1 godzinę",
+      "Wsparcie psychiczne i rozmowa z wolontariuszem"
+    ],
+    likes: 34,
+    dislikes: 1,
+    testersCount: 14,
+    testersList: ["barbara.nowak@malopolska.pl", "tester@rops.krakow.pl"],
+    colorTheme: "lavender",
+    geometricShape: "cloud",
+    status: "testing",
+    createdAt: "2026-09-15",
+    commentsCount: 6,
+    lookingForPartner: true,
+    partnerTypes: ["NGO / Stowarzyszenie", "Gmina wiejska"]
+  },
+  {
+    id: "idea-test-2",
+    title: "Sąsiedzka Lodówka i Bank Dzielenia Żywnością",
+    subtitle: "Punkt zero-waste i wzajemnej pomocy społecznej",
+    authorId: "user-2",
+    authorName: "Tomasz Lewandowski",
+    authorEmail: "tomek.lewandowski@krakow.org",
+    category: "Społeczność & Życie",
+    summary: "Całodobowa przeszklona lodówka społeczna ratująca żywność przed zmarnowaniem i wspierająca osoby w kryzysie.",
+    description: "Prototyp bezpiecznego punktu wymiany żywności przy lokalnym domu kultury. Każdy może zostawić nadwyżki pełnowartościowej żywności z krótką datą przydatności, a osoby potrzebujące mogą bezpłatnie i anonimowo z niej skorzystać.",
+    targetAudience: "Mieszkańcy osiedli miejsko-wiejskich, rodziny wielodzietne, osoby w trudnej sytuacji",
+    keyBenefits: [
+      "Ochrona żywności przed wyrzuceniem",
+      "Anonimowe wsparcie bez stygmatyzacji",
+      "Budowa zaufania w społeczności sąsiedzkiej"
+    ],
+    likes: 48,
+    dislikes: 2,
+    testersCount: 21,
+    testersList: ["tomek.lewandowski@krakow.org"],
+    colorTheme: "yellow",
+    geometricShape: "donut",
+    status: "testing",
+    createdAt: "2026-09-20",
+    commentsCount: 9,
+    lookingForPartner: true,
+    partnerTypes: ["Lokalny biznes spożywczy", "CUS / OPS"]
+  },
+  {
+    id: "idea-test-3",
+    title: "Kawiarenka Naprawcza 'Złota Rączka Pokoleń'",
+    subtitle: "Międzypokoleniowe warsztaty naprawy sprzętu i renowacji",
+    authorId: "user-3",
+    authorName: "Janusz Krawczyk",
+    authorEmail: "janusz.majster@interia.pl",
+    category: "Rzemiosło i Pasje",
+    summary: "Seniorzy-rzemieślnicy uczą młodzież naprawy drobnego AGD, rowerów i mebli przy kawie i cieście.",
+    description: "Cotygodniowe otwarte spotkania w remizie strażackiej lub domu kultury, gdzie starsi mistrzowie rzemiosła wspólnie z młodzieżą naprawiają zepsute przedmioty przyniesione przez mieszkańców. Przeciwdziała samotności na emeryturze i buduje szacunek do przedmiotów.",
+    targetAudience: "Seniorzy z umiejętnościami technicznymi, młodzież szkolna, lokalne rodziny",
+    keyBenefits: [
+      "Przekaz unikalnych umiejętności rzemieślniczych",
+      "Przeciwdziałanie samotności i wykluczeniu osób 60+",
+      "Ekologiczny styl życia i oszczędności dla portfela"
+    ],
+    likes: 62,
+    dislikes: 0,
+    testersCount: 18,
+    testersList: ["janusz.majster@interia.pl"],
+    colorTheme: "lilac",
+    geometricShape: "crescent",
+    status: "testing",
+    createdAt: "2026-09-25",
+    commentsCount: 12,
+    lookingForPartner: false,
+    partnerTypes: []
+  }
+];
 
 const STORAGE_IDEAS_KEY = 'hubmi_ideas_v2';
 

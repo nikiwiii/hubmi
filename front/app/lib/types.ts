@@ -49,7 +49,7 @@ export interface Idea {
   colorTheme: ColorTheme;
   geometricShape: ShapeType;
   visualMockupUrl?: string;
-  status: "active" | "draft" | "testing" | "archived";
+  status: "active" | "draft" | "testing" | "archived" | "pending" | "rejected";
   createdAt: string;
   commentsCount: number;
   lookingForPartner?: boolean;
@@ -63,7 +63,16 @@ export interface NotificationItem {
   id: string;
   title: string;
   message: string;
-  type: "new_idea" | "chat_message" | "grant_call" | "partnership" | "expert_assigned";
+  type:
+    | "new_idea"
+    | "chat_message"
+    | "grant_call"
+    | "partnership"
+    | "expert_assigned"
+    | "idea_approved"
+    | "tester_application"
+    | "tester_approved"
+    | "system";
   read: boolean;
   created_at: string;
   link?: string | null;
@@ -123,7 +132,8 @@ export type ScreenId =
   | "dashboard"
   | "knowledge"
   | "matching"
-  | "middleman";
+  | "middleman"
+  | "testing";
 
 export type KnowledgeType = "challenge" | "innovation" | "education";
 
@@ -384,4 +394,69 @@ export interface ServiceCardResponse {
   innovation_title: string;
   innovation_url?: string | null;
   card: ServiceCard;
+}
+
+// ==========================================
+// TESTER INNOWACJI: Usability rating, feedback & comments
+// ==========================================
+export interface IdeaFeedback {
+  id: string;
+  idea_id: string;
+  user_id?: string | null;
+  author_name: string;
+  author_role: string;
+  overall_rating: number;
+  usability_rating: number;
+  accessibility_rating: number;
+  impact_rating: number;
+  strengths?: string | null;
+  weaknesses?: string | null;
+  suggested_improvements?: string | null;
+  comment?: string | null;
+  created_at: string;
+}
+
+export interface IdeaComment {
+  id: string;
+  idea_id: string;
+  user_id?: string | null;
+  author_name: string;
+  content: string;
+  created_at: string;
+}
+
+export interface TestingSummary {
+  idea_id: string;
+  testers_count: number;
+  reviews_count: number;
+  avg_overall_rating: number;
+  avg_usability_rating: number;
+  avg_accessibility_rating: number;
+  avg_impact_rating: number;
+  feedback_list: IdeaFeedback[];
+  comments_list: IdeaComment[];
+}
+
+export interface FeedbackSubmitPayload {
+  overall_rating: number;
+  usability_rating: number;
+  accessibility_rating: number;
+  impact_rating: number;
+  author_role?: string;
+  strengths?: string;
+  weaknesses?: string;
+  suggested_improvements?: string;
+  comment?: string;
+}
+
+export interface TesterApplication {
+  id: string;
+  idea_id: string;
+  idea_title: string;
+  user_id?: string | null;
+  user_name: string;
+  user_email?: string | null;
+  status: "pending" | "approved" | "rejected";
+  motivation?: string | null;
+  created_at: string;
 }
