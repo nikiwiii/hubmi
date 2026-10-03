@@ -43,7 +43,7 @@ class FakeIdeasRepository(IdeasRepository):
 
     def _select_rows(self):
         self.calls += 1
-        return list(reversed(self.rows))
+        return self.rows[::-1]
 
     def _select_row(self, project_id) -> Optional[dict]:
         self.calls += 1

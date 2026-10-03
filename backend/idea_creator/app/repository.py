@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 from functools import lru_cache
-from typing import Any, Optional
+from typing import Any, Optional, List, Dict
 
 from fastapi import HTTPException, status
 
@@ -45,7 +47,7 @@ class IdeasRepository:
     ) -> ProjectOut:
         return self._from_row(self._insert_row(self._to_row(project, user_id, author_name, image_url)))
 
-    def list(self) -> list[ProjectOut]:
+    def list(self) -> List[ProjectOut]:
         return [self._from_row(row) for row in self._select_rows()]
 
     def get(self, project_id: str) -> Optional[ProjectOut]:
@@ -57,7 +59,7 @@ class IdeasRepository:
     @staticmethod
     def _to_row(
         project: ProjectCreate, user_id: str, author_name: str, image_url: Optional[str] = None
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         row = {column: getattr(project, field) for field, column in FIELD_TO_COLUMN.items()}
         row["stage"] = project.etap.value
         row["category"] = project.category or DEFAULT_CATEGORY
@@ -69,14 +71,14 @@ class IdeasRepository:
         return row
 
     @staticmethod
-    def _from_row(row: dict[str, Any]) -> ProjectOut:
+    def _from_row(row: Dict[str, Any]) -> ProjectOut:
         data = {field: row.get(column) for field, column in FIELD_TO_COLUMN.items()}
         data.update({column: row.get(column) for column in PASSTHROUGH_COLUMNS})
         return ProjectOut.model_validate(data)
 
     # ----- storage primitives (Supabase) -----
 
-    def _insert_row(self, row: dict[str, Any]) -> dict[str, Any]:
+    def _insert_row(self, row: Dict[str, Any]) -> Dict[str, Any]:
         try:
             res = self._client.table(TABLE_NAME).insert(row).execute()
         except Exception as e:
@@ -86,7 +88,7 @@ class IdeasRepository:
             raise RepositoryError("insert returned no data")
         return res.data[0]
 
-    def _select_rows(self) -> list[dict[str, Any]]:
+    def _select_rows(self) -> List[Dict[str, Any]]:
         try:
             res = self._client.table(TABLE_NAME).select("*").order("created_at", desc=True).execute()
         except Exception as e:
@@ -94,7 +96,7 @@ class IdeasRepository:
             raise RepositoryError("select failed") from e
         return res.data or []
 
-    def _select_row(self, project_id: str) -> Optional[dict[str, Any]]:
+    def _select_row(self, project_id: str) -> Optional[Dict[str, Any]]:
         try:
             res = self._client.table(TABLE_NAME).select("*").eq("id", project_id).limit(1).execute()
         except Exception as e:
