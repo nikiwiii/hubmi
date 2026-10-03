@@ -19,6 +19,8 @@ import {
   Bot
 } from 'lucide-react';
 import { RagChatSection } from './RagChatSection';
+import { MalopolskaMap } from './MalopolskaMap';
+import { PowiatItem } from '../lib/malopolskaMapData';
 
 interface KnowledgeHubScreenProps {
   onNavigate: (screen: ScreenId) => void;
@@ -30,6 +32,7 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({ onNaviga
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [activeVideoModal, setActiveVideoModal] = useState<KnowledgeResource | null>(null);
+  const [selectedPowiat, setSelectedPowiat] = useState<PowiatItem | null>(null);
 
   const filteredResources = useMemo(() => {
     return resources.filter((item) => {
@@ -73,6 +76,13 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({ onNaviga
           <span>Odpowiedz pomysłem z AI</span>
         </button>
       </div>
+
+      {/* Interaktywna Mapa Powiatów Małopolski */}
+      <MalopolskaMap
+        onSelectPowiat={(p) => setSelectedPowiat(p)}
+        onApplySearch={(term) => setSearchQuery(term)}
+        onNavigate={onNavigate}
+      />
 
       {/* Minimal Search & Filter Bar */}
       <div className="bg-white rounded-2xl p-2 shadow-2xs border border-black/[0.04]">
