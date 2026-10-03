@@ -1,369 +1,231 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { KnowledgeResource, KnowledgeType } from '../lib/types';
-import { getKnowledgeResources } from '../lib/knowledgeStore';
-import { GeometricIllustration } from '../components/shared/GeometricIllustration';
-import { getThemeStyles } from '../components/shared/IdeaCard';
+import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { getAllResearches, ResearchInfo } from '../lib/researchData';
 import {
-  Search,
-  BookOpen,
-  Film,
+  Users,
+  Briefcase,
+  Banknote,
+  Heart,
+  Activity,
+  ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  Layers,
   MapPin,
-  ChevronDown,
-  ChevronUp,
-  X,
-  Play,
   Sparkles,
-  Bot
+  BarChart3,
+  CheckCircle2
 } from 'lucide-react';
 
-import { MalopolskaMap } from '../components/knowledge/MalopolskaMap';
-import { RagChatSection } from '../components/knowledge/RagChatSection';
-import { PowiatItem } from '../lib/malopolskaMapData';
-import { useApp } from '../context/AppContext';
-
 export default function KnowledgePage() {
-  const { navigate } = useApp();
+  const router = useRouter();
+  const researches = getAllResearches();
 
-  const [resources] = useState<KnowledgeResource[]>(getKnowledgeResources());
-  const [activeFilter, setActiveFilter] = useState<'all' | KnowledgeType>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
-  const [activeVideoModal, setActiveVideoModal] = useState<KnowledgeResource | null>(null);
-  const [selectedPowiat, setSelectedPowiat] = useState<PowiatItem | null>(null);
-  const [isAiAdvisorOpen, setIsAiAdvisorOpen] = useState(false);
-
-  const filteredResources = useMemo(() => {
-    return resources.filter((item) => {
-      const matchesType = activeFilter === 'all' || item.type === activeFilter;
-      const q = searchQuery.toLowerCase();
-      const matchesQuery =
-        item.title.toLowerCase().includes(q) ||
-        item.subtitle.toLowerCase().includes(q) ||
-        item.summary.toLowerCase().includes(q) ||
-        item.tags.some((t) => t.toLowerCase().includes(q));
-
-      return matchesType && matchesQuery;
-    });
-  }, [resources, activeFilter, searchQuery]);
-
-  const toggleExpand = (id: string) => {
-    setExpandedItemId((prev) => (prev === id ? null : id));
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'users':
+        return <Users className="w-6 h-6" />;
+      case 'briefcase':
+        return <Briefcase className="w-6 h-6" />;
+      case 'banknote':
+        return <Banknote className="w-6 h-6" />;
+      case 'heart':
+        return <Heart className="w-6 h-6" />;
+      case 'activity':
+      default:
+        return <Activity className="w-6 h-6" />;
+    }
   };
 
   return (
-    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
-        <div>
-          <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
-            <span className="block text-stone-900">Zasobnik Wiedzy</span>
-            <span className="block text-stone-300">ROPS Kraków</span>
-          </div>
-          <p className="mt-2 text-stone-500 text-sm font-medium">
-            Diagnozy wyzwań Małopolski, baza przetestowanych innowacji oraz materiały edukacyjne.
-          </p>
+    <div className="py-8 px-4 sm:px-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-300">
+      {/* Nagłówek strony */}
+      <div className="space-y-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-200/70 text-stone-800 text-xs font-bold tracking-wide uppercase">
+          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+          <span>Baza Danych & Kartografia Małopolski</span>
         </div>
 
-        {/* Toggle Doradca AI button (replaces "Odpowiedz pomysłem z AI") */}
-        <button
-          onClick={() => setIsAiAdvisorOpen((prev) => !prev)}
-          className={`self-start sm:self-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            isAiAdvisorOpen
-              ? 'bg-[#EFE5C6] text-stone-900 border border-[#DDD0A6] shadow-2xs'
-              : 'bg-stone-900 text-white hover:bg-stone-800 shadow-2xs'
-          }`}
-        >
-          <Bot className="w-4 h-4 text-amber-500" />
-          <span>{isAiAdvisorOpen ? 'Ukryj Doradcę AI' : 'Doradca AI (Groq RAG)'}</span>
-          {isAiAdvisorOpen ? (
-            <ChevronUp className="w-3.5 h-3.5 text-stone-700" />
-          ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
-          )}
-        </button>
+        <div className="text-4xl sm:text-5xl font-black tracking-tight text-stone-900 leading-[1.05]">
+          Katalog Badań Społecznych
+        </div>
+
+        <p className="text-stone-600 text-base sm:text-lg max-w-3xl font-medium leading-relaxed">
+          Wybierz obszar badawczy, aby otworzyć interaktywną mapę kartogramu dla każdego roku (2014–2024) oraz szczegółowe wykresy zmian w czasie dla wszystkich 22 powiatów Małopolski.
+        </p>
       </div>
 
-      {/* Sekcja Doradcy AI - domyślnie ukryta na górze strony, rozwijana przyciskiem */}
-      {isAiAdvisorOpen && (
-        <div className="animate-in fade-in slide-in-from-top-3 duration-300">
-          <RagChatSection />
+      {/* Pasek statystyk zbiorczych */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+          <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block">
+            Obszary Badań
+          </span>
+          <span className="text-2xl sm:text-3xl font-black text-stone-900 font-mono">
+            {researches.length}
+          </span>
+          <span className="text-[11px] text-stone-400 block font-medium">
+            Kluczowe diagnozy ROPS
+          </span>
         </div>
-      )}
 
-      {/* Interaktywna Mapa Powiatów Małopolski */}
-      <MalopolskaMap
-        onSelectPowiat={(p) => setSelectedPowiat(p)}
-        onApplySearch={(term) => setSearchQuery(term)}
-        onNavigate={navigate}
-      />
+        <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+          <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block">
+            Zasięg Terytorialny
+          </span>
+          <span className="text-2xl sm:text-3xl font-black text-stone-900 font-mono">
+            22
+          </span>
+          <span className="text-[11px] text-stone-400 block font-medium">
+            Powiaty i miasta na prawach powiatu
+          </span>
+        </div>
 
-      {/* Minimal Search & Filter Bar */}
-      <div className="bg-white rounded-2xl p-2 shadow-2xs border border-black/4">
-        <div className="relative flex items-center">
-          <Search className="absolute left-3.5 w-4 h-4 text-stone-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Szukaj wyzwań, innowacji lub poradników..."
-            className="w-full pl-10 pr-8 py-2 text-base font-medium text-stone-900 placeholder:text-stone-400 rounded-xl focus:outline-none"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 p-1 text-stone-400 hover:text-stone-700"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+        <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+          <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block">
+            Horyzont Czasowy
+          </span>
+          <span className="text-2xl sm:text-3xl font-black text-stone-900 font-mono">
+            11 Lat
+          </span>
+          <span className="text-[11px] text-stone-400 block font-medium">
+            Szeregi czasowe 2014–2024
+          </span>
+        </div>
+
+        <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-1">
+          <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block">
+            Punkty Pomiarowe
+          </span>
+          <span className="text-2xl sm:text-3xl font-black text-stone-900 font-mono">
+            1 200+
+          </span>
+          <span className="text-[11px] text-stone-400 block font-medium">
+            Zweryfikowane dane statystyczne
+          </span>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        <button
-          onClick={() => setActiveFilter('all')}
-          className={`whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === 'all'
-              ? 'bg-stone-900 text-white'
-              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
-          }`}
-        >
-          Wszystkie zasoby ({resources.length})
-        </button>
-
-        <button
-          onClick={() => setActiveFilter('challenge')}
-          className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === 'challenge'
-              ? 'bg-stone-900 text-white'
-              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
-          }`}
-        >
-          <MapPin className="w-3.5 h-3.5" />
-          <span>Wyzwania Małopolski</span>
-        </button>
-
-        <button
-          onClick={() => setActiveFilter('innovation')}
-          className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === 'innovation'
-              ? 'bg-stone-900 text-white'
-              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
-          }`}
-        >
-          <Film className="w-3.5 h-3.5" />
-          <span>Biblioteka Innowacji (Wideo)</span>
-        </button>
-
-        <button
-          onClick={() => setActiveFilter('education')}
-          className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === 'education'
-              ? 'bg-stone-900 text-white'
-              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
-          }`}
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>Materiały Edukacyjne</span>
-        </button>
-      </div>
-
-      {/* Main Content Area */}
-      {filteredResources.length === 0 ? (
-        <div className="bg-white rounded-2xl p-10 text-center border border-stone-200">
-          <p className="text-base font-semibold text-stone-800">
-            Brak materiałów dla wybranych kryteriów
-          </p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setActiveFilter('all');
-            }}
-            className="mt-3 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-medium"
-          >
-            Wyczyść filtry
-          </button>
+      {/* Grid typów badań */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-stone-900 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-stone-700" />
+            <span>Dostępne Typy Badań i Wskaźników</span>
+          </h2>
+          <span className="text-xs text-stone-500 font-medium">
+            Kliknij kartę, aby przejść do map i wykresów
+          </span>
         </div>
-      ) : (
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredResources.map((item) => {
-            const styles = getThemeStyles(item.theme);
-            const isExpanded = expandedItemId === item.id;
+          {researches.map((research) => {
+            const isPositive = research.summary.deltaAvg >= 0;
 
             return (
               <div
-                key={item.id}
-                className={`flex flex-col justify-between overflow-hidden rounded-[28px] p-6 transition-all duration-300 hover:shadow-lg ${styles.bg} min-h-75 border border-black/4`}
+                key={research.id}
+                onClick={() => router.push(`/knowledge/${research.id}`)}
+                className="group relative flex flex-col justify-between bg-white rounded-3xl p-6 border border-stone-200/90 shadow-xs hover:shadow-xl hover:border-stone-400 transition-all duration-300 cursor-pointer overflow-hidden"
               >
-                {/* Top Header */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${styles.badge}`}
-                    >
-                      {item.categoryLabel}
-                    </span>
+                {/* Górny akcent kolorystyczny */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-1.5 transition-all group-hover:h-2"
+                  style={{ backgroundColor: research.theme.accent }}
+                />
 
-                    {item.statusBadge && (
-                      <span className="text-[10px] font-bold bg-white/90 text-stone-800 px-2 py-0.5 rounded-full shadow-2xs">
-                        {item.statusBadge}
+                <div className="space-y-4">
+                  {/* Nagłówek karty: Kategoria, Ikona, Jednostka */}
+                  <div className="flex items-start justify-between gap-3 pt-1">
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform"
+                      style={{ backgroundColor: research.theme.accent }}
+                    >
+                      {getIcon(research.iconName)}
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-stone-100 text-stone-700 border border-stone-200/60">
+                        {research.category}
                       </span>
-                    )}
+                      <span className="text-[11px] font-mono font-bold text-stone-500">
+                        Jednostka: {research.unit}
+                      </span>
+                    </div>
                   </div>
 
-                  <h3 className={`text-xl font-bold leading-snug tracking-tight mt-1 ${styles.text}`}>
-                    {item.title}
-                  </h3>
+                  {/* Tytuł i opis */}
+                  <div>
+                    <h3 className="text-xl font-bold text-stone-900 group-hover:text-stone-950 transition-colors leading-snug">
+                      {research.titlePl}
+                    </h3>
+                    <p className="text-xs font-semibold text-stone-400 mt-0.5">
+                      {research.titleEn}
+                    </p>
+                    <p className="text-xs text-stone-600 mt-2.5 line-clamp-3 leading-relaxed">
+                      {research.descriptionPl}
+                    </p>
+                  </div>
 
-                  <p className={`text-xs font-medium ${styles.subtext}`}>
-                    {item.subtitle}
-                  </p>
-                </div>
-
-                {/* Center: Key Metric, Video Thumbnail, or Geometric Art */}
-                <div className="my-auto py-3">
-                  {item.keyMetric ? (
-                    <div className="p-3 bg-white/60 backdrop-blur-2xs rounded-2xl border border-black/4 text-center space-y-0.5">
-                      <span className="block text-3xl font-extrabold text-stone-900 tracking-tight">
-                        {item.keyMetric}
+                  {/* Kluczowe wskaźniki podglądowe */}
+                  <div className="bg-stone-50/90 rounded-2xl p-3.5 border border-stone-200/60 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-stone-500 flex items-center gap-1 font-medium">
+                        <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                        <span>Zakres lat:</span>
                       </span>
-                      <span className="block text-[11px] font-medium text-stone-600">
-                        {item.metricLabel}
+                      <span className="font-mono font-bold text-stone-800">
+                        {research.summary.startYear} – {research.summary.endYear} ({research.years.length} lat)
                       </span>
                     </div>
-                  ) : item.videoUrl ? (
-                    <div
-                      onClick={() => setActiveVideoModal(item)}
-                      className="group/video relative aspect-video bg-black/10 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-black/20 transition-all border border-black/6 overflow-hidden"
-                    >
-                      <GeometricIllustration
-                        shape={item.shape}
-                        theme={item.theme}
-                        size={80}
-                        className="opacity-70 group-hover/video:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-stone-900/90 text-white flex items-center justify-center shadow-md group-hover/video:scale-110 transition-transform">
-                          <Play className="w-4 h-4 ml-0.5 fill-white" />
-                        </div>
-                      </div>
-                      {item.videoDuration && (
-                        <span className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/70 text-white text-[10px] font-mono rounded">
-                          {item.videoDuration}
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-stone-500 font-medium">Średnia Małopolski:</span>
+                      <div className="flex items-center gap-1.5 font-mono">
+                        <span className="font-extrabold text-stone-900 text-sm">
+                          {research.summary.endAvg} {research.unit}
                         </span>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      <GeometricIllustration
-                        shape={item.shape}
-                        theme={item.theme}
-                        size={90}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Summary / Expandable Content */}
-                <div className="space-y-2 pt-2 border-t border-black/6">
-                  <p className={`text-xs font-medium leading-relaxed ${styles.subtext}`}>
-                    {item.summary}
-                  </p>
-
-                  {/* Expanded deep dive */}
-                  {isExpanded && (
-                    <div className="p-3 bg-white/80 backdrop-blur-xs rounded-xl text-xs text-stone-800 space-y-2 animate-in fade-in duration-200">
-                      <p className="leading-relaxed">{item.content}</p>
-                      <div className="flex flex-wrap gap-1 pt-1">
-                        {item.tags.map((t, idx) => (
-                          <span
-                            key={idx}
-                            className="text-[10px] font-medium px-2 py-0.5 bg-stone-100 rounded text-stone-600"
-                          >
-                            #{t}
-                          </span>
-                        ))}
+                        <span
+                          className={`text-[11px] font-bold flex items-center ${
+                            isPositive ? 'text-emerald-700' : 'text-rose-700'
+                          }`}
+                        >
+                          {isPositive ? '+' : ''}
+                          {research.summary.deltaAvg}
+                        </span>
                       </div>
                     </div>
-                  )}
 
-                  {/* Footer Action buttons */}
-                  <div className="flex items-center justify-between pt-1 text-xs">
-                    <span className="text-[11px] text-stone-500 font-medium">
-                      {item.readTime}
-                    </span>
+                    {research.summary.topCounty.name && (
+                      <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-200/60">
+                        <span className="text-stone-500 text-[11px] font-medium truncate max-w-[120px]">
+                          Lider ({research.summary.endYear}):
+                        </span>
+                        <span className="font-medium text-stone-800 text-[11px] truncate max-w-[150px]">
+                          {research.summary.topCounty.name.replace('Powiat ', '')} (
+                          {research.summary.topCounty.value} {research.unit})
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                    <button
-                      onClick={() => toggleExpand(item.id)}
-                      className="flex items-center gap-1 font-semibold text-stone-800 hover:text-stone-950 cursor-pointer"
-                    >
-                      <span>{isExpanded ? 'Zwiń' : 'Czytaj szczegóły'}</span>
-                      {isExpanded ? (
-                        <ChevronUp className="w-3.5 h-3.5" />
-                      ) : (
-                        <ChevronDown className="w-3.5 h-3.5" />
-                      )}
-                    </button>
+                {/* Przycisk przejścia do badania */}
+                <div className="pt-5 mt-4 border-t border-stone-100 flex items-center justify-between text-xs font-bold text-stone-900 group-hover:text-stone-950">
+                  <span>Zobacz mapy roczne i wykresy</span>
+                  <div className="w-8 h-8 rounded-xl bg-stone-100 group-hover:bg-stone-900 group-hover:text-white flex items-center justify-center transition-all">
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-      )}
-
-      {/* Video Modal Player */}
-      {activeVideoModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-stone-200 space-y-4 animate-in fade-in">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-stone-100 text-stone-600 rounded-full">
-                  {activeVideoModal.categoryLabel}
-                </span>
-                <h4 className="text-lg font-bold text-stone-900 mt-1">
-                  {activeVideoModal.title}
-                </h4>
-              </div>
-              <button
-                onClick={() => setActiveVideoModal(null)}
-                className="p-2 rounded-full hover:bg-stone-100 text-stone-500 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="relative aspect-video bg-stone-900 rounded-2xl overflow-hidden flex flex-col items-center justify-center text-white p-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center mb-3">
-                <Play className="w-7 h-7 fill-white ml-1" />
-              </div>
-              <p className="text-sm font-semibold">{activeVideoModal.title}</p>
-              <p className="text-xs text-stone-400 mt-1">
-                Wideoteka Innowacji Społecznych ROPS Kraków ({activeVideoModal.videoDuration})
-              </p>
-              <span className="mt-4 px-3 py-1 bg-white/10 rounded-full text-[11px] font-mono">
-                Źródło: Kanał Wideo ROPS Kraków
-              </span>
-            </div>
-
-            <p className="text-xs text-stone-600 leading-relaxed">
-              {activeVideoModal.content}
-            </p>
-
-            <div className="flex justify-end pt-2">
-              <button
-                onClick={() => setActiveVideoModal(null)}
-                className="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-semibold cursor-pointer"
-              >
-                Zamknij
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

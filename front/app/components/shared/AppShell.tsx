@@ -11,16 +11,27 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const pathname = usePathname();
   const router = useRouter();
 
-  const isAuthPage = pathname === '/auth';
+  const isAuthPage = pathname?.startsWith('/auth');
+  const isKnowledgePage = pathname?.startsWith('/knowledge');
+  const isPublicPage = isAuthPage || isKnowledgePage;
 
   useEffect(() => {
-    if (!isLoadingUser && !currentUser && !isAuthPage) {
+    if (!isLoadingUser && !currentUser && !isPublicPage) {
       router.push('/auth');
     }
-  }, [currentUser, isLoadingUser, isAuthPage, router]);
+  }, [currentUser, isLoadingUser, isPublicPage, router]);
 
-  // While checking session or redirecting unauthenticated users
-  if (!isAuthPage && (isLoadingUser || !currentUser)) {
+  // If on auth page, render clean page without Navbar or bottom navigation
+  if (isAuthPage) {
+    return (
+      <main className="min-h-screen flex flex-col bg-[#F4F4F0]">
+        {children}
+      </main>
+    );
+  }
+
+  // While checking session or redirecting unauthenticated users on protected pages
+  if (!isKnowledgePage && (isLoadingUser || !currentUser)) {
     return (
       <>
         <Navbar

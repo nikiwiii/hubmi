@@ -285,13 +285,13 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2.5">
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-stone-800 text-[11px] shrink-0"
-                          style={{ backgroundColor: u.avatarBg }}
+                          style={{ backgroundColor: u.avatarBg || '#A4B3F6' }}
                         >
-                          {u.name.charAt(0)}
+                          {(u.name || u.email || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <p className="font-semibold text-stone-900">
-                            {u.name}
+                            {u.name || u.email || 'Użytkownik'}
                           </p>
                           <p className="text-[10px] text-stone-400">
                             {u.email}

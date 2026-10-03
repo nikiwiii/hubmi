@@ -63,14 +63,14 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3.5">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-stone-800 shrink-0"
-            style={{ backgroundColor: user.avatarBg }}
+            style={{ backgroundColor: user.avatarBg || '#A4B3F6' }}
           >
-            {user.name.charAt(0)}
+            {(user.name || user.email || 'U').charAt(0).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-stone-900 leading-tight">
-                {user.name}
+                {user.name || user.email || 'Użytkownik'}
               </span>
               <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
                 {user.role}

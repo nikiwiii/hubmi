@@ -179,13 +179,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="flex items-center gap-2 p-1 pl-2.5 rounded-xl bg-white border border-stone-200 hover:border-stone-300 cursor-pointer transition-colors"
               >
                 <span className="hidden sm:inline-block text-xs font-semibold text-stone-800 truncate max-w-25">
-                  {currentUser.name}
+                  {currentUser.name || currentUser.email || "Konto"}
                 </span>
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-stone-800"
-                  style={{ backgroundColor: currentUser.avatarBg }}
+                  style={{ backgroundColor: currentUser.avatarBg || "#A4B3F6" }}
                 >
-                  {currentUser.name.charAt(0)}
+                  {(currentUser.name || currentUser.email || "U").charAt(0).toUpperCase()}
                 </div>
               </div>
             ) : (

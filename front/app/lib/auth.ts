@@ -54,7 +54,11 @@ export function getCurrentUser(): User | null {
     if (!stored) {
       return null;
     }
-    return JSON.parse(stored);
+    const parsed: User = JSON.parse(stored);
+    if (parsed && !parsed.name) {
+      parsed.name = parsed.email ? parsed.email.split('@')[0] : 'Użytkownik';
+    }
+    return parsed;
   } catch {
     return null;
   }
