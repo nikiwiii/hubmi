@@ -8,7 +8,8 @@ import {
   Shield,
   User as UserIcon,
   LogIn,
-  Type
+  Type,
+  BookOpen
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -57,6 +58,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               Odkrywaj
+            </button>
+            <button
+              onClick={() => onNavigate('knowledge')}
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                currentScreen === 'knowledge'
+                  ? 'bg-white text-stone-900 shadow-2xs'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              Zasobnik
             </button>
             <button
               onClick={() => onNavigate('propose')}
@@ -161,12 +172,22 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="max-w-md mx-auto flex items-center justify-around">
           <button
             onClick={() => onNavigate('discover')}
-            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all cursor-pointer ${
+            className={`flex flex-col items-center gap-0.5 py-1 px-1.5 transition-all cursor-pointer ${
               currentScreen === 'discover' ? 'text-stone-900 font-bold' : 'text-stone-400'
             }`}
           >
             <Compass className="w-5 h-5" />
             <span className="text-[10px]">Odkrywaj</span>
+          </button>
+
+          <button
+            onClick={() => onNavigate('knowledge')}
+            className={`flex flex-col items-center gap-0.5 py-1 px-1.5 transition-all cursor-pointer ${
+              currentScreen === 'knowledge' ? 'text-stone-900 font-bold' : 'text-stone-400'
+            }`}
+          >
+            <BookOpen className="w-5 h-5" />
+            <span className="text-[10px]">Zasobnik</span>
           </button>
 
           <button
