@@ -519,3 +519,26 @@ export async function updateConversationStatus(
   return await res.json();
 }
 
+/**
+ * Pobiera aktualną listę wskaźników z bazy Supabase poprzez backend API.
+ */
+export async function getLiveIndicators(): Promise<any> {
+  const res = await apiFetch(`${API_BASE}/api/indicators`, {
+    headers: getHeaders(false),
+  });
+  if (!res.ok) {
+    throw new Error("Błąd pobierania wskaźników z serwera.");
+  }
+  return await res.json();
+}
+
+/**
+ * Wymusza odświeżenie pamięci podręcznej wskaźników w backendzie.
+ */
+export async function refreshIndicatorsCache(): Promise<void> {
+  await apiFetch(`${API_BASE}/api/indicators/refresh`, {
+    method: "POST",
+    headers: getHeaders(false),
+  });
+}
+

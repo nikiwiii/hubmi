@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import rawData from './visualize_data.json';
 import { POWIATY_DATA, PowiatItem } from './malopolskaMapData';
 
@@ -221,17 +222,324 @@ const RESEARCH_CONFIGS: Record<
       border: '#C1C9E4',
       text: '#1D2235'
     }
+  },
+  urbanization_rate: {
+    titlePl: 'Wskaźnik urbanizacji',
+    titleEn: 'Urbanization rate',
+    unitPl: '%',
+    category: 'Demografia',
+    descriptionPl:
+      'Udział ludności zamieszkującej tereny miejskie w ogólnej populacji powiatu. Miernik rozwoju ośrodków miejskich.',
+    iconName: 'users',
+    theme: {
+      accent: '#5E8B84',
+      chartColor: '#5E8B84',
+      chartSecondary: '#D1E6E2',
+      badgeBg: 'bg-[#D1E6E2] text-[#18332F] border-[#BED6D1]',
+      badgeText: 'text-[#18332F]',
+      cardBorder: 'border-[#BED6D1] hover:border-[#5E8B84]',
+      gradient: 'from-[#5E8B84] to-[#436761]',
+      colorScale: ['#EDF6F4', '#8AB5AE', '#32524C'],
+      pastelBg: '#D1E6E2',
+      border: '#BED6D1',
+      text: '#18332F'
+    }
+  },
+  kindergarten_availability: {
+    titlePl: 'Dostępność miejsc w przedszkolach',
+    titleEn: 'Kindergarten availability',
+    unitPl: 'dzieci/miejsce',
+    category: 'Edukacja',
+    descriptionPl:
+      'Liczba dzieci w wieku 3–5 lat przypadająca na 1 miejsce w przedszkolach. Obrazuje dostępność edukacji przedszkolnej.',
+    iconName: 'heart',
+    theme: {
+      accent: '#BF8A52',
+      chartColor: '#BF8A52',
+      chartSecondary: '#F2E4D2',
+      badgeBg: 'bg-[#F2E4D2] text-[#3B2610] border-[#E2D0BA]',
+      badgeText: 'text-[#3B2610]',
+      cardBorder: 'border-[#E2D0BA] hover:border-[#BF8A52]',
+      gradient: 'from-[#BF8A52] to-[#996937]',
+      colorScale: ['#FAF4EC', '#D6AA79', '#784E20'],
+      pastelBg: '#F2E4D2',
+      border: '#E2D0BA',
+      text: '#3B2610'
+    }
+  },
+  pharmacy_availability: {
+    titlePl: 'Dostępność aptek ogólnodostępnych',
+    titleEn: 'Pharmacy availability',
+    unitPl: 'osób/aptekę',
+    category: 'Zdrowie',
+    descriptionPl:
+      'Liczba mieszkańców przypadająca na jedną aptekę. Mierzy nasycenie podstawową infrastrukturą farmaceutyczną.',
+    iconName: 'activity',
+    theme: {
+      accent: '#649479',
+      chartColor: '#649479',
+      chartSecondary: '#D3E6DB',
+      badgeBg: 'bg-[#D3E6DB] text-[#1A3324] border-[#BDD6C7]',
+      badgeText: 'text-[#1A3324]',
+      cardBorder: 'border-[#BDD6C7] hover:border-[#649479]',
+      gradient: 'from-[#649479] to-[#497059]',
+      colorScale: ['#EEF6F1', '#8EBAA1', '#345742'],
+      pastelBg: '#D3E6DB',
+      border: '#BDD6C7',
+      text: '#1A3324'
+    }
+  },
+  cancer_incidence: {
+    titlePl: 'Zachorowalność na nowotwory',
+    titleEn: 'Cancer incidence',
+    unitPl: 'na 1000',
+    category: 'Zdrowie',
+    descriptionPl:
+      'Liczba pacjentów z rozpoznaniem nowotworowym (19+) pod opieką lekarza POZ w przeliczeniu na 1000 mieszkańców.',
+    iconName: 'activity',
+    theme: {
+      accent: '#B06371',
+      chartColor: '#B06371',
+      chartSecondary: '#EED3D8',
+      badgeBg: 'bg-[#EED3D8] text-[#36171E] border-[#DEC0C6]',
+      badgeText: 'text-[#36171E]',
+      cardBorder: 'border-[#DEC0C6] hover:border-[#B06371]',
+      gradient: 'from-[#B06371] to-[#8C4653]',
+      colorScale: ['#F9EDEF', '#CF8794', '#6E2C38'],
+      pastelBg: '#EED3D8',
+      border: '#DEC0C6',
+      text: '#36171E'
+    }
+  },
+  care_and_education_centers: {
+    titlePl: 'Placówki opiekuńczo-wychowawcze',
+    titleEn: 'Care and education centers',
+    unitPl: 'placówek',
+    category: 'Piecza Zastępcza',
+    descriptionPl:
+      'Liczba stacjonarnych placówek opiekuńczo-wychowawczych realizujących opiekę całodobową nad dziećmi i młodzieżą.',
+    iconName: 'heart',
+    theme: {
+      accent: '#946EA3',
+      chartColor: '#946EA3',
+      chartSecondary: '#E5D6EC',
+      badgeBg: 'bg-[#E5D6EC] text-[#2C1935] border-[#D4C0DE]',
+      badgeText: 'text-[#2C1935]',
+      cardBorder: 'border-[#D4C0DE] hover:border-[#946EA3]',
+      gradient: 'from-[#946EA3] to-[#734F82]',
+      colorScale: ['#F6EEF9', '#B594C2', '#583666'],
+      pastelBg: '#E5D6EC',
+      border: '#D4C0DE',
+      text: '#2C1935'
+    }
+  },
+  residents_per_social_worker: {
+    titlePl: 'Mieszkańcy na pracownika socjalnego',
+    titleEn: 'Residents per social worker',
+    unitPl: 'osób/pracownika',
+    category: 'Pomoc Społeczna',
+    descriptionPl:
+      'Liczba mieszkańców przypadająca na jednego zatrudnionego pracownika socjalnego w jednostkach pomocy społecznej.',
+    iconName: 'briefcase',
+    theme: {
+      accent: '#5E7D9E',
+      chartColor: '#5E7D9E',
+      chartSecondary: '#D0DFEE',
+      badgeBg: 'bg-[#D0DFEE] text-[#192735] border-[#BCCEE0]',
+      badgeText: 'text-[#192735]',
+      cardBorder: 'border-[#BCCEE0] hover:border-[#5E7D9E]',
+      gradient: 'from-[#5E7D9E] to-[#435F7E]',
+      colorScale: ['#EDF3F9', '#8AA9C9', '#324C69'],
+      pastelBg: '#D0DFEE',
+      border: '#BCCEE0',
+      text: '#192735'
+    }
+  },
+  large_families_share: {
+    titlePl: 'Udział rodzin wielodzietnych',
+    titleEn: 'Share of large families',
+    unitPl: '%',
+    category: 'Demografia',
+    descriptionPl:
+      'Odsetek rodzin z trojgiem lub więcej dzieci na utrzymaniu do 24 lat w ogólnej liczbie rodzin z dziećmi (NSP).',
+    iconName: 'users',
+    theme: {
+      accent: '#8C8855',
+      chartColor: '#8C8855',
+      chartSecondary: '#E5E3CE',
+      badgeBg: 'bg-[#E5E3CE] text-[#282715] border-[#D5D3B8]',
+      badgeText: 'text-[#282715]',
+      cardBorder: 'border-[#D5D3B8] hover:border-[#8C8855]',
+      gradient: 'from-[#8C8855] to-[#6E6A3B]',
+      colorScale: ['#F6F5ED', '#B3B083', '#524E25'],
+      pastelBg: '#E5E3CE',
+      border: '#D5D3B8',
+      text: '#282715'
+    }
+  },
+  municipal_budget_expenditures: {
+    titlePl: 'Wydatki budżetów gmin per capita',
+    titleEn: 'Total municipal budget expenditures',
+    unitPl: 'zł/mieszkańca',
+    category: 'Finanse',
+    descriptionPl:
+      'Wydatki budżetowe gmin i miast na prawach powiatu w przeliczeniu na 1 mieszkańca. Obrazuje skalę nakładów lokalnych.',
+    iconName: 'banknote',
+    theme: {
+      accent: '#A89251',
+      chartColor: '#A89251',
+      chartSecondary: '#ECE5CE',
+      badgeBg: 'bg-[#ECE5CE] text-[#2F2712] border-[#DCD3B5]',
+      badgeText: 'text-[#2F2712]',
+      cardBorder: 'border-[#DCD3B5] hover:border-[#A89251]',
+      gradient: 'from-[#A89251] to-[#867236]',
+      colorScale: ['#F7F4EA', '#C8B57B', '#675522'],
+      pastelBg: '#ECE5CE',
+      border: '#DCD3B5',
+      text: '#2F2712'
+    }
+  },
+  museum_availability: {
+    titlePl: 'Dostępność muzeów i instytucji',
+    titleEn: 'Museum availability',
+    unitPl: 'osób/muzeum',
+    category: 'Kultura',
+    descriptionPl:
+      'Liczba mieszkańców przypadająca na jedno muzeum lub oddział muzealny. Miernik nasycenia ofertą dziedzictwa kultury.',
+    iconName: 'activity',
+    theme: {
+      accent: '#9E7464',
+      chartColor: '#9E7464',
+      chartSecondary: '#ECD8D0',
+      badgeBg: 'bg-[#ECD8D0] text-[#331E18] border-[#DEC5BC]',
+      badgeText: 'text-[#331E18]',
+      cardBorder: 'border-[#DEC5BC] hover:border-[#9E7464]',
+      gradient: 'from-[#9E7464] to-[#7E5646]',
+      colorScale: ['#F8F0EC', '#C29B8C', '#613E30'],
+      pastelBg: '#ECD8D0',
+      border: '#DEC5BC',
+      text: '#331E18'
+    }
   }
 };
 
-const typedRawData = rawData as unknown as RawResearchData;
+let dynamicRawData: RawResearchData = { ...(rawData as unknown as RawResearchData) };
+
+if (typeof window !== 'undefined') {
+  try {
+    const cached = localStorage.getItem('hubmi_cached_indicators_v2');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && typeof parsed === 'object') {
+        dynamicRawData = { ...dynamicRawData, ...parsed };
+      }
+    }
+  } catch (e) {
+    // Ignore cache parse error
+  }
+}
+
+type ResearchDataListener = () => void;
+const listeners = new Set<ResearchDataListener>();
+
+export function subscribeToResearchData(listener: ResearchDataListener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+let isFetchingLive = false;
+
+export async function fetchLiveResearchData(): Promise<boolean> {
+  if (isFetchingLive) return false;
+  isFetchingLive = true;
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const res = await fetch(`${apiUrl}/api/indicators`, {
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
+    });
+    if (!res.ok) {
+      isFetchingLive = false;
+      return false;
+    }
+    const json = await res.json();
+    if (json.success && json.data && typeof json.data === 'object' && Object.keys(json.data).length > 0) {
+      dynamicRawData = { ...dynamicRawData, ...json.data };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('hubmi_cached_indicators_v2', JSON.stringify(dynamicRawData));
+        } catch (e) {}
+      }
+      listeners.forEach((fn) => {
+        try {
+          fn();
+        } catch (e) {}
+      });
+      isFetchingLive = false;
+      return true;
+    }
+  } catch (err) {
+    // Fallback silently to current data
+  }
+  isFetchingLive = false;
+  return false;
+}
+
+// React hooks for automatic reactive updates
+export function useResearches() {
+  const [data, setData] = useState<ResearchInfo[]>(() => getAllResearches());
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setData(getAllResearches());
+
+    const unsubscribe = subscribeToResearchData(() => {
+      setData(getAllResearches());
+    });
+
+    setIsLoading(true);
+    fetchLiveResearchData().finally(() => {
+      setIsLoading(false);
+      setData(getAllResearches());
+    });
+
+    return unsubscribe;
+  }, []);
+
+  return { researches: data, isLoading, refresh: fetchLiveResearchData };
+}
+
+export function useResearch(id: string) {
+  const [research, setResearch] = useState<ResearchInfo | null>(() => getResearchById(id));
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setResearch(getResearchById(id));
+
+    const unsubscribe = subscribeToResearchData(() => {
+      setResearch(getResearchById(id));
+    });
+
+    setIsLoading(true);
+    fetchLiveResearchData().finally(() => {
+      setIsLoading(false);
+      setResearch(getResearchById(id));
+    });
+
+    return unsubscribe;
+  }, [id]);
+
+  return { research, isLoading };
+}
 
 // Pobranie listy wszystkich typów badań
 export function getAllResearches(): ResearchInfo[] {
-  const keys = Object.keys(typedRawData);
+  const keys = Object.keys(dynamicRawData);
 
   return keys.map((key) => {
-    const raw = typedRawData[key];
+    const raw = dynamicRawData[key];
     const cfg = RESEARCH_CONFIGS[key] || {
       titlePl: raw.name,
       titleEn: raw.name,
@@ -326,7 +634,7 @@ export function getResearchById(id: string): ResearchInfo | null {
 
 // Pobranie wartości dla danego roku dla wszystkich powiatów (do mapy i rankingu)
 export function getYearPowiatValues(researchId: string, year: string): PowiatYearValue[] {
-  const raw = typedRawData[researchId];
+  const raw = dynamicRawData[researchId];
   if (!raw) return [];
 
   const results: PowiatYearValue[] = [];
@@ -356,7 +664,7 @@ export function getYearPowiatValues(researchId: string, year: string): PowiatYea
 
 // Pobranie serii czasowej dla każdego powiatu (do wykresów)
 export function getAllPowiatTimeSeries(researchId: string): PowiatTimeSeries[] {
-  const raw = typedRawData[researchId];
+  const raw = dynamicRawData[researchId];
   if (!raw) return [];
 
   const years = raw.years;
@@ -415,7 +723,7 @@ export function getAllPowiatTimeSeries(researchId: string): PowiatTimeSeries[] {
 export function getRegionalAverageTimeSeries(
   researchId: string
 ): { year: string; value: number }[] {
-  const raw = typedRawData[researchId];
+  const raw = dynamicRawData[researchId];
   if (!raw) return [];
 
   return raw.years.map((year) => {

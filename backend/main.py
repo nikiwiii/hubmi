@@ -7,6 +7,7 @@ from ideas.router import router as ideas_router
 from matching.router import router as matching_router
 from chat.router import router as chat_router
 from innovations.router import router as innovations_router
+from indicators.router import router as indicators_router
 
 app = FastAPI(
     title="Hubmi API - Ideas, Community, RAG Matching & ROPS Kraków Chat",
@@ -29,6 +30,7 @@ app.include_router(ideas_router)
 app.include_router(matching_router)
 app.include_router(chat_router)
 app.include_router(innovations_router)
+app.include_router(indicators_router)
 
 @app.get("/", tags=["Status"])
 def root():

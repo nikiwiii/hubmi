@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { getAllResearches } from '../lib/researchData';
+import { useResearches } from '../lib/researchData';
 import {
   Users,
   Briefcase,
@@ -14,7 +14,7 @@ import {
 
 export default function KnowledgePage() {
   const router = useRouter();
-  const researches = getAllResearches();
+  const { researches, isLoading } = useResearches();
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
