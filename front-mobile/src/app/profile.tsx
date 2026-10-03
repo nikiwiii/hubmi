@@ -15,7 +15,7 @@ import {
 import { useRouter } from "expo-router";
 
 import { ThemedView } from "@/components/themed-view";
-import { CURRENT_USER, UserRole } from "@/constants/mock-data";
+import { CURRENT_USER } from "@/constants/mock-data";
 import { Spacing } from "@/constants/theme";
 
 export default function ProfileScreen() {
@@ -25,14 +25,6 @@ export default function ProfileScreen() {
   const [user, setUser] = useState(CURRENT_USER);
   const [isLargeFont, setIsLargeFont] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-
-  const handleRoleChange = (newRole: UserRole) => {
-    setUser({ ...user, role: newRole });
-    Alert.alert(
-      "Zmieniono rolę",
-      `Twoja rola to teraz: ${newRole.toUpperCase()}`,
-    );
-  };
 
   return (
     <ThemedView style={styles.container}>
@@ -62,50 +54,10 @@ export default function ProfileScreen() {
               <View style={styles.userInfo}>
                 <Text style={styles.userName}>{user.name}</Text>
                 <Text style={styles.userEmail}>{user.email}</Text>
-                <View style={styles.roleBadge}>
-                  <Text style={styles.roleBadgeText}>
-                    Rola:{" "}
-                    {user.role === "admin"
-                      ? "Administrator"
-                      : user.role === "creator"
-                        ? "Twórca"
-                        : "Tester"}
-                  </Text>
-                </View>
               </View>
             </View>
 
             <Text style={styles.userBio}>{user.bio}</Text>
-
-            {/* Role Switcher */}
-            <View style={styles.roleSwitchSection}>
-              <Text style={styles.subHeading}>Zmień aktywną rolę w Hubmi:</Text>
-              <View style={styles.roleButtonsRow}>
-                {(["creator", "tester", "admin"] as UserRole[]).map((r) => {
-                  const active = user.role === r;
-                  return (
-                    <Pressable
-                      key={r}
-                      style={[styles.roleBtn, active && styles.roleBtnActive]}
-                      onPress={() => handleRoleChange(r)}
-                    >
-                      <Text
-                        style={[
-                          styles.roleBtnText,
-                          active && styles.roleBtnTextActive,
-                        ]}
-                      >
-                        {r === "creator"
-                          ? "💡 Twórca"
-                          : r === "tester"
-                            ? "🧪 Tester"
-                            : "🛡️ Admin"}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
           </View>
 
           {/* Quick Stats Grid */}
@@ -281,7 +233,7 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     borderWidth: 1,
     borderColor: "rgba(0, 0, 0, 0.05)",
-    gap: 12,
+    gap: 24,
   },
   userTop: {
     flexDirection: "row",
@@ -313,57 +265,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#78716C",
   },
-  roleBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#EFE5C6",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  roleBadgeText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#44403C",
-  },
+
   userBio: {
     fontSize: 13,
     lineHeight: 18,
     color: "#57534E",
-  },
-  roleSwitchSection: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#F5F5F4",
-    paddingTop: 10,
-    gap: 8,
-  },
-  subHeading: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#78716C",
-    textTransform: "uppercase",
-  },
-  roleButtonsRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  roleBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: "center",
-    borderRadius: 10,
-    backgroundColor: "#F5F5F4",
-  },
-  roleBtnActive: {
-    backgroundColor: "#1C1917",
-  },
-  roleBtnText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#57534E",
-  },
-  roleBtnTextActive: {
-    color: "#FFFFFF",
   },
   statsGrid: {
     flexDirection: "row",

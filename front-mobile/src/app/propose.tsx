@@ -18,24 +18,6 @@ import { ThemedView } from "@/components/themed-view";
 import { CATEGORIES } from "@/constants/mock-data";
 import { Spacing } from "@/constants/theme";
 
-const SHAPES = [
-  { id: "donut", label: "Torus", symbol: "🍩" },
-  { id: "v-shape", label: "V-Kształt", symbol: "✌️" },
-  { id: "cloud", label: "Chmurka", symbol: "☁️" },
-  { id: "crescent", label: "Półksiężyc", symbol: "🌙" },
-  { id: "wave", label: "Fala", symbol: "🌊" },
-  { id: "sun", label: "Słońce", symbol: "☀️" },
-];
-
-const THEME_COLORS = [
-  { id: "yellow", label: "Ciepły Żółty", color: "#FEF08A" },
-  { id: "slate", label: "Grafit", color: "#CBD5E1" },
-  { id: "lavender", label: "Lawenda", color: "#E9D5FF" },
-  { id: "sage", label: "Szałwia", color: "#BBF7D0" },
-  { id: "lilac", label: "Liliowy", color: "#DDD6FE" },
-  { id: "pink", label: "Róż", color: "#FBCFE8" },
-];
-
 export default function ProposeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -46,8 +28,6 @@ export default function ProposeScreen() {
   const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
   const [targetAudience, setTargetAudience] = useState("");
-  const [selectedShape, setSelectedShape] = useState("donut");
-  const [selectedColor, setSelectedColor] = useState("yellow");
   const [benefit, setBenefit] = useState("");
   const [benefitsList, setBenefitsList] = useState<string[]>([
     "Oszczędność czasu i budżetu",
@@ -120,7 +100,7 @@ export default function ProposeScreen() {
             </View>
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Chwytliwy podtytuł</Text>
+              <Text style={styles.label}>Podtytuł</Text>
               <TextInput
                 style={styles.input}
                 placeholder="np. Wypożyczalnia sprzętu i wsparcie w ogrodzie"
@@ -236,58 +216,6 @@ export default function ProposeScreen() {
                   </Pressable>
                 </View>
               ))}
-            </View>
-          </View>
-
-          {/* Section: Visual Style */}
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionHeader}>4. Styl wizualny karty</Text>
-
-            <Text style={styles.label}>Kształt geometryczny</Text>
-            <View style={styles.shapeGrid}>
-              {SHAPES.map((shape) => {
-                const active = selectedShape === shape.id;
-                return (
-                  <Pressable
-                    key={shape.id}
-                    style={[
-                      styles.shapeOption,
-                      active && styles.shapeOptionActive,
-                    ]}
-                    onPress={() => setSelectedShape(shape.id)}
-                  >
-                    <Text style={styles.shapeSymbol}>{shape.symbol}</Text>
-                    <Text
-                      style={[
-                        styles.shapeLabel,
-                        active && styles.shapeLabelActive,
-                      ]}
-                    >
-                      {shape.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <Text style={[styles.label, { marginTop: 12 }]}>
-              Motyw kolorystyczny
-            </Text>
-            <View style={styles.colorRow}>
-              {THEME_COLORS.map((tc) => {
-                const active = selectedColor === tc.id;
-                return (
-                  <Pressable
-                    key={tc.id}
-                    style={[
-                      styles.colorCircle,
-                      { backgroundColor: tc.color },
-                      active && styles.colorCircleActive,
-                    ]}
-                    onPress={() => setSelectedColor(tc.id)}
-                  />
-                );
-              })}
             </View>
           </View>
 
@@ -449,57 +377,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginLeft: 2,
   },
-  shapeGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  shapeOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: "#F5F5F4",
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  shapeOptionActive: {
-    borderColor: "#1C1917",
-    backgroundColor: "#FFFFFF",
-  },
-  shapeSymbol: {
-    fontSize: 15,
-  },
-  shapeLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#57534E",
-  },
-  shapeLabelActive: {
-    color: "#1C1917",
-    fontWeight: "700",
-  },
-  colorRow: {
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "center",
-  },
-  colorCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  colorCircleActive: {
-    borderColor: "#1C1917",
-    transform: [{ scale: 1.15 }],
-  },
   submitButton: {
     backgroundColor: "#1C1917",
-    borderRadius: 16,
+    borderRadius: 9999,
     paddingVertical: 14,
     alignItems: "center",
     marginTop: 6,
