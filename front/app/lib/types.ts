@@ -78,7 +78,6 @@ export type ScreenId =
   | "auth"
   | "discover"
   | "propose"
-  | "browse"
   | "chat"
   | "admin"
   | "dashboard"

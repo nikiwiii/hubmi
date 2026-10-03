@@ -30,6 +30,7 @@ import {
   Award,
   Sparkles
 } from 'lucide-react';
+import { CustomSelect, SelectOption } from '../shared/CustomSelect';
 
 interface PowiatLineChartProps {
   research: ResearchInfo;
@@ -73,6 +74,25 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
     if (!comparePowiatId) return null;
     return allSeries.find((s) => s.powiatId === comparePowiatId) || null;
   }, [comparePowiatId, allSeries]);
+
+  const mainPowiatOptions: SelectOption[] = useMemo(() => {
+    return allSeries.map((s) => ({
+      value: s.powiatId,
+      label: `${s.powiatName} (${s.endValue} ${research.unit})`,
+    }));
+  }, [allSeries, research.unit]);
+
+  const comparePowiatOptions: SelectOption[] = useMemo(() => {
+    return [
+      { value: 'none', label: '+ Porównaj z innym powiatem' },
+      ...allSeries
+        .filter((s) => s.powiatId !== activeSeries?.powiatId)
+        .map((s) => ({
+          value: s.powiatId,
+          label: `Porównaj: ${s.powiatName}`,
+        })),
+    ];
+  }, [allSeries, activeSeries?.powiatId]);
 
   // Formatowanie danych do Recharts
   const chartData = useMemo(() => {
@@ -151,40 +171,20 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
 
         {/* Selektory powiatu */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Wybór głównego powiatu */}
-          <div className="relative">
-            <select
+          {activeSeries && (
+            <CustomSelect
               value={activeSeries.powiatId}
-              onChange={(e) => onSelectPowiat(e.target.value)}
-              className="bg-stone-50 border border-stone-200 text-stone-900 text-xs font-bold rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-stone-900 cursor-pointer shadow-2xs"
-            >
-              {allSeries.map((s) => (
-                <option key={s.powiatId} value={s.powiatId}>
-                  {s.powiatName} ({s.endValue} {research.unit})
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-4 h-4 text-stone-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+              onChange={onSelectPowiat}
+              options={mainPowiatOptions}
+              labelPrefix="Powiat:"
+            />
+          )}
 
-          {/* Opcja porównania z drugim powiatem */}
-          <div className="relative">
-            <select
-              value={comparePowiatId || ''}
-              onChange={(e) => setComparePowiatId(e.target.value || null)}
-              className="bg-white border border-stone-200 text-stone-700 text-xs font-medium rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-stone-900 cursor-pointer shadow-2xs"
-            >
-              <option value="">+ Porównaj z innym powiatem</option>
-              {allSeries
-                .filter((s) => s.powiatId !== activeSeries.powiatId)
-                .map((s) => (
-                  <option key={s.powiatId} value={s.powiatId}>
-                    Porównaj z: {s.powiatName}
-                  </option>
-                ))}
-            </select>
-            <ChevronDown className="w-4 h-4 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <CustomSelect
+            value={comparePowiatId || 'none'}
+            onChange={(val) => setComparePowiatId(val === 'none' ? null : val)}
+            options={comparePowiatOptions}
+          />
         </div>
       </div>
 

@@ -22,7 +22,7 @@ export const IdeaMockupVisualizer: React.FC<IdeaMockupVisualizerProps> = ({
   keyBenefits,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-[#FAF9F5] rounded-4xl border border-black/5">
+    <div className="flex flex-col items-center justify-center p-6 bg-[#FAF9F5] rounded-2xl border border-black/5">
       {/* Phone Screen Mockup Preview */}
       <div className="relative w-full max-w-70 aspect-9/18 bg-stone-900 rounded-[42px] p-2.5 shadow-xl border border-stone-800">
         {/* Dynamic Island */}

@@ -4,20 +4,21 @@ import {
   MatchResponse,
   BackendConversation,
   BackendMessage,
-  getCategoryThemeAndShape
-} from './types';
+  getCategoryThemeAndShape,
+} from "./types";
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-const TOKEN_KEY = 'hubmi_jwt_token_v1';
+const TOKEN_KEY = "hubmi_jwt_token_v1";
 
 export function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   return localStorage.getItem(TOKEN_KEY);
 }
 
 export function setAuthToken(token: string | null): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   if (token) {
     localStorage.setItem(TOKEN_KEY, token);
   } else {
@@ -27,12 +28,12 @@ export function setAuthToken(token: string | null): void {
 
 function getHeaders(includeAuth = true): Record<string, string> {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (includeAuth) {
     const token = getAuthToken();
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
   }
   return headers;
@@ -44,20 +45,23 @@ function getHeaders(includeAuth = true): Record<string, string> {
  */
 async function apiFetch(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   const res = await fetch(url, options);
 
   const isAuthEndpoint =
-    url.includes('/api/login/user') ||
-    url.includes('/api/login/admin') ||
-    url.includes('/api/login/register');
+    url.includes("/api/login/user") ||
+    url.includes("/api/login/admin") ||
+    url.includes("/api/login/register");
 
   if (res.status === 401 && !isAuthEndpoint) {
     // Token wygasł lub jest nieprawidłowy w zapytaniach wymagających autoryzacji
     setAuthToken(null);
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-      window.location.href = '/auth';
+    if (
+      typeof window !== "undefined" &&
+      !window.location.pathname.startsWith("/auth")
+    ) {
+      window.location.href = "/auth";
     }
   }
 
@@ -84,16 +88,19 @@ export interface LoginResponse {
   email?: string;
 }
 
-export async function loginUser(email: string, password: string): Promise<User> {
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<User> {
   const res = await apiFetch(`${API_BASE}/api/login/user`, {
-    method: 'POST',
+    method: "POST",
     headers: getHeaders(false),
     body: JSON.stringify({ email, password }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Błąd logowania użytkownika.');
+    throw new Error(err.detail || "Błąd logowania użytkownika.");
   }
 
   const data: LoginResponse = await res.json();
@@ -101,31 +108,41 @@ export async function loginUser(email: string, password: string): Promise<User> 
 
   const userId = data.user?.id || data.user_id || `user-${Date.now()}`;
   const userEmail = data.user?.email || data.email || email;
-  const userName = data.user?.full_name || data.name || data.full_name || userEmail.split('@')[0];
+  const userName =
+    data.user?.full_name ||
+    data.name ||
+    data.full_name ||
+    userEmail.split("@")[0];
   const userRole = data.user?.role || data.role;
-  const isAdmin = userRole === 'admin' || userEmail.toLowerCase().includes('admin');
+  const isAdmin =
+    userRole === "admin" || userEmail.toLowerCase().includes("admin");
 
   return {
     id: userId,
     email: userEmail,
     name: userName,
-    role: isAdmin ? 'admin' : 'creator',
-    avatarBg: isAdmin ? '#F5E85A' : '#A4B3F6',
-    createdAt: data.user?.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
-    status: 'active',
+    role: isAdmin ? "admin" : "creator",
+    avatarBg: isAdmin ? "#F5E85A" : "#A4B3F6",
+    createdAt:
+      data.user?.created_at?.split("T")[0] ||
+      new Date().toISOString().split("T")[0],
+    status: "active",
   };
 }
 
-export async function loginAdmin(email: string, password: string): Promise<User> {
+export async function loginAdmin(
+  email: string,
+  password: string,
+): Promise<User> {
   const res = await apiFetch(`${API_BASE}/api/login/admin`, {
-    method: 'POST',
+    method: "POST",
     headers: getHeaders(false),
     body: JSON.stringify({ email, password }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Błąd logowania administratora.');
+    throw new Error(err.detail || "Błąd logowania administratora.");
   }
 
   const data: LoginResponse = await res.json();
@@ -133,33 +150,44 @@ export async function loginAdmin(email: string, password: string): Promise<User>
 
   const userId = data.user?.id || data.user_id || `admin-${Date.now()}`;
   const userEmail = data.user?.email || data.email || email;
-  const userName = data.user?.full_name || data.name || data.full_name || 'Główny Administrator';
+  const userName =
+    data.user?.full_name ||
+    data.name ||
+    data.full_name ||
+    "Główny Administrator";
 
   return {
     id: userId,
     email: userEmail,
     name: userName,
-    role: 'admin',
-    avatarBg: '#F5E85A',
-    createdAt: data.user?.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
-    status: 'active',
+    role: "admin",
+    avatarBg: "#F5E85A",
+    createdAt:
+      data.user?.created_at?.split("T")[0] ||
+      new Date().toISOString().split("T")[0],
+    status: "active",
   };
 }
 
-export async function registerUser(email: string, password: string, name: string, role: string = 'user'): Promise<User> {
+export async function registerUser(
+  email: string,
+  password: string,
+  name: string,
+  role: string = "user",
+): Promise<User> {
   const res = await apiFetch(`${API_BASE}/api/login/register`, {
-    method: 'POST',
+    method: "POST",
     headers: getHeaders(false),
     body: JSON.stringify({ email, password, full_name: name, role }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Błąd rejestracji konta.');
+    throw new Error(err.detail || "Błąd rejestracji konta.");
   }
 
   // After registration, log the user in to get JWT token
-  if (role === 'admin') {
+  if (role === "admin") {
     return loginAdmin(email, password);
   }
   return loginUser(email, password);
@@ -171,23 +199,24 @@ export async function fetchCurrentProfile(): Promise<User | null> {
 
   try {
     const res = await apiFetch(`${API_BASE}/api/login/me`, {
-      method: 'GET',
+      method: "GET",
       headers: getHeaders(true),
     });
 
     if (!res.ok) return null;
 
     const data = await res.json();
-    const userRole = data.role === 'admin' ? 'admin' : 'creator';
-    const userName = data.full_name || data.name || data.email?.split('@')[0] || 'Użytkownik';
+    const userRole = data.role === "admin" ? "admin" : "creator";
+    const userName =
+      data.full_name || data.name || data.email?.split("@")[0] || "Użytkownik";
     return {
       id: data.id,
       email: data.email,
       name: userName,
       role: userRole,
-      avatarBg: userRole === 'admin' ? '#F5E85A' : '#A4B3F6',
-      createdAt: data.created_at?.split('T')[0] || '2026-03-01',
-      status: 'active',
+      avatarBg: userRole === "admin" ? "#F5E85A" : "#A4B3F6",
+      createdAt: data.created_at?.split("T")[0] || "2026-03-01",
+      status: "active",
     };
   } catch {
     return null;
@@ -212,40 +241,51 @@ export interface BackendIdea {
 }
 
 export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
-  const { theme, shape } = getCategoryThemeAndShape(b.category || 'Społeczność');
+  const { theme, shape } = getCategoryThemeAndShape(
+    b.category || "Społeczność",
+  );
   return {
     id: b.id,
     title: b.title,
-    subtitle: b.category ? `Kategoria: ${b.category}` : 'Innowacja społeczna',
+    subtitle: b.category ? `Kategoria: ${b.category}` : "Innowacja społeczna",
     authorId: b.user_id,
-    authorName: b.author_name || 'Użytkownik Hubmi',
+    authorName: b.author_name || "Użytkownik Hubmi",
     authorEmail: `${b.user_id}@hubmi.pl`,
-    category: b.category || 'Społeczność',
-    summary: b.description.slice(0, 140) + (b.description.length > 140 ? '...' : ''),
+    category: b.category || "Społeczność",
+    summary:
+      b.description.slice(0, 140) + (b.description.length > 140 ? "..." : ""),
     description: b.description,
-    targetAudience: 'Mieszkańcy i społeczność lokalna',
-    keyBenefits: ['Wsparcie ekspertów ROPS', 'Możliwość dofinansowania', 'Otwarte testy prototypu'],
+    targetAudience: "Mieszkańcy i społeczność lokalna",
+    keyBenefits: [
+      "Wsparcie ekspertów ROPS",
+      "Możliwość dofinansowania",
+      "Otwarte testy prototypu",
+    ],
     likes: b.likes_count || 0,
     dislikes: b.dislikes_count || 0,
-    userVote: b.my_reactions?.includes('like') ? 'like' : (b.my_reactions?.includes('dislike') ? 'dislike' : null),
+    userVote: b.my_reactions?.includes("like")
+      ? "like"
+      : b.my_reactions?.includes("dislike")
+        ? "dislike"
+        : null,
     testersCount: b.volunteers_count || 0,
-    testersList: b.my_reactions?.includes('volunteer') ? ['current_user'] : [],
+    testersList: b.my_reactions?.includes("volunteer") ? ["current_user"] : [],
     colorTheme: theme,
     geometricShape: shape,
-    status: 'active',
-    createdAt: b.created_at ? b.created_at.split('T')[0] : '2026-03-01',
+    status: "active",
+    createdAt: b.created_at ? b.created_at.split("T")[0] : "2026-03-01",
     commentsCount: 0,
   };
 }
 
 export async function fetchIdeasFromBackend(): Promise<Idea[]> {
   const res = await apiFetch(`${API_BASE}/api/ideas/`, {
-    method: 'GET',
+    method: "GET",
     headers: getHeaders(true),
   });
 
   if (!res.ok) {
-    throw new Error('Failed to load ideas from backend');
+    throw new Error("Failed to load ideas from backend");
   }
 
   const data: BackendIdea[] = await res.json();
@@ -258,14 +298,14 @@ export async function createIdeaOnBackend(data: {
   category?: string;
 }): Promise<Idea> {
   const res = await apiFetch(`${API_BASE}/api/ideas/`, {
-    method: 'POST',
+    method: "POST",
     headers: getHeaders(true),
     body: JSON.stringify(data),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Nie udało się dodać pomysłu.');
+    throw new Error(err.detail || "Nie udało się dodać pomysłu.");
   }
 
   const created: BackendIdea = await res.json();
@@ -274,29 +314,34 @@ export async function createIdeaOnBackend(data: {
 
 export async function deleteIdeaOnBackend(ideaId: string): Promise<void> {
   const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}`, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: getHeaders(true),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Nie udało się usunąć pomysłu.');
+    throw new Error(err.detail || "Nie udało się usunąć pomysłu.");
   }
 }
 
 export async function toggleIdeaReaction(
   ideaId: string,
-  reactionType: 'like' | 'volunteer' | 'dislike'
-): Promise<{ likes: number; volunteers: number; dislikes: number; active: boolean }> {
+  reactionType: "like" | "volunteer" | "dislike",
+): Promise<{
+  likes: number;
+  volunteers: number;
+  dislikes: number;
+  active: boolean;
+}> {
   const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/react`, {
-    method: 'POST',
+    method: "POST",
     headers: getHeaders(true),
     body: JSON.stringify({ reaction_type: reactionType }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Nie udało się zareagować na pomysł.');
+    throw new Error(err.detail || "Nie udało się zareagować na pomysł.");
   }
 
   const data = await res.json();
@@ -313,10 +358,10 @@ export async function toggleIdeaReaction(
 // ==========================================
 export async function sendMatchingChat(
   message: string,
-  history: Array<{ role: 'user' | 'assistant'; content: string }> = []
+  history: Array<{ role: "user" | "assistant"; content: string }> = [],
 ): Promise<MatchResponse> {
   const res = await apiFetch(`${API_BASE}/api/matching/chat`, {
-    method: 'POST',
+    method: "POST",
     headers: getHeaders(false),
     body: JSON.stringify({
       message,
@@ -326,7 +371,7 @@ export async function sendMatchingChat(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Błąd zapytania do chatbota innowacji.');
+    throw new Error(err.detail || "Błąd zapytania do chatbota innowacji.");
   }
 
   return await res.json();
@@ -334,12 +379,12 @@ export async function sendMatchingChat(
 
 export async function fetchInnovations(): Promise<any[]> {
   const res = await apiFetch(`${API_BASE}/api/matching/innovations`, {
-    method: 'GET',
+    method: "GET",
     headers: getHeaders(false),
   });
 
   if (!res.ok) {
-    throw new Error('Błąd pobierania innowacji.');
+    throw new Error("Błąd pobierania innowacji.");
   }
 
   return await res.json();
@@ -355,43 +400,50 @@ export async function startExpertConversation(data: {
   initial_message?: string;
 }): Promise<BackendConversation> {
   const res = await apiFetch(`${API_BASE}/api/chat/conversations`, {
-    method: 'POST',
+    method: "POST",
     headers: getHeaders(true),
     body: JSON.stringify(data),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Nie udało się otworzyć czatu z ekspertem.');
+    throw new Error(err.detail || "Nie udało się otworzyć czatu z ekspertem.");
   }
 
   return await res.json();
 }
 
-export async function fetchConversations(statusFilter?: string): Promise<BackendConversation[]> {
+export async function fetchConversations(
+  statusFilter?: string,
+): Promise<BackendConversation[]> {
   const url = new URL(`${API_BASE}/api/chat/conversations`);
-  if (statusFilter) url.searchParams.set('status', statusFilter);
+  if (statusFilter) url.searchParams.set("status", statusFilter);
 
   const res = await apiFetch(url.toString(), {
-    method: 'GET',
+    method: "GET",
     headers: getHeaders(true),
   });
 
   if (!res.ok) {
-    throw new Error('Błąd pobierania listy rozmów.');
+    throw new Error("Błąd pobierania listy rozmów.");
   }
 
   return await res.json();
 }
 
-export async function fetchConversationDetails(conversationId: string): Promise<BackendConversation> {
-  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}`, {
-    method: 'GET',
-    headers: getHeaders(true),
-  });
+export async function fetchConversationDetails(
+  conversationId: string,
+): Promise<BackendConversation> {
+  const res = await apiFetch(
+    `${API_BASE}/api/chat/conversations/${conversationId}`,
+    {
+      method: "GET",
+      headers: getHeaders(true),
+    },
+  );
 
   if (!res.ok) {
-    throw new Error('Błąd pobierania szczegółów rozmowy.');
+    throw new Error("Błąd pobierania szczegółów rozmowy.");
   }
 
   return await res.json();
@@ -400,24 +452,26 @@ export async function fetchConversationDetails(conversationId: string): Promise<
 export async function pollConversationMessages(
   conversationId: string,
   afterId?: string,
-  since?: string
+  since?: string,
 ): Promise<{
   messages: BackendMessage[];
   last_polled_at: string;
   new_messages_count: number;
   assigned_admin_name?: string;
 }> {
-  const url = new URL(`${API_BASE}/api/chat/conversations/${conversationId}/messages`);
-  if (afterId) url.searchParams.set('after_id', afterId);
-  if (since) url.searchParams.set('since', since);
+  const url = new URL(
+    `${API_BASE}/api/chat/conversations/${conversationId}/messages`,
+  );
+  if (afterId) url.searchParams.set("after_id", afterId);
+  if (since) url.searchParams.set("since", since);
 
   const res = await apiFetch(url.toString(), {
-    method: 'GET',
+    method: "GET",
     headers: getHeaders(true),
   });
 
   if (!res.ok) {
-    throw new Error('Błąd odpytywania wiadomości.');
+    throw new Error("Błąd odpytywania wiadomości.");
   }
 
   return await res.json();
@@ -425,17 +479,20 @@ export async function pollConversationMessages(
 
 export async function sendConversationMessage(
   conversationId: string,
-  content: string
+  content: string,
 ): Promise<BackendMessage> {
-  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}/messages`, {
-    method: 'POST',
-    headers: getHeaders(true),
-    body: JSON.stringify({ content }),
-  });
+  const res = await apiFetch(
+    `${API_BASE}/api/chat/conversations/${conversationId}/messages`,
+    {
+      method: "POST",
+      headers: getHeaders(true),
+      body: JSON.stringify({ content }),
+    },
+  );
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Błąd wysyłania wiadomości.');
+    throw new Error(err.detail || "Błąd wysyłania wiadomości.");
   }
 
   return await res.json();
@@ -443,18 +500,22 @@ export async function sendConversationMessage(
 
 export async function updateConversationStatus(
   conversationId: string,
-  status: 'open' | 'in_progress' | 'closed'
+  status: "open" | "in_progress" | "closed",
 ): Promise<BackendConversation> {
-  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}/status`, {
-    method: 'PATCH',
-    headers: getHeaders(true),
-    body: JSON.stringify({ status }),
-  });
+  const res = await apiFetch(
+    `${API_BASE}/api/chat/conversations/${conversationId}/status`,
+    {
+      method: "PATCH",
+      headers: getHeaders(true),
+      body: JSON.stringify({ status }),
+    },
+  );
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Błąd zmiany statusu rozmowy.');
+    throw new Error(err.detail || "Błąd zmiany statusu rozmowy.");
   }
 
   return await res.json();
 }
+
