@@ -4,25 +4,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from supabase_client import is_supabase_connected, SUPABASE_URL
 from login.router import router as login_router
 from ideas.router import router as ideas_router
+from matching.router import router as matching_router
 
 app = FastAPI(
-    title="Hubmi API - Ideas & Community",
-    description="Backend API z FastAPI i Supabase do obsługi profili, logowania użytkowników, logowania adminów oraz postów/pomysłów z reakcjami (like, volunteer, dislike).",
-    version="1.0.0"
+    title="Hubmi API - Ideas, Community & RAG Matching",
+    description="Backend API z FastAPI, Supabase oraz Groq API RAG do wyszukiwania innowacji (vector search), logowania użytkowników, logowania adminów, profili oraz postów.",
+    version="1.1.0"
 )
 
-# CORS Middleware aby frontend (Next.js / inne) mógł bez problemu łączyć się z API
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # W produkcji można ograniczyć np. ["http://localhost:3000"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Podłączamy routery do aplikacji zgodnie z wymaganiami
+# Podłączamy routery do aplikacji
 app.include_router(login_router)
 app.include_router(ideas_router)
+app.include_router(matching_router)
 
 @app.get("/", tags=["Status"])
 def root():
