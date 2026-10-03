@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { sendMatchingChat } from '../../lib/api';
 import { MatchResponse } from '../../lib/types';
 import {
@@ -173,13 +175,61 @@ export const RagChatSection: React.FC = () => {
           </div>
 
           {/* AI Response Card */}
-          <div className="p-5 sm:p-6 bg-[#FAF9F5] border border-stone-200 rounded-2xl space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-stone-800">
-              <Sparkles className="w-4 h-4 text-stone-700" />
-              <span>Odpowiedź Asystenta (Groq API):</span>
+          <div className="p-6 sm:p-7 bg-[#FAF9F5] border border-stone-200/90 rounded-2xl shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-stone-200/70 pb-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-stone-900">
+                <div className="w-5 h-5 rounded-md bg-[#EFE5C6] flex items-center justify-center text-stone-900">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <span>Rekomendacja Doradcy Społecznego ROPS</span>
+              </div>
+              <span className="text-[11px] font-medium text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-md">
+                Groq AI • RAG
+              </span>
             </div>
-            <div className="text-sm text-stone-800 leading-relaxed whitespace-pre-line font-normal">
-              {result.answer}
+
+            <div className="text-sm text-stone-800 leading-relaxed font-normal">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({ ...props }) => <h3 className="text-base font-bold text-stone-900 mt-5 mb-2.5 first:mt-0" {...props} />,
+                  h2: ({ ...props }) => <h3 className="text-base font-bold text-stone-900 mt-5 mb-2.5 first:mt-0" {...props} />,
+                  h3: ({ ...props }) => <h4 className="text-sm font-bold text-stone-900 mt-4 mb-2 first:mt-0 flex items-center gap-1.5" {...props} />,
+                  h4: ({ ...props }) => <h5 className="text-xs font-bold text-stone-900 mt-3 mb-1.5 uppercase tracking-wide" {...props} />,
+                  p: ({ ...props }) => <p className="mb-3 leading-relaxed text-stone-800 last:mb-0" {...props} />,
+                  ul: ({ ...props }) => <ul className="list-disc list-outside pl-5 space-y-2 my-3 text-stone-800" {...props} />,
+                  ol: ({ ...props }) => <ol className="list-decimal list-outside pl-5 space-y-2 my-3 text-stone-800" {...props} />,
+                  li: ({ ...props }) => <li className="leading-relaxed pl-1" {...props} />,
+                  strong: ({ ...props }) => <strong className="font-semibold text-stone-950" {...props} />,
+                  em: ({ ...props }) => <em className="italic text-stone-800" {...props} />,
+                  a: ({ href, children, ...props }) => (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-stone-900 font-semibold underline underline-offset-2 decoration-stone-400 hover:decoration-stone-900 hover:text-stone-950 inline-flex items-center gap-1 transition-colors"
+                      {...props}
+                    >
+                      <span>{children}</span>
+                      <ExternalLink className="w-3 h-3 inline-block shrink-0" />
+                    </a>
+                  ),
+                  blockquote: ({ ...props }) => (
+                    <blockquote className="border-l-3 border-[#D4C39E] bg-[#F5EEDC]/40 pl-4 py-2 italic text-stone-700 my-3 rounded-r-xl" {...props} />
+                  ),
+                  table: ({ ...props }) => (
+                    <div className="overflow-x-auto my-4 border border-stone-200 rounded-xl bg-white shadow-2xs">
+                      <table className="w-full text-xs text-left border-collapse" {...props} />
+                    </div>
+                  ),
+                  thead: ({ ...props }) => <thead className="bg-stone-100/90 text-stone-900 font-semibold border-b border-stone-200" {...props} />,
+                  th: ({ ...props }) => <th className="px-3.5 py-2.5 border-r border-stone-200 last:border-r-0" {...props} />,
+                  td: ({ ...props }) => <td className="px-3.5 py-2.5 border-b border-stone-100 border-r border-stone-100 last:border-r-0" {...props} />,
+                  code: ({ ...props }) => <code className="bg-stone-200/70 text-stone-900 px-1.5 py-0.5 rounded text-xs font-mono font-medium" {...props} />,
+                }}
+              >
+                {result.answer}
+              </ReactMarkdown>
             </div>
           </div>
 
