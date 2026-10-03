@@ -13,6 +13,7 @@ import {
   Type,
   BookOpen,
   Search,
+  Handshake,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -40,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const detectedScreen: ScreenId = (() => {
     if (!pathname) return currentScreen || "discover";
     if (pathname.startsWith("/matching")) return "matching";
+    if (pathname.startsWith("/middleman")) return "middleman";
     if (pathname.startsWith("/knowledge")) return "knowledge";
     if (pathname.startsWith("/propose")) return "propose";
     if (pathname.startsWith("/chat")) return "chat";
@@ -62,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-[#F7F6F1]/90 backdrop-blur-md border-b border-black/5">
+      <header className="print:hidden sticky top-0 z-40 bg-[#F7F6F1]/90 backdrop-blur-md border-b border-black/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between">
           {/* Brand Logo */}
           <div
@@ -96,6 +98,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
             >
               Problemmatching
+            </button>
+            <button
+              onClick={() => navigateTo("middleman")}
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeScreen === "middleman"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-600 hover:text-stone-900"
+                }`}
+            >
+              Middleman
             </button>
             <button
               onClick={() => navigateTo("knowledge")}
@@ -196,7 +207,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#F7F6F1]/95 backdrop-blur-md border-t border-stone-200 py-1.5 px-3">
+      <div className="print:hidden md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#F7F6F1]/95 backdrop-blur-md border-t border-stone-200 py-1.5 px-3">
         <div className="max-w-md mx-auto flex items-center justify-around">
           <button
             onClick={() => navigateTo("discover")}
@@ -218,6 +229,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Search className="w-5 h-5" />
             <span className="text-[10px]">Matching</span>
+          </button>
+
+          <button
+            onClick={() => navigateTo("middleman")}
+            className={`flex flex-col items-center gap-0.5 py-1 px-1.5 transition-all cursor-pointer ${activeScreen === "middleman"
+              ? "text-stone-900 font-bold"
+              : "text-stone-400"
+              }`}
+          >
+            <Handshake className="w-5 h-5" />
+            <span className="text-[10px]">Middleman</span>
           </button>
 
           <button

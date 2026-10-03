@@ -13,6 +13,7 @@ from matching.router import router as matching_router
 from chat.router import router as chat_router
 from innovations.router import router as innovations_router
 from indicators.router import router as indicators_router
+from middleman.router import router as middleman_router
 
 # Idea Creator is a self-contained app whose package is named `app`; it must stay importable standalone.
 sys.path.insert(0, str(Path(__file__).resolve().parent / "idea_creator"))
@@ -64,6 +65,7 @@ app.include_router(matching_router)
 app.include_router(chat_router)
 app.include_router(innovations_router)
 app.include_router(indicators_router)
+app.include_router(middleman_router)
 
 # Kreator pomysłów (asystent AI + publikacja): /api/idea-creator/assistant/*, /api/idea-creator/projects
 app.mount("/api/idea-creator", idea_creator_app)

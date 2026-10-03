@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sendMatchingChat } from '../lib/api';
@@ -24,7 +25,8 @@ import {
   ChevronUp,
   TrendingUp,
   Compass,
-  CheckCircle2
+  CheckCircle2,
+  Handshake
 } from 'lucide-react';
 
 interface ChatTurn {
@@ -325,17 +327,26 @@ export default function ProblemMatchingPage() {
                             <span>Źródło: ROPS Kraków (Katalog Innowacji Społecznych)</span>
                           </div>
 
-                          {turn.matchResponse.top_solution.url && (
-                            <a
-                              href={turn.matchResponse.top_solution.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-xl transition-all shadow-2xs"
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Link
+                              href={`/middleman?innovation=${encodeURIComponent(turn.matchResponse.top_solution.id)}`}
+                              className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-[#EFE5C6] hover:bg-[#E7DAC0] text-stone-900 text-xs font-semibold rounded-xl transition-all shadow-2xs"
                             >
-                              <span>Zobacz projekt źródłowy</span>
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                          )}
+                              <Handshake className="w-3.5 h-3.5" />
+                              <span>Dostosuj dla mojej instytucji</span>
+                            </Link>
+                            {turn.matchResponse.top_solution.url && (
+                              <a
+                                href={turn.matchResponse.top_solution.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-xl transition-all shadow-2xs"
+                              >
+                                <span>Zobacz projekt źródłowy</span>
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -432,17 +443,26 @@ export default function ProblemMatchingPage() {
                                   </span>
                                 </div>
                                 <p className="text-stone-600 leading-relaxed line-clamp-2">{alt.solution}</p>
-                                {alt.url && (
-                                  <a
-                                    href={alt.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-900 underline underline-offset-2 hover:text-stone-700"
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <Link
+                                    href={`/middleman?innovation=${encodeURIComponent(alt.id)}`}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#EFE5C6] hover:bg-[#E7DAC0] text-[11px] font-semibold text-stone-900 transition-colors"
                                   >
-                                    <span>Szczegóły projektu</span>
-                                    <ExternalLink className="w-3 h-3" />
-                                  </a>
-                                )}
+                                    <Handshake className="w-3 h-3" />
+                                    <span>Dostosuj dla mojej instytucji</span>
+                                  </Link>
+                                  {alt.url && (
+                                    <a
+                                      href={alt.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-900 underline underline-offset-2 hover:text-stone-700"
+                                    >
+                                      <span>Szczegóły projektu</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>

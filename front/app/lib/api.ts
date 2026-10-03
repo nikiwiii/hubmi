@@ -4,6 +4,10 @@ import {
   MatchResponse,
   BackendConversation,
   BackendMessage,
+  InnovationRecord,
+  InstitutionProfile,
+  ServiceCard,
+  ServiceCardResponse,
   getCategoryThemeAndShape,
 } from "./types";
 
@@ -447,6 +451,81 @@ export async function fetchInnovations(): Promise<any[]> {
   }
 
   return await res.json();
+}
+
+export async function searchInnovations(
+  search: string,
+  limit = 30,
+): Promise<InnovationRecord[]> {
+  const url = new URL(`${API_BASE}/api/innovations`);
+  if (search.trim()) url.searchParams.set("search", search.trim());
+  url.searchParams.set("limit", String(limit));
+  const res = await apiFetch(url.toString(), {
+    method: "GET",
+    headers: getHeaders(false),
+  });
+  if (!res.ok) {
+    throw new Error("Błąd pobierania innowacji.");
+  }
+  return await res.json();
+}
+
+export async function fetchInnovationById(
+  innovationId: string,
+): Promise<InnovationRecord> {
+  const res = await apiFetch(
+    `${API_BASE}/api/innovations/${encodeURIComponent(innovationId)}`,
+    { method: "GET", headers: getHeaders(false) },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(extractErrorMessage(err, "Nie znaleziono innowacji."));
+  }
+  return await res.json();
+}
+
+// ==========================================
+// 3b. MIDDLEMAN INNOWACJI API (/api/middleman)
+// ==========================================
+async function postMiddleman<T>(path: string, body: unknown): Promise<T> {
+  let res: Response;
+  try {
+    res = await apiFetch(`${API_BASE}/api/middleman/${path}`, {
+      method: "POST",
+      headers: getHeaders(false),
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new Error("Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.");
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      extractErrorMessage(err, "Asystent AI nie przygotował karty usługi. Spróbuj ponownie."),
+    );
+  }
+  return await res.json();
+}
+
+export function adaptInnovation(
+  innovationId: string,
+  profile: InstitutionProfile,
+): Promise<ServiceCardResponse> {
+  return postMiddleman("adapt", { innovation_id: innovationId, profile });
+}
+
+export function refineServiceCard(
+  innovationId: string,
+  profile: InstitutionProfile,
+  card: ServiceCard,
+  instruction: string,
+): Promise<ServiceCardResponse> {
+  return postMiddleman("refine", {
+    innovation_id: innovationId,
+    profile,
+    card,
+    instruction,
+  });
 }
 
 // ==========================================
