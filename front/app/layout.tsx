@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Ubuntu } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,8 +12,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const ubuntu = Ubuntu({
+  variable: "--font-ubuntu",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Hubmi – Platforma Pomysłów & Społeczność 40+",
+  title: "minno – Platforma Pomysłów & Społeczność 40+",
   description: "Minimalistyczna, profesjonalna przestrzeń do zgłaszania, opiniowania i testowania pomysłów.",
 };
 
@@ -27,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="pl"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${ubuntu.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#F4F4F0] text-stone-900">
         <Providers>{children}</Providers>

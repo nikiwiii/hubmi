@@ -144,9 +144,20 @@ export default function DiscoverIdeaDetailPage() {
             </p>
           </div>
 
-          <div className="shrink-0 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xs rounded-2xl border border-white/50">
-            <GeometricIllustration shape={shape} theme={theme} size={120} />
-          </div>
+          {currentIdea.visualMockupUrl ? (
+            <div className="shrink-0 w-full md:w-80 overflow-hidden rounded-2xl border border-white/50 bg-white/40">
+              {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
+              <img
+                src={currentIdea.visualMockupUrl}
+                alt={`Wizualizacja: ${currentIdea.title}`}
+                className="w-full aspect-[4/3] object-cover"
+              />
+            </div>
+          ) : (
+            <div className="shrink-0 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xs rounded-2xl border border-white/50">
+              <GeometricIllustration shape={shape} theme={theme} size={120} />
+            </div>
+          )}
         </div>
 
         {/* Action Bar */}

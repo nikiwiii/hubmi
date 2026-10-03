@@ -99,10 +99,10 @@ export default function DiscoverScreen() {
         <View style={styles.header}>
           <View style={styles.brandRow}>
             <View style={styles.logoBadge}>
-              <Text style={styles.logoText}>H</Text>
+              <Text style={styles.logoText}>m</Text>
             </View>
             <View>
-              <Text style={styles.brandTitle}>Hubmi</Text>
+              <Text style={styles.brandTitle}>minno</Text>
               <Text style={styles.brandSubtitle}>Społeczność & Innowacje</Text>
             </View>
           </View>

@@ -3,7 +3,6 @@ import logging
 import re
 import unicodedata
 from typing import List, Optional, Set, Tuple, Any
-import numpy as np
 
 logger = logging.getLogger("hubmi.embeddings")
 
@@ -62,20 +61,20 @@ def compute_embedding(text: str) -> List[float]:
     if model is not None:
         try:
             vec = model.encode(text, normalize_embeddings=True)
-            return vec.tolist()
+            return vec.tolist() if hasattr(vec, "tolist") else list(vec)
         except Exception as e:
             logger.error(f"Błąd podczas generowania embeddingu: {e}")
 
     # Fallback deterministyczny hash-vectorizer
     words = text.lower().split()
-    vec = np.zeros(384, dtype=float)
+    vec = [0.0] * 384
     for i, word in enumerate(words):
-        idx = hash(word) % 384
+        idx = abs(hash(word)) % 384
         vec[idx] += 1.0 / (1.0 + i * 0.1)
-    norm = np.linalg.norm(vec)
+    norm = math.sqrt(sum(x * x for x in vec))
     if norm > 0:
-        vec = vec / norm
-    return vec.tolist()
+        vec = [x / norm for x in vec]
+    return vec
 
 def cosine_similarity(v1: Any, v2: Any) -> float:
     """Oblicza podobieństwo cosinusowe pomiędzy dwoma wektorami."""
@@ -93,11 +92,10 @@ def cosine_similarity(v1: Any, v2: Any) -> float:
             return 0.0
     if not v1 or not v2 or len(v1) != len(v2):
         return 0.0
-    a = np.array(v1, dtype=float)
-    b = np.array(v2, dtype=float)
-    norm_a = np.linalg.norm(a)
-    norm_b = np.linalg.norm(b)
+    dot = sum(float(x) * float(y) for x, y in zip(v1, v2))
+    norm_a = math.sqrt(sum(float(x) * float(x) for x in v1))
+    norm_b = math.sqrt(sum(float(y) * float(y) for y in v2))
     if norm_a == 0.0 or norm_b == 0.0:
         return 0.0
-    dot = float(np.dot(a, b))
-    return max(0.0, min(1.0, dot))
+    similarity = dot / (norm_a * norm_b)
+    return max(0.0, min(1.0, float(similarity)))
