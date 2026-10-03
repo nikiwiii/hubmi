@@ -26,6 +26,7 @@ import {
   Filter,
   X
 } from 'lucide-react';
+import { CustomSelect, SelectOption } from '../shared/CustomSelect';
 
 interface PowiatChartsGridProps {
   research: ResearchInfo;
@@ -34,6 +35,14 @@ interface PowiatChartsGridProps {
 }
 
 type SortOption = 'rank' | 'alpha' | 'deltaAsc' | 'deltaDesc' | 'valDesc' | 'valAsc';
+
+const SORT_OPTIONS: SelectOption<SortOption>[] = [
+  { value: 'rank', label: 'Ranking (od najwyższej)' },
+  { value: 'valAsc', label: 'Wartość (od najniższej)' },
+  { value: 'deltaDesc', label: 'Największy wzrost (↑)' },
+  { value: 'deltaAsc', label: 'Największy spadek (↓)' },
+  { value: 'alpha', label: 'Nazwa powiatu (A-Z)' },
+];
 
 export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
   research,
@@ -145,17 +154,12 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <select
+            <CustomSelect<SortOption>
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="bg-stone-50 border border-stone-200 text-stone-800 text-xs font-semibold rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 cursor-pointer"
-            >
-              <option value="rank">Ranking (od najwyższej)</option>
-              <option value="valAsc">Wartość (od najniższej)</option>
-              <option value="deltaDesc">Największy wzrost (&uarr;)</option>
-              <option value="deltaAsc">Największy spadek (&darr;)</option>
-              <option value="alpha">Nazwa powiatu (A-Z)</option>
-            </select>
+              onChange={setSortBy}
+              options={SORT_OPTIONS}
+              labelPrefix="Sortuj:"
+            />
           </div>
         </div>
       </div>

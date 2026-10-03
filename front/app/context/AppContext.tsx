@@ -166,13 +166,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         category: newIdeaData.category
       });
       setIdeas((prev) => [created, ...prev]);
-      router.push(`/browse?id=${created.id}`);
+      router.push(`/discover/${created.id}`);
       return created;
     } catch (e) {
       console.warn('Backend create fallback to local:', e);
       const created = storeAddIdea(newIdeaData);
       setIdeas(getIdeas());
-      router.push(`/browse?id=${created.id}`);
+      router.push(`/discover/${created.id}`);
       return created;
     }
   };
@@ -198,7 +198,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleSelectIdea = (idea: Idea) => {
-    router.push(`/browse?id=${idea.id}`);
+    router.push(`/discover/${idea.id}`);
   };
 
   const handleOpenChatWithAuthor = (authorId: string) => {

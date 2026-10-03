@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { IdeaCard } from "../components/shared/IdeaCard";
-import { Search, Plus, X, Loader2 } from "lucide-react";
+import { CustomSelect, SelectOption } from "../components/shared/CustomSelect";
+import { Search, Plus, X, TrendingUp, Users, Clock } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 const CATEGORIES = [
@@ -15,9 +16,27 @@ const CATEGORIES = [
   "Praca",
 ];
 
+const SORT_OPTIONS: SelectOption<"popular" | "testers" | "newest">[] = [
+  {
+    value: "popular",
+    label: "Najpopularniejsze",
+    icon: <TrendingUp className="w-3.5 h-3.5" />,
+  },
+  {
+    value: "testers",
+    label: "Najwięcej testerów",
+    icon: <Users className="w-3.5 h-3.5" />,
+  },
+  {
+    value: "newest",
+    label: "Najnowsze",
+    icon: <Clock className="w-3.5 h-3.5" />,
+  },
+];
+
 function IdeaCardSkeleton() {
   return (
-    <div className="rounded-[28px] overflow-hidden bg-white border border-black/4 min-h-75 animate-pulse p-6 flex flex-col gap-4">
+    <div className="rounded-2xl overflow-hidden bg-white border border-black/4 min-h-75 animate-pulse p-6 flex flex-col gap-4">
       <div className="h-3 w-20 bg-stone-200 rounded-full" />
       <div className="h-6 w-3/4 bg-stone-200 rounded-xl" />
       <div className="h-3 w-1/2 bg-stone-100 rounded-full" />
@@ -33,8 +52,15 @@ function IdeaCardSkeleton() {
 }
 
 export default function DiscoverPage() {
-  const { ideas, currentUser, selectIdea, vote, toggleTesting, navigate, isLoadingIdeas } =
-    useApp();
+  const {
+    ideas,
+    currentUser,
+    selectIdea,
+    vote,
+    toggleTesting,
+    navigate,
+    isLoadingIdeas,
+  } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Wszystkie");
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "testers">(
@@ -132,15 +158,11 @@ export default function DiscoverPage() {
 
         {/* Sort Options */}
         <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
-          <select
+          <CustomSelect
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-2.5 py-1.5 bg-white border border-stone-200/80 rounded-xl text-xs font-medium text-stone-700 focus:outline-none cursor-pointer"
-          >
-            <option value="popular">Najpopularniejsze</option>
-            <option value="testers">Najwięcej testerów</option>
-            <option value="newest">Najnowsze</option>
-          </select>
+            onChange={setSortBy}
+            options={SORT_OPTIONS}
+          />
         </div>
       </div>
 
