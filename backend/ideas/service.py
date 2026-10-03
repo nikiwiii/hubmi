@@ -275,10 +275,57 @@ class IdeaService:
         )
 
     @classmethod
-    def add_feedback(cls, idea_id: str, data: FeedbackCreate, user_id: Optional[str], author_name: str) -> FeedbackResponse:
+    def _is_user_approved_tester(
+        cls,
+        idea_id: str,
+        user_id: Optional[str],
+        user_email: Optional[str],
+        user_role: Optional[str]
+    ) -> bool:
+        """
+        Sprawdza, czy użytkownik ma uprawnienia testera:
+        1. Administratorzy i eksperci ROPS – zawsze uprawnieni
+        2. Zaakceptowani testerzy z zatwierdzonym wnioskiem (status 'approved')
+        3. Użytkownicy na liście testersList powiązanej z pomysłem
+        """
+        if user_role in ("admin", "expert") or (user_email and "admin" in user_email.lower()):
+            return True
+
+        approved_apps = DatabaseRepository.get_tester_applications(idea_id=idea_id, status="approved")
+        for app in approved_apps:
+            if user_id and app.get("user_id") and str(app.get("user_id")) == str(user_id):
+                return True
+            if user_email and app.get("user_email") and str(app.get("user_email")).lower() == user_email.lower():
+                return True
+
+        idea = DatabaseRepository.get_idea_by_id(idea_id)
+        if idea and user_email:
+            testers_list = idea.get("testersList") or []
+            if any(t.lower() == user_email.lower() for t in testers_list):
+                return True
+
+        return False
+
+    @classmethod
+    def add_feedback(
+        cls,
+        idea_id: str,
+        data: FeedbackCreate,
+        user_id: Optional[str],
+        author_name: str,
+        user_email: Optional[str] = None,
+        user_role: Optional[str] = None
+    ) -> FeedbackResponse:
         idea = DatabaseRepository.get_idea_by_id(idea_id)
         if not idea:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pomysł nie istnieje.")
+
+        # Wymóg: tylko zaakceptowany tester lub administrator może wystawić ocenę i opinię
+        if not cls._is_user_approved_tester(idea_id, user_id, user_email, user_role):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Dodawanie recenzji i ocen użyteczności wymaga wcześniejszej akceptacji Twojego zgłoszenia jako testera przez administratora."
+            )
 
         feedback_data = {
             "idea_id": idea_id,
@@ -330,10 +377,30 @@ class IdeaService:
         )
 
     @classmethod
-    def add_comment(cls, idea_id: str, data: CommentCreate, user_id: Optional[str], author_name: str) -> CommentResponse:
+    def add_comment(
+        cls,
+        idea_id: str,
+        data: CommentCreate,
+        user_id: Optional[str],
+        author_name: str,
+        user_email: Optional[str] = None,
+        user_role: Optional[str] = None
+    ) -> CommentResponse:
         idea = DatabaseRepository.get_idea_by_id(idea_id)
         if not idea:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pomysł nie istnieje.")
+
+        # Wymóg: zaakceptowany tester, administrator lub autor projektu odpowiadający w dyskusji
+        is_tester_or_admin = cls._is_user_approved_tester(idea_id, user_id, user_email, user_role)
+        is_author = (user_id and str(idea.get("user_id")) == str(user_id)) or (
+            user_email and idea.get("author_email") and idea.get("author_email").lower() == user_email.lower()
+        )
+
+        if not (is_tester_or_admin or is_author):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Dodawanie komentarzy w wątku testowym wymaga wcześniejszej akceptacji Twojego zgłoszenia jako testera przez administratora."
+            )
 
         comment_data = {
             "idea_id": idea_id,
@@ -451,9 +518,12 @@ class IdeaService:
         cls,
         idea_id: Optional[str] = None,
         user_id: Optional[str] = None,
+        user_email: Optional[str] = None,
         status: Optional[str] = None
     ) -> List[TesterApplicationResponse]:
-        apps = DatabaseRepository.get_tester_applications(idea_id=idea_id, user_id=user_id, status=status)
+        apps = DatabaseRepository.get_tester_applications(
+            idea_id=idea_id, user_id=user_id, user_email=user_email, status=status
+        )
         return [
             TesterApplicationResponse(
                 id=str(a.get("id")),

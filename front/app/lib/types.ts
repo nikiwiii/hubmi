@@ -460,3 +460,63 @@ export interface TesterApplication {
   motivation?: string | null;
   created_at: string;
 }
+
+// ==========================================
+// KNOWLEDGE RAG TYPES (/api/indicators/rag)
+// ==========================================
+export interface KnowledgeRagDetectedPowiat {
+  id: string;
+  name: string;
+  display_name: string;
+  is_city: boolean;
+}
+
+export interface KnowledgeRagMatchedReport {
+  id: string;
+  title: string;
+  category: string;
+  unit: string;
+  description: string;
+  latest_year: string;
+  latest_value: number;
+  first_value: number;
+  delta: number;
+  region_avg: number;
+  rank: number;
+  total_powiats: number;
+  reason: string;
+  time_series: { year: string; value: number }[];
+}
+
+export interface KnowledgeRagChartData {
+  report_id: string;
+  report_title: string;
+  unit: string;
+  latest_year: string;
+  trend_series: { year: string; powiatValue: number; regionAvg: number }[];
+  comparison_bars: { powiatId: string; name: string; value: number }[];
+}
+
+export interface KnowledgeRagMatchedInnovation {
+  id: string;
+  title: string;
+  description: string;
+  addressed_problems?: string;
+  funding_info?: string;
+  url?: string | null;
+  score: number;
+}
+
+export interface KnowledgeRagResponse {
+  success: boolean;
+  query: string;
+  detected_powiat: KnowledgeRagDetectedPowiat;
+  detected_topics: string[];
+  ai_synthesis: string;
+  primary_report: KnowledgeRagMatchedReport | null;
+  matched_reports: KnowledgeRagMatchedReport[];
+  chart_data: KnowledgeRagChartData;
+  matched_innovations: KnowledgeRagMatchedInnovation[];
+  matched_expert?: MatchedExpert | null;
+}
+

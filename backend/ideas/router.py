@@ -151,37 +151,47 @@ def get_idea_testing_summary(idea_id: str):
 def submit_idea_feedback(
     idea_id: str,
     feedback_data: FeedbackCreate,
-    user_payload: Optional[dict] = Depends(get_optional_user_payload)
+    user_payload: dict = Depends(get_current_user_payload)
 ):
     """
-    Pozwala testerowi wystawić ocenę użyteczności (1-5 gwiazdek), wskazać mocne strony,
+    Pozwala zaakceptowanemu testerowi wystawić ocenę użyteczności (1-5 gwiazdek), wskazać mocne strony,
     bariery oraz zgłosić konkretne propozycje usprawnień dla twórców innowacji.
+    Wymaga uprzedniej akceptacji zgłoszenia testera przez administratora.
     """
-    user_id = user_payload.get("sub") if user_payload else None
-    author_name = user_payload.get("name", "Tester społeczny") if user_payload else "Anonimowy tester"
+    user_id = user_payload.get("sub")
+    author_name = user_payload.get("name") or user_payload.get("email", "Tester społeczny")
+    user_email = user_payload.get("email")
+    user_role = user_payload.get("role", "user")
     return IdeaService.add_feedback(
         idea_id=idea_id,
         data=feedback_data,
         user_id=user_id,
-        author_name=author_name
+        author_name=author_name,
+        user_email=user_email,
+        user_role=user_role
     )
 
 @router.post("/{idea_id}/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED, summary="Dodaj komentarz w wątku dyskusji o testach innowacji")
 def submit_idea_comment(
     idea_id: str,
     comment_data: CommentCreate,
-    user_payload: Optional[dict] = Depends(get_optional_user_payload)
+    user_payload: dict = Depends(get_current_user_payload)
 ):
     """
     Dodaje komentarz w otwartej dyskusji nad pomysłem / prototypem.
+    Wymaga uprzedniej akceptacji zgłoszenia testera przez administratora lub bycia autorem pomysłu.
     """
-    user_id = user_payload.get("sub") if user_payload else None
-    author_name = user_payload.get("name", "Użytkownik") if user_payload else "Mieszkaniec Małopolski"
+    user_id = user_payload.get("sub")
+    author_name = user_payload.get("name") or user_payload.get("email", "Użytkownik")
+    user_email = user_payload.get("email")
+    user_role = user_payload.get("role", "user")
     return IdeaService.add_comment(
         idea_id=idea_id,
         data=comment_data,
         user_id=user_id,
-        author_name=author_name
+        author_name=author_name,
+        user_email=user_email,
+        user_role=user_role
     )
 
 # ==========================================
@@ -246,9 +256,11 @@ def list_tester_applications(
     """
     is_admin = user_payload.get("role") in ("admin", "expert")
     user_id = None if is_admin else user_payload["sub"]
+    user_email = None if is_admin else user_payload.get("email")
     return IdeaService.list_tester_applications(
         idea_id=idea_id,
         user_id=user_id,
+        user_email=user_email,
         status=status_filter
     )
 

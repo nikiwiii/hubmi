@@ -194,6 +194,7 @@ def local_save_tester_application(data: Dict[str, Any]) -> Dict[str, Any]:
 def local_get_tester_applications(
     idea_id: Optional[str] = None,
     user_id: Optional[str] = None,
+    user_email: Optional[str] = None,
     status: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     conn = _get_connection()
@@ -204,9 +205,15 @@ def local_get_tester_applications(
         if idea_id:
             query += " AND idea_id = ?"
             params.append(str(idea_id))
-        if user_id:
+        if user_id and user_email:
+            query += " AND (user_id = ? OR LOWER(user_email) = LOWER(?))"
+            params.extend([str(user_id), str(user_email)])
+        elif user_id:
             query += " AND user_id = ?"
             params.append(str(user_id))
+        elif user_email:
+            query += " AND LOWER(user_email) = LOWER(?)"
+            params.append(str(user_email))
         if status:
             query += " AND status = ?"
             params.append(str(status))
