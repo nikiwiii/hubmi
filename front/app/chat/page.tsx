@@ -15,6 +15,7 @@ import {
 } from "../lib/chatStore";
 import {
   fetchConversations,
+  fetchConversationDetails,
   pollConversationMessages,
   sendConversationMessage,
   startExpertConversation,
@@ -55,7 +56,9 @@ function ChatContent() {
   );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
-  const [isCreatingNewThread, setIsCreatingNewThread] = useState(false);
+  const [isCreatingNewThread, setIsCreatingNewThread] = useState(
+    Boolean(topicFromUrl),
+  );
   const [isExpertsModalOpen, setIsExpertsModalOpen] = useState(false);
   const [experts, setExperts] = useState<RopsExpert[]>([]);
   const [newTopic, setNewTopic] = useState(topicFromUrl || "");
@@ -74,12 +77,16 @@ function ChatContent() {
     }
   }, [currentUser, isLoadingUser, router]);
 
-  // Sync activeContactId from URL param
+  // Sync activeContactId and newTopic from URL params
   useEffect(() => {
     if (recipientFromUrl) {
       setActiveContactId(recipientFromUrl);
     }
-  }, [recipientFromUrl]);
+    if (topicFromUrl) {
+      setNewTopic(topicFromUrl);
+      setIsCreatingNewThread(true);
+    }
+  }, [recipientFromUrl, topicFromUrl]);
 
   // Pobierz katalog ekspertów ROPS
   useEffect(() => {
@@ -94,9 +101,26 @@ function ChatContent() {
     const loadConversations = async () => {
       try {
         const convs = await fetchConversations();
-        if (convs && convs.length > 0) {
-          setBackendConversations(convs);
-          const mappedContacts: ChatContact[] = convs.map((c) => ({
+        let allConvs = convs || [];
+
+        // Jeśli w URL jest recipient, a nie ma go na pobranej liście, dociągnij go bezpośrednio
+        if (
+          recipientFromUrl &&
+          !allConvs.some((c) => c.id === recipientFromUrl)
+        ) {
+          try {
+            const direct = await fetchConversationDetails(recipientFromUrl);
+            if (direct) {
+              allConvs = [direct, ...allConvs];
+            }
+          } catch (e) {
+            console.warn("Nie udało się pobrać konwersacji z parametru URL:", e);
+          }
+        }
+
+        if (allConvs.length > 0) {
+          setBackendConversations(allConvs);
+          const mappedContacts: ChatContact[] = allConvs.map((c) => ({
             id: c.id,
             name: isExpertOrAdmin
               ? `${c.user_name} (${c.topic})`
@@ -116,6 +140,8 @@ function ChatContent() {
           setContacts(mappedContacts);
           if (!recipientFromUrl) {
             setActiveContactId(mappedContacts[0].id);
+          } else {
+            setActiveContactId(recipientFromUrl);
           }
         }
       } catch (err) {
@@ -598,14 +624,6 @@ function ChatContent() {
                     <p className="text-[11px] text-stone-400">
                       {activeContact.role}
                     </p>
-                  </div>
-                </div>
-
-                {/* Status komunikatora */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-mono border border-emerald-200/60">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Synchronizacja na żywo (API)</span>
                   </div>
                 </div>
               </div>

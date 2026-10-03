@@ -11,6 +11,7 @@ import {
   Filter,
   Search,
   ArrowRight,
+  ArrowLeft,
   ShieldCheck,
   Check,
   Sparkles,
@@ -93,9 +94,20 @@ export default function TestingPage() {
   }
 
   return (
-    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-200">
+    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-200">
+      {/* Back to Admin Navigation */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => router.push("/admin")}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white hover:bg-stone-50 border border-stone-200 rounded-xl transition-all cursor-pointer shadow-2xs group"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-stone-400 group-hover:-translate-x-0.5 transition-transform" />
+          <span>Wróć do Panelu Admina</span>
+        </button>
+      </div>
+
       {/* Hero Banner: Tester Innowacji */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-1">
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider">
             <FlaskConical className="w-3.5 h-3.5 text-amber-700" />

@@ -22,10 +22,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   const router = useRouter();
 
   const isAuthPage = pathname === "/auth" || pathname?.startsWith("/auth");
+  const protectedRoutes = ["/admin", "/dashboard", "/chat"];
+  const isProtectedRoute = protectedRoutes.some(
+    (route) => pathname === route || pathname?.startsWith(`${route}/`),
+  );
 
   useEffect(() => {
     if (!isLoadingUser) {
-      if (!currentUser && !isAuthPage) {
+      if (!currentUser && isProtectedRoute) {
         // Niezalogowany użytkownik próbuje wejść na chronioną stronę -> przekieruj do /auth
         const redirectParam =
           pathname && pathname !== "/"
@@ -37,7 +41,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         router.replace("/");
       }
     }
-  }, [currentUser, isLoadingUser, isAuthPage, pathname, router]);
+  }, [currentUser, isLoadingUser, isAuthPage, isProtectedRoute, pathname, router]);
 
   // Jeśli użytkownik jest na stronie /auth
   if (isAuthPage) {
@@ -63,8 +67,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     );
   }
 
-  // Jeśli użytkownik nie jest zalogowany (i nie jest na /auth) – nic nie renderujemy, przekierowanie w toku
-  if (!currentUser) {
+  // Jeśli użytkownik nie jest zalogowany i wszedł na chronioną stronę – oczekiwanie na przekierowanie
+  if (!currentUser && isProtectedRoute) {
     return null;
   }
 

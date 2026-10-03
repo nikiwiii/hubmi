@@ -69,13 +69,13 @@ class IdeasRepository:
         row["category"] = project.category or DEFAULT_CATEGORY
         import uuid as _uuid
         try:
-            _uuid.UUID(str(user_id))
-            row["user_id"] = str(user_id)
+            _uuid.UUID(user_id)
+            row["user_id"] = user_id
         except (ValueError, TypeError, AttributeError):
             row["user_id"] = None
         row["author_name"] = author_name
         if image_url:
-            row["essence"] = image_url
+            row["image_url"] = image_url
         if project.partner_types or project.looking_for_partner:
             row["dedicated_to"] = json.dumps({
                 "looking_for_partner": bool(project.looking_for_partner),

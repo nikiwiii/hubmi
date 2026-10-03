@@ -67,7 +67,8 @@ async function apiFetch(
   const isAuthEndpoint =
     url.includes("/api/login/user") ||
     url.includes("/api/login/admin") ||
-    url.includes("/api/login/register");
+    url.includes("/api/login/register") ||
+    url.includes("/api/login/me");
 
   if (res.status === 401 && !isAuthEndpoint) {
     // Token wygasł lub jest nieprawidłowy w zapytaniach wymagających autoryzacji
@@ -77,12 +78,21 @@ async function apiFetch(
       typeof window !== "undefined" &&
       !window.location.pathname.startsWith("/auth")
     ) {
-      const redirect =
-        window.location.pathname && window.location.pathname !== "/"
-          ? `?redirect=${encodeURIComponent(window.location.pathname)}`
-          : "";
-      window.location.href = `/auth${redirect}`;
+      const protectedPaths = ["/admin", "/dashboard", "/chat"];
+      const isProtected = protectedPaths.some((p) =>
+        window.location.pathname.startsWith(p),
+      );
+      if (isProtected) {
+        const redirect =
+          window.location.pathname && window.location.pathname !== "/"
+            ? `?redirect=${encodeURIComponent(window.location.pathname)}`
+            : "";
+        window.location.href = `/auth${redirect}`;
+      }
     }
+  } else if (res.status === 401 && url.includes("/api/login/me")) {
+    setAuthToken(null);
+    setCurrentUser(null);
   }
 
   return res;
