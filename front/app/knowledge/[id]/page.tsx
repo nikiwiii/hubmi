@@ -4,8 +4,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  getResearchById,
-  getAllResearches
+  useResearch,
+  useResearches
 } from '../../lib/researchData';
 import { ResearchChoroplethMap } from '../../components/knowledge/ResearchChoroplethMap';
 import { AllYearsMapGallery } from '../../components/knowledge/AllYearsMapGallery';
@@ -27,13 +27,8 @@ export default function ResearchDetailPage() {
   const router = useRouter();
   const researchId = params?.id as string;
 
-  const research = useMemo(() => {
-    return getResearchById(researchId);
-  }, [researchId]);
-
-  const allResearches = useMemo(() => {
-    return getAllResearches();
-  }, []);
+  const { research, isLoading } = useResearch(researchId);
+  const { researches: allResearches } = useResearches();
 
   // Stan wybranego roku na mapie
   const [selectedYear, setSelectedYear] = useState<string>('');

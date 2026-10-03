@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAllResearches } from "../lib/researchData";
+import { useResearches } from "../lib/researchData";
 import { ResearchAIChat } from "../components/knowledge/ResearchAIChat";
 import {
   Users,
@@ -17,7 +17,7 @@ import {
 
 export default function KnowledgePage() {
   const router = useRouter();
-  const researches = getAllResearches();
+  const { researches, isLoading } = useResearches();
 
   // Tryb skupienia na czacie (gdy czat jest otwarty, użytkownik skupia się wyłącznie na nim)
   const [isChatOpen, setIsChatOpen] = useState(true);

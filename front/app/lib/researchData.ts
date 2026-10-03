@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import rawData from './visualize_data.json';
 import { POWIATY_DATA, PowiatItem } from './malopolskaMapData';
 
@@ -422,14 +423,123 @@ const RESEARCH_CONFIGS: Record<
   }
 };
 
-const typedRawData = rawData as unknown as RawResearchData;
+let dynamicRawData: RawResearchData = { ...(rawData as unknown as RawResearchData) };
+
+if (typeof window !== 'undefined') {
+  try {
+    const cached = localStorage.getItem('hubmi_cached_indicators_v2');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && typeof parsed === 'object') {
+        dynamicRawData = { ...dynamicRawData, ...parsed };
+      }
+    }
+  } catch (e) {
+    // Ignore cache parse error
+  }
+}
+
+type ResearchDataListener = () => void;
+const listeners = new Set<ResearchDataListener>();
+
+export function subscribeToResearchData(listener: ResearchDataListener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+let isFetchingLive = false;
+
+export async function fetchLiveResearchData(): Promise<boolean> {
+  if (isFetchingLive) return false;
+  isFetchingLive = true;
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const res = await fetch(`${apiUrl}/api/indicators`, {
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
+    });
+    if (!res.ok) {
+      isFetchingLive = false;
+      return false;
+    }
+    const json = await res.json();
+    if (json.success && json.data && typeof json.data === 'object' && Object.keys(json.data).length > 0) {
+      dynamicRawData = { ...dynamicRawData, ...json.data };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('hubmi_cached_indicators_v2', JSON.stringify(dynamicRawData));
+        } catch (e) {}
+      }
+      listeners.forEach((fn) => {
+        try {
+          fn();
+        } catch (e) {}
+      });
+      isFetchingLive = false;
+      return true;
+    }
+  } catch (err) {
+    // Fallback silently to current data
+  }
+  isFetchingLive = false;
+  return false;
+}
+
+// React hooks for automatic reactive updates
+export function useResearches() {
+  const [data, setData] = useState<ResearchInfo[]>(() => getAllResearches());
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setData(getAllResearches());
+
+    const unsubscribe = subscribeToResearchData(() => {
+      setData(getAllResearches());
+    });
+
+    setIsLoading(true);
+    fetchLiveResearchData().finally(() => {
+      setIsLoading(false);
+      setData(getAllResearches());
+    });
+
+    return unsubscribe;
+  }, []);
+
+  return { researches: data, isLoading, refresh: fetchLiveResearchData };
+}
+
+export function useResearch(id: string) {
+  const [research, setResearch] = useState<ResearchInfo | null>(() => getResearchById(id));
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setResearch(getResearchById(id));
+
+    const unsubscribe = subscribeToResearchData(() => {
+      setResearch(getResearchById(id));
+    });
+
+    setIsLoading(true);
+    fetchLiveResearchData().finally(() => {
+      setIsLoading(false);
+      setResearch(getResearchById(id));
+    });
+
+    return unsubscribe;
+  }, [id]);
+
+  return { research, isLoading };
+}
 
 // Pobranie listy wszystkich typów badań
 export function getAllResearches(): ResearchInfo[] {
-  const keys = Object.keys(typedRawData);
+  const keys = Object.keys(dynamicRawData);
 
   return keys.map((key) => {
-    const raw = typedRawData[key];
+    const raw = dynamicRawData[key];
     const cfg = RESEARCH_CONFIGS[key] || {
       titlePl: raw.name,
       titleEn: raw.name,
@@ -524,7 +634,7 @@ export function getResearchById(id: string): ResearchInfo | null {
 
 // Pobranie wartości dla danego roku dla wszystkich powiatów (do mapy i rankingu)
 export function getYearPowiatValues(researchId: string, year: string): PowiatYearValue[] {
-  const raw = typedRawData[researchId];
+  const raw = dynamicRawData[researchId];
   if (!raw) return [];
 
   const results: PowiatYearValue[] = [];
@@ -554,7 +664,7 @@ export function getYearPowiatValues(researchId: string, year: string): PowiatYea
 
 // Pobranie serii czasowej dla każdego powiatu (do wykresów)
 export function getAllPowiatTimeSeries(researchId: string): PowiatTimeSeries[] {
-  const raw = typedRawData[researchId];
+  const raw = dynamicRawData[researchId];
   if (!raw) return [];
 
   const years = raw.years;
@@ -613,7 +723,7 @@ export function getAllPowiatTimeSeries(researchId: string): PowiatTimeSeries[] {
 export function getRegionalAverageTimeSeries(
   researchId: string
 ): { year: string; value: number }[] {
-  const raw = typedRawData[researchId];
+  const raw = dynamicRawData[researchId];
   if (!raw) return [];
 
   return raw.years.map((year) => {
