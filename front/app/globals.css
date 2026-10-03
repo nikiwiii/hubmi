@@ -5,6 +5,12 @@
   --foreground: #1E1F21;
 }
 
+html {
+  /* Prevent layout jump when scrollbar appears / disappears */
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -15,8 +21,8 @@ body {
 
 /* Custom subtle scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;

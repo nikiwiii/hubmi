@@ -1,13 +1,14 @@
 import React from 'react';
-import { Idea, ColorTheme } from '../lib/types';
+import { Idea, ColorTheme, getCategoryThemeAndShape } from '../lib/types';
 import { GeometricIllustration } from './GeometricIllustration';
-import { ThumbsUp, Users, Check } from 'lucide-react';
+import { ThumbsUp, Users, Check, MessageSquare } from 'lucide-react';
 
 interface IdeaCardProps {
   idea: Idea;
   onClick?: () => void;
   onVote?: (e: React.MouseEvent) => void;
   onToggleTesting?: (e: React.MouseEvent) => void;
+  onChat?: (e: React.MouseEvent) => void;
   isTester?: boolean;
 }
 
@@ -78,9 +79,12 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   onClick,
   onVote,
   onToggleTesting,
+  onChat,
   isTester = false
 }) => {
-  const styles = getThemeStyles(idea.colorTheme);
+  // Color theme and shape strictly depend on category
+  const { theme, shape } = getCategoryThemeAndShape(idea.category);
+  const styles = getThemeStyles(theme);
 
   return (
     <div
@@ -113,8 +117,8 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
       {/* Center Geometric Illustration */}
       <div className="my-auto flex items-center justify-center py-2 transition-transform duration-300 group-hover:scale-103">
         <GeometricIllustration
-          shape={idea.geometricShape}
-          theme={idea.colorTheme}
+          shape={shape}
+          theme={theme}
           size={100}
         />
       </div>
@@ -125,13 +129,24 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {idea.authorName}
         </p>
 
-        {/* Minimal Action Counters (no labels, just clean icons + numbers) */}
+        {/* Minimal Action Counters */}
         <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          {onChat && (
+            <button
+              onClick={onChat}
+              title="Czat z autorem"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/70 hover:bg-white text-stone-800 transition-all cursor-pointer"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Czat</span>
+            </button>
+          )}
+
           {onVote && (
             <button
               onClick={onVote}
               title="Polub"
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                 idea.userVote === 'like'
                   ? 'bg-stone-900 text-white shadow-xs'
                   : 'bg-white/70 hover:bg-white text-stone-800'
@@ -146,7 +161,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             <button
               onClick={onToggleTesting}
               title="Testerzy"
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                 isTester
                   ? 'bg-emerald-700 text-white shadow-xs'
                   : 'bg-white/70 hover:bg-white text-stone-800'

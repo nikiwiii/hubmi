@@ -1,4 +1,4 @@
-import { Idea } from './types';
+import { Idea, getCategoryThemeAndShape } from './types';
 
 export const INITIAL_IDEAS: Idea[] = [
   {
@@ -23,7 +23,7 @@ export const INITIAL_IDEAS: Idea[] = [
     userVote: 'like',
     testersCount: 29,
     testersList: ['jan.wisniewski@hubmi.pl', 'anna.kowalska@hubmi.pl'],
-    colorTheme: 'slate',
+    colorTheme: 'sage',
     geometricShape: 'v-shape',
     status: 'active',
     createdAt: '2026-02-14',
@@ -104,8 +104,8 @@ export const INITIAL_IDEAS: Idea[] = [
     userVote: null,
     testersCount: 38,
     testersList: ['jan.wisniewski@hubmi.pl'],
-    colorTheme: 'sage',
-    geometricShape: 'v-shape',
+    colorTheme: 'cyan',
+    geometricShape: 'wave',
     status: 'active',
     createdAt: '2026-03-10',
     commentsCount: 22
@@ -176,7 +176,15 @@ export function getIdeas(): Idea[] {
       localStorage.setItem(STORAGE_IDEAS_KEY, JSON.stringify(INITIAL_IDEAS));
       return INITIAL_IDEAS;
     }
-    return JSON.parse(stored);
+    const parsed: Idea[] = JSON.parse(stored);
+    return parsed.map(item => {
+      const { theme, shape } = getCategoryThemeAndShape(item.category);
+      return {
+        ...item,
+        colorTheme: theme,
+        geometricShape: shape
+      };
+    });
   } catch {
     return INITIAL_IDEAS;
   }
@@ -260,8 +268,11 @@ export function toggleTestingParticipation(id: string, userEmail: string): { ide
 
 export function addIdea(newIdea: Omit<Idea, 'id' | 'createdAt' | 'likes' | 'dislikes' | 'testersCount' | 'testersList' | 'commentsCount'>): Idea {
   const current = getIdeas();
+  const { theme, shape } = getCategoryThemeAndShape(newIdea.category);
   const idea: Idea = {
     ...newIdea,
+    colorTheme: theme,
+    geometricShape: shape,
     id: `idea-${Date.now()}`,
     createdAt: new Date().toISOString().split('T')[0],
     likes: 0,
