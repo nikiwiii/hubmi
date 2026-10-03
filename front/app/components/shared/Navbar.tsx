@@ -142,15 +142,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Czat
             </button>
-            <button
-              onClick={() => navigateTo("dashboard")}
-              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeScreen === "dashboard"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-600 hover:text-stone-900"
-                }`}
-            >
-              Pulpit
-            </button>
             {isAdmin && (
               <button
                 onClick={() => navigateTo("admin")}
@@ -291,7 +282,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <UserIcon className="w-5 h-5" />
             <span className="text-[10px]">
-              {currentUser ? "Pulpit" : "Konto"}
+              {currentUser ? "Konto" : "Zaloguj"}
             </span>
           </button>
         </div>
