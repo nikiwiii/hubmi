@@ -82,7 +82,8 @@ export type ScreenId =
   | "admin"
   | "dashboard"
   | "knowledge"
-  | "matching";
+  | "matching"
+  | "middleman";
 
 export type KnowledgeType = "challenge" | "innovation" | "education";
 
@@ -272,4 +273,75 @@ export interface BackendMessage {
   sender_role: "user" | "admin" | "expert";
   content: string;
   created_at: string;
+}
+
+// ==========================================
+// MIDDLEMAN INNOWACJI (/api/middleman)
+// ==========================================
+export interface InnovationRecord {
+  id: string;
+  title: string;
+  description?: string | null;
+  addressed_problems?: string | null;
+  target_group?: string | null;
+  beneficiaries?: string | null;
+  funding_info?: string | null;
+  category?: string | null;
+  url?: string | null;
+}
+
+export type InstitutionType =
+  | "gmina_miejska"
+  | "gmina_wiejska"
+  | "gmina_miejsko_wiejska"
+  | "powiat"
+  | "cus"
+  | "ops"
+  | "ngo"
+  | "inna";
+
+export type BudgetRange = "below_20k" | "20k_100k" | "100k_500k" | "above_500k";
+
+export interface InstitutionProfile {
+  institution_type: InstitutionType;
+  institution_name?: string | null;
+  powiat: string;
+  target_group: string;
+  recipients_count?: number | null;
+  budget_range: BudgetRange;
+  staff_resources: string;
+  time_horizon_months: 3 | 6 | 12;
+  local_context?: string | null;
+}
+
+export interface ServiceCard {
+  service_name: string;
+  summary: string;
+  adaptations: { change: string; reason: string }[];
+  scope: string[];
+  recipients: string;
+  resources: {
+    staff: string[];
+    premises: string[];
+    equipment: string[];
+    local_partners: string[];
+  };
+  timeline: { name: string; duration: string; activities: string[] }[];
+  budget: {
+    items: { name: string; amount_pln: number; note?: string | null }[];
+    total_pln: number;
+    disclaimer: string;
+  };
+  feasibility_note?: string | null;
+  funding_sources: { source: string; how_to_use: string }[];
+  kpis: { name: string; target: string; measurement: string }[];
+  risks: { risk: string; mitigation: string }[];
+  next_steps: string[];
+}
+
+export interface ServiceCardResponse {
+  innovation_id: string;
+  innovation_title: string;
+  innovation_url?: string | null;
+  card: ServiceCard;
 }

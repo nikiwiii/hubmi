@@ -27,6 +27,7 @@ import {
   TrendingUp,
   Compass,
   CheckCircle2,
+  Handshake,
   MapPin,
   Tag,
   Lightbulb,
@@ -36,8 +37,11 @@ import {
   Database,
   Heart,
   Activity,
-  Building2
+  Building2,
+  Mic,
+  MicOff
 } from 'lucide-react';
+import { VoiceDictationPopup, useSpeechToText } from '../components/voice';
 
 interface ChatTurn {
   id: string;
@@ -104,6 +108,43 @@ export default function ProblemMatchingPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Stan dyktowania głosowego
+  const [initialTextBeforeDictation, setInitialTextBeforeDictation] = useState('');
+
+  const {
+    isListening,
+    interimTranscript,
+    errorMessage: voiceError,
+    audioStream,
+    startListening,
+    stopListening,
+    cancelListening,
+  } = useSpeechToText({
+    lang: 'pl-PL',
+    onTranscriptChange: (text) => {
+      setInputMessage(text);
+    },
+  });
+
+  const handleToggleVoice = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      setInitialTextBeforeDictation(inputMessage);
+      startListening(inputMessage);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  };
+
+  const handleFinishVoice = () => {
+    stopListening();
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const handleCancelVoice = () => {
+    cancelListening(initialTextBeforeDictation);
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -113,6 +154,9 @@ export default function ProblemMatchingPage() {
   }, [messages, isLoading]);
 
   const handleSendMessage = async (textToSend?: string) => {
+    if (isListening) {
+      stopListening();
+    }
     const q = (textToSend || inputMessage).trim();
     if (!q || isLoading) return;
 
@@ -186,6 +230,9 @@ export default function ProblemMatchingPage() {
   };
 
   const handleResetChat = () => {
+    if (isListening) {
+      stopListening();
+    }
     setMessages([]);
     setExpandedAlternatives({});
     setExpandedAdminTrace({});
@@ -253,6 +300,9 @@ export default function ProblemMatchingPage() {
                   <button
                     key={idx}
                     onClick={() => {
+                      if (isListening) {
+                        stopListening();
+                      }
                       setSelectedCategory(cat.label);
                       setInputMessage(cat.query);
                     }}
@@ -409,17 +459,26 @@ export default function ProblemMatchingPage() {
                             </span>
                           </div>
 
-                          {turn.matchResponse.top_solution.url && (
-                            <a
-                              href={turn.matchResponse.top_solution.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-xl transition-all shadow-2xs"
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Link
+                              href={`/middleman?innovation=${encodeURIComponent(turn.matchResponse.top_solution.id)}`}
+                              className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-[#EFE5C6] hover:bg-[#E7DAC0] text-stone-900 text-xs font-semibold rounded-xl transition-all shadow-2xs"
                             >
-                              <span>Zobacz dokument innowacji</span>
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                          )}
+                              <Handshake className="w-3.5 h-3.5" />
+                              <span>Dostosuj dla mojej instytucji</span>
+                            </Link>
+                            {turn.matchResponse.top_solution.url && (
+                              <a
+                                href={turn.matchResponse.top_solution.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-xl transition-all shadow-2xs"
+                              >
+                                <span>Zobacz dokument innowacji</span>
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -685,17 +744,26 @@ export default function ProblemMatchingPage() {
                                   </span>
                                 </div>
                                 <p className="text-stone-600 leading-relaxed line-clamp-2">{alt.solution}</p>
-                                {alt.url && (
-                                  <a
-                                    href={alt.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-900 underline underline-offset-2 hover:text-stone-700"
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <Link
+                                    href={`/middleman?innovation=${encodeURIComponent(alt.id)}`}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#EFE5C6] hover:bg-[#E7DAC0] text-[11px] font-semibold text-stone-900 transition-colors"
                                   >
-                                    <span>Szczegóły innowacji</span>
-                                    <ExternalLink className="w-3 h-3" />
-                                  </a>
-                                )}
+                                    <Handshake className="w-3 h-3" />
+                                    <span>Dostosuj dla mojej instytucji</span>
+                                  </Link>
+                                  {alt.url && (
+                                    <a
+                                      href={alt.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-900 underline underline-offset-2 hover:text-stone-700"
+                                    >
+                                      <span>Szczegóły innowacji</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -824,6 +892,16 @@ export default function ProblemMatchingPage() {
           }}
           className="relative bg-white/95 backdrop-blur-xl rounded-2xl border border-black/6 shadow-lg p-2 focus-within:ring-2 focus-within:ring-stone-900/10 focus-within:border-stone-900/30 transition-all"
         >
+          {/* Popup z animowanymi falami dźwiękowymi podczas dyktowania */}
+          <VoiceDictationPopup
+            isListening={isListening}
+            audioStream={audioStream}
+            interimTranscript={interimTranscript}
+            errorMessage={voiceError}
+            onFinish={handleFinishVoice}
+            onCancel={handleCancelVoice}
+          />
+
           <div className="flex items-center gap-2">
             {/* Pole tekstowe */}
             <input
@@ -831,10 +909,34 @@ export default function ProblemMatchingPage() {
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Opisz problem lub potrzebę (np. samotność seniorów na wsi, brak dojazdu do lekarza)..."
+              placeholder={
+                isListening
+                  ? "Słucham... powiedz swoje zapytanie..."
+                  : "Opisz problem lub potrzebę (np. samotność seniorów na wsi, brak dojazdu do lekarza)..."
+              }
               disabled={isLoading}
               className="flex-1 px-3 py-2.5 bg-transparent text-sm sm:text-base font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none disabled:opacity-50"
             />
+
+            {/* Przycisk mikrofonu do dyktowania głosem */}
+            <button
+              type="button"
+              onClick={handleToggleVoice}
+              disabled={isLoading}
+              title={isListening ? "Zakończ dyktowanie głosowe" : "Dyktuj zapytanie mikrofonem"}
+              aria-label={isListening ? "Zakończ dyktowanie głosowe" : "Dyktuj zapytanie mikrofonem"}
+              className={`relative p-3 rounded-xl transition-all flex items-center justify-center shrink-0 cursor-pointer ${
+                isListening
+                  ? 'bg-stone-900 text-white shadow-sm ring-2 ring-stone-900/15'
+                  : 'bg-stone-100 hover:bg-stone-200/80 text-stone-700 hover:text-stone-900 border border-black/5 active:scale-95'
+              }`}
+            >
+              {isListening ? (
+                <MicOff className="w-4 h-4 text-white" />
+              ) : (
+                <Mic className="w-4 h-4 text-stone-700" />
+              )}
+            </button>
 
             {/* Przycisk wysłania */}
             <button
