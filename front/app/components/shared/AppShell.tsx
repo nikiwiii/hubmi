@@ -13,7 +13,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   const isAuthPage = pathname?.startsWith('/auth');
   const isKnowledgePage = pathname?.startsWith('/knowledge');
-  const isMatchingPage = pathname?.startsWith('/matching');
+  const isMatchingPage = pathname?.startsWith('/matching') || pathname?.startsWith('/middleman');
   const isPublicPage = isAuthPage || isKnowledgePage || isMatchingPage;
 
   useEffect(() => {
