@@ -21,17 +21,29 @@ class Settings(BaseSettings):
 
     supabase_url: str = ""
     supabase_key: str = ""
+    # Public Supabase Storage bucket for published visualizations (see README migration).
+    supabase_image_bucket: str = "idea-images"
 
     groq_api_key: str = ""
     groq_model: str = "openai/gpt-oss-120b"
     groq_base_url: str = "https://api.groq.com/openai/v1"
     groq_timeout_seconds: float = 60.0
 
+    # Paid models (e.g. nanobanana2) require a secret `sk_` key from https://enter.pollinations.ai/keys
+    pollinations_api_key: str = ""
+    pollinations_image_model: str = "nanobanana2"
+    pollinations_base_url: str = "https://gen.pollinations.ai"
+    pollinations_timeout_seconds: float = 120.0
+    image_width: int = 1024
+    image_height: int = 768
+
     jwt_secret: str = DEFAULT_JWT_SECRET
     jwt_algorithm: str = "HS256"
 
     # One assistant loop round = 2 requests (question + refine), max 10 rounds.
     assistant_rate_limit_per_minute: int = 60
+    # Every image generation costs pollen.
+    image_rate_limit_per_minute: int = 10
 
     @field_validator("supabase_url")
     @classmethod
@@ -41,7 +53,15 @@ class Settings(BaseSettings):
             value = value[: -len("/rest/v1")]
         return value
 
-    @field_validator("supabase_key", "groq_api_key", "groq_model", "jwt_secret", "jwt_algorithm")
+    @field_validator(
+        "supabase_key",
+        "groq_api_key",
+        "groq_model",
+        "pollinations_api_key",
+        "pollinations_image_model",
+        "jwt_secret",
+        "jwt_algorithm",
+    )
     @classmethod
     def strip_whitespace(cls, value: str) -> str:
         return value.strip()

@@ -1,9 +1,10 @@
+import base64
 import uuid
 
 import jwt
 import pytest
 
-from app.schemas import Stage
+from app.schemas import MAX_IMAGE_BYTES, Stage
 from tests.conftest import auth_header, make_token
 
 PROJECT = {
@@ -13,6 +14,49 @@ PROJECT = {
     "odbiorcy": "Mieszkańcy osiedla.",
     "etap": "prototyp",
 }
+
+PNG_BYTES = b"\x89PNG-fake-image"
+PNG_DATA_URL = "data:image/png;base64," + base64.b64encode(PNG_BYTES).decode()
+
+
+def test_publish_with_image_uploads_it_and_stores_url(client, repo, storage):
+    res = client.post("/projects", json={**PROJECT, "image": PNG_DATA_URL}, headers=auth_header(make_token()))
+    assert res.status_code == 201
+    assert storage.uploads == [(PNG_BYTES, "image/png")]
+    assert repo.rows[0]["image_url"] == "https://storage.test/idea-images/1.png"
+    assert "image" not in repo.rows[0]
+    assert res.json()["image_url"] == "https://storage.test/idea-images/1.png"
+
+
+def test_publish_without_image_omits_image_column(client, repo, storage):
+    res = client.post("/projects", json={**PROJECT, "image": ""}, headers=auth_header(make_token()))
+    assert res.status_code == 201
+    assert storage.uploads == []
+    assert "image_url" not in repo.rows[0]
+    assert res.json()["image_url"] is None
+
+
+@pytest.mark.parametrize(
+    "image",
+    [
+        "https://example.com/a.png",
+        "data:image/gif;base64," + base64.b64encode(b"GIF89a").decode(),
+        "data:image/png;base64,@@not-base64@@",
+        "data:image/png;base64," + base64.b64encode(b"x" * (MAX_IMAGE_BYTES + 1)).decode(),
+    ],
+)
+def test_publish_rejects_invalid_image(client, repo, storage, image):
+    res = client.post("/projects", json={**PROJECT, "image": image}, headers=auth_header(make_token()))
+    assert res.status_code == 422
+    assert storage.uploads == []
+    assert repo.rows == []
+
+
+def test_publish_storage_failure_is_502_and_saves_nothing(client, repo, storage):
+    storage.fail = True
+    res = client.post("/projects", json={**PROJECT, "image": PNG_DATA_URL}, headers=auth_header(make_token()))
+    assert res.status_code == 502
+    assert repo.rows == []
 
 
 def test_publish_requires_auth(client, repo):

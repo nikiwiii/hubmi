@@ -1,7 +1,7 @@
 import { Idea, getCategoryThemeAndShape } from './types';
-import { getAuthToken } from './api';
+import { API_BASE, getAuthToken } from './api';
 
-export const IDEA_CREATOR_BASE = process.env.NEXT_PUBLIC_IDEA_CREATOR_URL || 'http://localhost:8001';
+export const IDEA_CREATOR_BASE = process.env.NEXT_PUBLIC_IDEA_CREATOR_URL || `${API_BASE}/api/idea-creator`;
 
 export type Stage = 'pomysl' | 'prototyp' | 'przetestowane_rozwiazanie' | 'gotowe_do_wdrozenia';
 export type IdeaField = 'tytul' | 'opis' | 'innowacyjnosc' | 'odbiorcy' | 'etap';
@@ -66,6 +66,7 @@ export interface PublishedProject extends IdeaFields {
   category: string;
   user_id: string | null;
   author_name: string | null;
+  image_url?: string | null;
   created_at: string | null;
 }
 
@@ -106,12 +107,26 @@ export function refineField(fields: IdeaFields, question: AssistantQuestion, ans
   return request('/assistant/refine', { ...fields, question, answer }, 'Nie udało się przygotować propozycji.');
 }
 
-export function publishProject(fields: IdeaFields, category?: string): Promise<PublishedProject> {
+export function publishProject(fields: IdeaFields, category?: string, image?: string): Promise<PublishedProject> {
   return request(
     '/projects',
-    { ...fields, category: category || undefined },
+    { ...fields, category: category || undefined, image: image || undefined },
     'Sprawdź, czy wszystkie pola są wypełnione.',
     true
+  );
+}
+
+export interface GeneratedImage {
+  image: string; // data URL
+  prompt: string;
+  model: string;
+}
+
+export function generateImage(fields: IdeaFields, category?: string): Promise<GeneratedImage> {
+  return request(
+    '/generate_image',
+    { ...fields, category: category || undefined },
+    'Uzupełnij przynajmniej tytuł lub opis, aby wygenerować obraz.'
   );
 }
 
@@ -137,6 +152,7 @@ export function mapProjectToIdea(p: PublishedProject): Idea {
     testersList: [],
     colorTheme: theme,
     geometricShape: shape,
+    visualMockupUrl: p.image_url || undefined,
     status: 'active',
     createdAt: p.created_at ? p.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
     commentsCount: 0,

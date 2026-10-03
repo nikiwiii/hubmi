@@ -2,12 +2,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Check, X, SkipForward, Send, Square, RotateCcw, Loader2, Lock, RefreshCw } from 'lucide-react';
+import { Sparkles, Check, X, SkipForward, Send, Square, RotateCcw, Loader2, Lock, RefreshCw, ImageIcon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { IdeaCard } from '../components/shared/IdeaCard';
 import {
   AssistantQuestion,
   EMPTY_FIELDS,
   FIELD_LABELS,
+  GeneratedImage,
   HistoryEntry,
   IdeaCreatorError,
   IdeaField,
@@ -16,6 +18,7 @@ import {
   STAGE_OPTIONS,
   Stage,
   fetchNextQuestion,
+  generateImage,
   mapProjectToIdea,
   publishProject,
   refineField,
@@ -67,6 +70,9 @@ export default function ProposePage() {
   const [error, setError] = useState<{ message: string; retry: () => void } | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [generatedImage, setGeneratedImage] = useState<GeneratedImage | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const assistantPanelRef = useRef<HTMLDivElement>(null);
 
@@ -104,6 +110,20 @@ export default function ProposePage() {
   const isLoading = phase === 'loadingQuestion' || phase === 'loadingRefine';
   const canPublish =
     !!fields.tytul.trim() && !!fields.opis.trim() && !!fields.innowacyjnosc.trim() && !!fields.odbiorcy.trim() && !!fields.etap;
+  const canGenerateImage = !!fields.tytul.trim() || !!fields.opis.trim();
+
+  const previewIdea = {
+    ...mapProjectToIdea({
+      ...fields,
+      tytul: fields.tytul.trim() || 'Tytuł projektu',
+      id: 'preview',
+      category: category || 'general',
+      user_id: currentUser.id,
+      author_name: currentUser.name,
+      created_at: null,
+    }),
+    visualMockupUrl: generatedImage?.image,
+  };
 
   const updateField = (key: keyof IdeaFields, value: string) => {
     setFields((prev) => ({ ...prev, [key]: key === 'etap' ? ((value || null) as Stage | null) : value }));
@@ -200,6 +220,21 @@ export default function ProposePage() {
     setNotice('Zakończono pracę z asystentem. Możesz poprawić pola ręcznie i opublikować projekt.');
   };
 
+  // ---------- image ----------
+
+  const handleGenerateImage = async () => {
+    if (!canGenerateImage) return;
+    setImageError(null);
+    setIsGeneratingImage(true);
+    try {
+      setGeneratedImage(await generateImage(fields, category));
+    } catch (e) {
+      setImageError(e instanceof IdeaCreatorError ? e.message : 'Nie udało się wygenerować obrazu.');
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   // ---------- publish ----------
 
   const handlePublish = async () => {
@@ -207,7 +242,7 @@ export default function ProposePage() {
     setPublishError(null);
     setIsPublishing(true);
     try {
-      const project = await publishProject(fields, category);
+      const project = await publishProject(fields, category, generatedImage?.image);
       const idea = mapProjectToIdea(project);
       addPublishedIdea(idea);
       selectIdea(idea);
@@ -295,6 +330,16 @@ export default function ProposePage() {
             >
               <Sparkles className="w-4 h-4" />
               <span>{history.length > 0 ? 'Zacznij od nowa z asystentem AI' : 'Popraw z asystentem AI'}</span>
+            </button>
+            <button
+              onClick={handleGenerateImage}
+              disabled={!canGenerateImage || isGeneratingImage}
+              className="px-5 py-3 bg-stone-100 hover:bg-stone-200 disabled:opacity-40 text-stone-900 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              {isGeneratingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+              <span>
+                {isGeneratingImage ? 'Generuję obraz...' : generatedImage ? 'Wygeneruj obraz ponownie' : 'Wygeneruj obraz'}
+              </span>
             </button>
             <button
               onClick={handlePublish}
@@ -441,6 +486,64 @@ export default function ProposePage() {
           )}
         </div>
       )}
+
+      {/* CARD PREVIEW */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+          <span className="text-xs font-semibold text-stone-500 flex items-center gap-1.5">
+            <ImageIcon className="w-3.5 h-3.5" />
+            Podgląd fiszki po publikacji
+          </span>
+          {generatedImage && !isGeneratingImage && (
+            <button
+              onClick={() => setGeneratedImage(null)}
+              className="text-xs text-stone-500 hover:text-stone-900 flex items-center gap-1"
+            >
+              <X className="w-3 h-3" />
+              <span>Usuń obraz</span>
+            </button>
+          )}
+        </div>
+
+        {imageError && (
+          <div className="p-3 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-between gap-3">
+            <p className="text-sm text-red-700">{imageError}</p>
+            <button
+              onClick={handleGenerateImage}
+              disabled={!canGenerateImage || isGeneratingImage}
+              className="shrink-0 px-3 py-1.5 bg-white border border-red-200 rounded-lg text-xs font-semibold text-red-700 flex items-center gap-1 disabled:opacity-40"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Spróbuj ponownie</span>
+            </button>
+          </div>
+        )}
+
+        <div className="relative max-w-sm mx-auto">
+          <IdeaCard idea={previewIdea} />
+          {isGeneratingImage && (
+            <div className="absolute inset-0 rounded-[28px] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 text-stone-600">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span className="text-xs font-semibold">Asystent tworzy wizualizację...</span>
+            </div>
+          )}
+        </div>
+
+        {!generatedImage && !isGeneratingImage && (
+          <p className="text-xs text-stone-500 text-center">
+            Kliknij „Wygeneruj obraz”, aby AI przygotowało wizualizację pomysłu na podstawie wypełnionych pól.
+          </p>
+        )}
+
+        {generatedImage && (
+          <details className="text-xs text-stone-500">
+            <summary className="cursor-pointer font-semibold hover:text-stone-900">Prompt użyty do wygenerowania obrazu</summary>
+            <p className="mt-2 p-3 rounded-2xl bg-stone-50 border border-stone-200 text-stone-600 leading-relaxed">
+              {generatedImage.prompt}
+            </p>
+          </details>
+        )}
+      </div>
     </div>
   );
 }

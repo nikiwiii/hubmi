@@ -204,6 +204,7 @@ export interface BackendIdea {
   category: string;
   user_id: string;
   author_name: string;
+  image_url?: string | null;
   created_at: string;
   likes_count: number;
   volunteers_count: number;
@@ -232,6 +233,7 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
     testersList: b.my_reactions?.includes('volunteer') ? ['current_user'] : [],
     colorTheme: theme,
     geometricShape: shape,
+    visualMockupUrl: b.image_url || undefined,
     status: 'active',
     createdAt: b.created_at ? b.created_at.split('T')[0] : '2026-03-01',
     commentsCount: 0,

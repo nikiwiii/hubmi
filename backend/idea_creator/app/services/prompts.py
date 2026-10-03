@@ -74,6 +74,32 @@ Pole do poprawy: "{field}"
 Pytanie: {question}
 Odpowiedź autora: {answer}"""
 
+IMAGE_PROMPT_SYSTEM_PROMPT = f"""Jesteś art directorem platformy, na której mieszkańcy publikują projekty \
+innowacji społecznych. Każdy projekt ma "fiszkę" (kartę) z ilustracją, która w jednym kadrze pokazuje, \
+na czym polega pomysł.
+
+Zadanie: na podstawie pól projektu napisz prompt dla modelu generującego obrazy.
+- Prompt piszesz PO ANGIELSKU, 60-120 słów, jako jeden akapit.
+- Pokaż konkretną scenę: ludzi korzystających z rozwiązania, miejsce i najważniejszy przedmiot/usługę. \
+Odbiorców projektu przedstaw z szacunkiem i bez stereotypów.
+- Opieraj się WYŁĄCZNIE na treści pól; nie dodawaj logo, marek, nazw instytucji ani konkretnych miast, \
+jeśli nie ma ich w polach.
+- Styl (zawsze dołącz): soft modern editorial illustration, flat shapes with subtle grain, muted pastel palette \
+(warm beige, sage green, dusty lavender, soft sky blue), gentle natural light, clean uncluttered composition, \
+centered subject with generous negative space, friendly and hopeful mood.
+- Zawsze zakończ: "no text, no letters, no logos, no watermark".
+- Odpowiadasz WYŁĄCZNIE poprawnym obiektem JSON, bez żadnego tekstu przed ani po, bez bloków ```.
+
+Pola projektu:
+- "tytul": tytuł, "opis": opis, "innowacyjnosc": co jest nowatorskie, "odbiorcy": dla kogo, \
+"etap": etap rozwoju ({STAGE_VALUES}), "kategoria": kategoria tematyczna (może być pusta).
+
+Schemat odpowiedzi:
+{{"prompt": "..."}}"""
+
+IMAGE_PROMPT_USER_TEMPLATE = """Pola projektu (puste pole = autor go nie wypełnił):
+{idea_json}"""
+
 RETRY_INSTRUCTION = """Twoja poprzednia odpowiedź nie spełnia wymagań:
 {error}
 

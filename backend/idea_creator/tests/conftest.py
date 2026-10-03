@@ -11,7 +11,10 @@ from app.config import Settings, get_settings
 from app.main import app
 from app.repository import IdeasRepository, get_repository
 from app.routers.assistant import assistant_rate_limiter
+from app.routers.visualize import image_rate_limiter
+from app.services.images import ImageGenerationError, get_image_generator
 from app.services.llm import get_llm
+from app.services.storage import StorageError, get_image_storage
 
 TEST_SETTINGS = Settings(
     _env_file=None,
@@ -60,9 +63,45 @@ class FakeLLM:
         return item if isinstance(item, str) else json.dumps(item, ensure_ascii=False)
 
 
+class FakeImageGenerator:
+    """Returns fixed PNG bytes (or fails) and records the prompts it received."""
+
+    model = "test-image-model"
+
+    def __init__(self):
+        self.prompts: list[str] = []
+        self.fail = False
+        self.fail_status = None
+
+    async def generate(self, prompt):
+        self.prompts.append(prompt)
+        if self.fail:
+            raise ImageGenerationError("boom", self.fail_status)
+        return b"\x89PNG-fake", "image/png"
+
+
+class FakeImageStorage:
+    """Records uploads and returns a fake public URL (or fails)."""
+
+    def __init__(self):
+        self.uploads: list[tuple[bytes, str]] = []
+        self.fail = False
+
+    def upload(self, data, content_type):
+        if self.fail:
+            raise StorageError("boom")
+        self.uploads.append((data, content_type))
+        return f"https://storage.test/idea-images/{len(self.uploads)}.png"
+
+
 @pytest.fixture
 def repo():
     return FakeIdeasRepository()
+
+
+@pytest.fixture
+def storage():
+    return FakeImageStorage()
 
 
 @pytest.fixture
@@ -71,15 +110,24 @@ def llm():
 
 
 @pytest.fixture
-def client(repo, llm):
+def images():
+    return FakeImageGenerator()
+
+
+@pytest.fixture
+def client(repo, llm, images, storage):
     app.dependency_overrides[get_settings] = lambda: TEST_SETTINGS
     app.dependency_overrides[get_repository] = lambda: repo
+    app.dependency_overrides[get_image_storage] = lambda: storage
     app.dependency_overrides[get_llm] = lambda: llm
+    app.dependency_overrides[get_image_generator] = lambda: images
     assistant_rate_limiter.reset()
+    image_rate_limiter.reset()
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
     assistant_rate_limiter.reset()
+    image_rate_limiter.reset()
 
 
 def make_token(sub: str = None, name: str = "Jan Kowalski", **extra) -> str:

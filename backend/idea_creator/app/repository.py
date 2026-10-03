@@ -21,7 +21,7 @@ FIELD_TO_COLUMN: dict[str, str] = {
     "etap": "stage",
 }
 
-PASSTHROUGH_COLUMNS = ("id", "category", "user_id", "author_name", "created_at")
+PASSTHROUGH_COLUMNS = ("id", "category", "user_id", "author_name", "image_url", "created_at")
 
 
 class RepositoryError(Exception):
@@ -40,8 +40,10 @@ class IdeasRepository:
 
     # ----- public API -----
 
-    def create(self, project: ProjectCreate, user_id: str, author_name: str) -> ProjectOut:
-        return self._from_row(self._insert_row(self._to_row(project, user_id, author_name)))
+    def create(
+        self, project: ProjectCreate, user_id: str, author_name: str, image_url: Optional[str] = None
+    ) -> ProjectOut:
+        return self._from_row(self._insert_row(self._to_row(project, user_id, author_name, image_url)))
 
     def list(self) -> list[ProjectOut]:
         return [self._from_row(row) for row in self._select_rows()]
@@ -53,12 +55,17 @@ class IdeasRepository:
     # ----- mapping -----
 
     @staticmethod
-    def _to_row(project: ProjectCreate, user_id: str, author_name: str) -> dict[str, Any]:
+    def _to_row(
+        project: ProjectCreate, user_id: str, author_name: str, image_url: Optional[str] = None
+    ) -> dict[str, Any]:
         row = {column: getattr(project, field) for field, column in FIELD_TO_COLUMN.items()}
         row["stage"] = project.etap.value
         row["category"] = project.category or DEFAULT_CATEGORY
         row["user_id"] = user_id
         row["author_name"] = author_name
+        # Omitted when absent, so publishing without an image works before the image_url migration.
+        if image_url:
+            row["image_url"] = image_url
         return row
 
     @staticmethod
@@ -97,11 +104,16 @@ class IdeasRepository:
 
 
 @lru_cache
-def _supabase_repository() -> IdeasRepository:
+def supabase_client() -> Any:
     from supabase import create_client
 
     settings = get_settings()
-    return IdeasRepository(create_client(settings.supabase_url, settings.supabase_key))
+    return create_client(settings.supabase_url, settings.supabase_key)
+
+
+@lru_cache
+def _supabase_repository() -> IdeasRepository:
+    return IdeasRepository(supabase_client())
 
 
 def get_repository() -> IdeasRepository:

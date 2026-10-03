@@ -15,6 +15,7 @@ class IdeaResponse(BaseModel):
     category: Optional[str] = "general"
     user_id: str
     author_name: str
+    image_url: Optional[str] = None
     created_at: str
     likes_count: int = 0
     volunteers_count: int = 0

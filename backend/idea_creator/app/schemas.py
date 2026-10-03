@@ -1,3 +1,6 @@
+import base64
+import binascii
+import re
 from enum import Enum
 from typing import Literal, Optional
 
@@ -27,6 +30,25 @@ def _empty_to_none(value):
     if isinstance(value, str) and not value.strip():
         return None
     return value
+
+
+MAX_IMAGE_BYTES = 8 * 1024 * 1024
+IMAGE_CONTENT_TYPES = {"image/png": "png", "image/jpeg": "jpg", "image/webp": "webp"}
+_DATA_URL_RE = re.compile(r"^data:(image/[a-z]+);base64,(.+)$", re.DOTALL)
+
+
+def parse_image_data_url(value: str) -> tuple[bytes, str]:
+    """Decodes a base64 image data URL into (bytes, content type); raises ValueError if invalid."""
+    match = _DATA_URL_RE.match(value)
+    if not match or match.group(1) not in IMAGE_CONTENT_TYPES:
+        raise ValueError(f"Obraz musi być data URL typu: {', '.join(IMAGE_CONTENT_TYPES)}.")
+    try:
+        data = base64.b64decode(match.group(2), validate=True)
+    except binascii.Error:
+        raise ValueError("Obraz ma niepoprawne kodowanie base64.")
+    if not data or len(data) > MAX_IMAGE_BYTES:
+        raise ValueError(f"Obraz musi mieć od 1 B do {MAX_IMAGE_BYTES // (1024 * 1024)} MB.")
+    return data, match.group(1)
 
 
 # ---------- Assistant ----------
@@ -104,6 +126,25 @@ class RefineResponse(BaseModel):
     changes: list[FieldChange] = Field(default_factory=list, max_length=1)
 
 
+# ---------- Visualization ----------
+
+
+class GenerateImageRequest(IdeaDraft):
+    category: Optional[str] = None
+
+    @model_validator(mode="after")
+    def requires_content(self):
+        if not (self.tytul.strip() or self.opis.strip()):
+            raise ValueError("Uzupełnij przynajmniej tytuł lub opis, aby wygenerować obraz.")
+        return self
+
+
+class GenerateImageResponse(BaseModel):
+    image: str = Field(..., description="Data URL (base64) of the generated image.")
+    prompt: str
+    model: str
+
+
 # ---------- LLM output contracts ----------
 
 
@@ -124,6 +165,10 @@ class LLMRefineOutput(BaseModel):
     summary: str = ""
 
 
+class LLMImagePromptOutput(BaseModel):
+    prompt: str = Field(..., min_length=20, max_length=1500)
+
+
 # ---------- Projects ----------
 
 
@@ -136,11 +181,19 @@ class ProjectCreate(BaseModel):
     odbiorcy: str = Field(..., min_length=1)
     etap: Stage
     category: Optional[str] = None
+    image: Optional[str] = Field(None, description="Visualization from /generate_image (data URL); stored on publish.")
 
-    @field_validator("category", mode="before")
+    @field_validator("category", "image", mode="before")
     @classmethod
-    def blank_category_to_none(cls, value):
+    def blank_to_none(cls, value):
         return _empty_to_none(value)
+
+    @field_validator("image")
+    @classmethod
+    def valid_image(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None:
+            parse_image_data_url(value)
+        return value
 
 
 class ProjectOut(BaseModel):
@@ -153,6 +206,7 @@ class ProjectOut(BaseModel):
     category: str = "general"
     user_id: Optional[str] = None
     author_name: Optional[str] = None
+    image_url: Optional[str] = None
     created_at: Optional[str] = None
 
     @model_validator(mode="before")
