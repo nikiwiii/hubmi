@@ -153,43 +153,6 @@ export default function AuthPage() {
     setIsSubmitting(false);
   };
 
-  const handleQuickLogin = async (demoEmail: string) => {
-    setErrorMsg("");
-    setSuccessMsg("");
-    setIsSubmitting(true);
-
-    const isAdmin = demoEmail.toLowerCase().includes("admin");
-    const defaultPassword = isAdmin ? "admin123" : "user123";
-
-    try {
-      const loggedUser = isAdmin
-        ? await loginAdmin(demoEmail, defaultPassword)
-        : await loginUser(demoEmail, defaultPassword);
-
-      setCurrentUser(loggedUser);
-      onUserChange(loggedUser);
-      setSuccessMsg(`Zalogowano profil: ${loggedUser.name}`);
-      setTimeout(
-        () => navigate(loggedUser.role === "admin" ? "admin" : "discover"),
-        400,
-      );
-      return;
-    } catch {
-      const users = getUsers();
-      const user = users.find((u) => u.email === demoEmail);
-      if (user) {
-        setCurrentUser(user);
-        onUserChange(user);
-        setTimeout(
-          () => navigate(user.role === "admin" ? "admin" : "discover"),
-          400,
-        );
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="max-w-md mx-auto py-10 px-4">
       <div className="mb-6 text-center">
@@ -304,44 +267,6 @@ export default function AuthPage() {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Quick Demo Switcher */}
-        <div className="mt-6 pt-5 border-t border-stone-100">
-          <p className="text-[11px] font-semibold text-stone-400 text-center mb-2">
-            Szybki profil testowy:
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => handleQuickLogin("anna.kowalska@hubmi.pl")}
-              className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-center transition-colors cursor-pointer"
-            >
-              <span className="block text-xs font-semibold text-stone-800">
-                Anna
-              </span>
-              <span className="text-[10px] text-stone-400">Twórca</span>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin("admin@hubmi.pl")}
-              className="p-2 rounded-xl bg-[#EFE5C6]/60 hover:bg-[#EFE5C6] border border-[#DFD3AE] text-center transition-colors cursor-pointer"
-            >
-              <span className="block text-xs font-semibold text-stone-800">
-                Marek
-              </span>
-              <span className="text-[10px] text-stone-600">Admin</span>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin("jan.wisniewski@hubmi.pl")}
-              className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-center transition-colors cursor-pointer"
-            >
-              <span className="block text-xs font-semibold text-stone-800">
-                Jan
-              </span>
-              <span className="text-[10px] text-stone-400">Tester</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
