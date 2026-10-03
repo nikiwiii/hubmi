@@ -239,7 +239,7 @@ export const RagChatSection: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <span className="px-2.5 py-1 bg-stone-900 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                    Najbliższe rozwiązanie (Top Match)
+                    Najbliższe rozwiązanie
                   </span>
                   <h4 className="text-lg font-bold text-stone-900 mt-2">
                     {result.top_solution.title}
@@ -248,7 +248,7 @@ export const RagChatSection: React.FC = () => {
 
                 <div className="sm:text-right">
                   <span className="text-xs text-stone-400 font-medium block">Podobieństwo semantyczne:</span>
-                  <span className="text-lg font-black text-emerald-700">
+                  <span className="text-lg font-bold text-emerald-700">
                     {result.top_solution.similarity_percentage}
                   </span>
                 </div>

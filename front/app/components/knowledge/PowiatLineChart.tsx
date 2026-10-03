@@ -115,7 +115,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
     if (active && payload && payload.length) {
       return (
         <div className="bg-stone-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl border border-white/10 text-xs space-y-1.5 min-w-[200px]">
-          <div className="font-bold text-amber-400 text-sm font-mono border-b border-white/10 pb-1">
+          <div className="font-bold text-amber-400 text-sm border-b border-white/10 pb-1">
             Rok {label}
           </div>
           {payload.map((entry: any, index: number) => (
@@ -127,7 +127,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
                 />
                 <span className="truncate max-w-[130px]">{entry.name}:</span>
               </span>
-              <span className="font-bold text-stone-100 font-mono">
+              <span className="font-bold text-stone-100">
                 {entry.value} {research.unit}
               </span>
             </div>
@@ -139,19 +139,14 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-6">
+    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs p-5 sm:p-6 space-y-6">
       {/* Nagłówek i przełączniki powiatów */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5" style={{ color: research.theme.accent }} />
-            <h3 className="text-base font-bold text-stone-900">
-              Analiza Trendu Liniowego – {activeSeries.powiatName}
-            </h3>
-          </div>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Dynamika zmian w latach {research.years[0]}–{research.years[research.years.length - 1]} w porównaniu ze średnią całego województwa.
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-4">
+        <div className="flex items-center gap-2">
+          <Activity className="w-5 h-5" style={{ color: research.theme.accent }} />
+          <h3 className="text-base font-bold text-stone-900">
+            {activeSeries.powiatName}
+          </h3>
         </div>
 
         {/* Selektory powiatu */}
@@ -199,7 +194,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
           <span className="text-[11px] font-medium text-stone-500 block">
             Początek ({research.years[0]})
           </span>
-          <span className="text-xl font-extrabold text-stone-900 font-mono mt-0.5 block">
+          <span className="text-xl font-extrabold text-stone-900 mt-0.5 block">
             {activeSeries.startValue} {research.unit}
           </span>
         </div>
@@ -208,7 +203,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
           <span className="text-[11px] font-medium text-stone-500 block">
             Ostatni pomiar ({research.years[research.years.length - 1]})
           </span>
-          <span className="text-xl font-extrabold text-stone-900 font-mono mt-0.5 block">
+          <span className="text-xl font-extrabold text-stone-900 mt-0.5 block">
             {activeSeries.endValue} {research.unit}
           </span>
         </div>
@@ -224,7 +219,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
               <TrendingDown className="w-4 h-4 text-rose-600" />
             )}
             <span
-              className={`text-xl font-extrabold font-mono ${
+              className={`text-xl font-extrabold ${
                 isPositiveTrend ? 'text-emerald-700' : 'text-rose-700'
               }`}
             >
@@ -240,7 +235,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
           </span>
           <div className="flex items-center gap-1.5 mt-0.5">
             <Award className="w-4 h-4 text-amber-500" />
-            <span className="text-xl font-extrabold text-stone-900 font-mono">
+            <span className="text-xl font-extrabold text-stone-900">
               #{activeSeries.latestRank}{' '}
               <span className="text-xs font-normal text-stone-500">/ 22</span>
             </span>

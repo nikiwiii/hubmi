@@ -119,24 +119,33 @@ export function getCategoryThemeAndShape(category: string): {
   if (
     cat.includes("zdrowie") ||
     cat.includes("lek") ||
-    cat.includes("bezpieczeństwo")
+    cat.includes("bezpieczeństwo") ||
+    cat.includes("szpital")
   ) {
     return { theme: "lavender", shape: "cloud" }; // Peaceful misty periwinkle
   }
   if (
     cat.includes("społecz") ||
     cat.includes("rozwój") ||
-    cat.includes("mądrość")
+    cat.includes("mądrość") ||
+    cat.includes("pomoc")
   ) {
     return { theme: "yellow", shape: "donut" }; // Warm pale sun yellow
   }
-  if (cat.includes("podróż") || cat.includes("kamper")) {
+  if (
+    cat.includes("podróż") ||
+    cat.includes("kamper") ||
+    cat.includes("demograf") ||
+    cat.includes("ludność")
+  ) {
     return { theme: "cyan", shape: "wave" }; // Sea glass cyan
   }
   if (
     cat.includes("rzemiosł") ||
     cat.includes("mebl") ||
-    cat.includes("pasj")
+    cat.includes("pasj") ||
+    cat.includes("piecz") ||
+    cat.includes("rodzin")
   ) {
     return { theme: "lilac", shape: "crescent" }; // Heather lilac
   }
@@ -144,7 +153,8 @@ export function getCategoryThemeAndShape(category: string): {
     cat.includes("prac") ||
     cat.includes("biznes") ||
     cat.includes("finanse") ||
-    cat.includes("księg")
+    cat.includes("księg") ||
+    cat.includes("bezrobot")
   ) {
     return { theme: "pink", shape: "diamond" }; // Soft rose
   }
