@@ -13,11 +13,8 @@ import {
 import { getCurrentUser, setCurrentUser as setStoredCurrentUser } from '../lib/auth';
 import {
   getIdeas,
-  voteIdea,
-  toggleTestingParticipation,
+  saveIdeas,
   addIdea as storeAddIdea,
-  updateIdea as storeUpdateIdea,
-  deleteIdea as storeDeleteIdea,
 } from '../lib/ideasStore';
 import { EMPTY_PROFILE } from '../lib/middleman';
 import {
@@ -199,10 +196,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const backendIdeas = await fetchIdeasFromBackend();
       if (backendIdeas && backendIdeas.length > 0) {
         setIdeas(backendIdeas);
+        saveIdeas(backendIdeas);
       } else {
-        setIdeas(getIdeas());
+        const local = getIdeas();
+        setIdeas(local);
       }
-    } catch {
+    } catch (e) {
+      console.warn('Failed to load ideas from backend:', e);
       setIdeas(getIdeas());
     } finally {
       setIsLoadingIdeas(false);
@@ -263,25 +263,57 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    // Optymistyczna zmiana lokalna
-    const updated = voteIdea(id, type);
-    setIdeas(updated);
+    // Optymistyczna zmiana lokalna na aktualnym stanie w React
+    setIdeas((prev) => {
+      const next = prev.map((item) => {
+        if (item.id !== id) return item;
+
+        let likes = item.likes;
+        let dislikes = item.dislikes;
+        let userVote: 'like' | 'dislike' | null = type;
+
+        if (item.userVote === type) {
+          // Cofnięcie polubienia / głosu (toggle off)
+          userVote = null;
+          if (type === 'like') likes = Math.max(0, likes - 1);
+          if (type === 'dislike') dislikes = Math.max(0, dislikes - 1);
+        } else {
+          // Zmiana z przeciwnego
+          if (item.userVote === 'like') likes = Math.max(0, likes - 1);
+          if (item.userVote === 'dislike') dislikes = Math.max(0, dislikes - 1);
+
+          if (type === 'like') likes += 1;
+          if (type === 'dislike') dislikes += 1;
+        }
+
+        return {
+          ...item,
+          likes,
+          dislikes,
+          userVote,
+        };
+      });
+      saveIdeas(next);
+      return next;
+    });
 
     // Synchronizacja z backendem
     try {
       const res = await toggleIdeaReaction(id, type);
-      setIdeas((prev) =>
-        prev.map((item) =>
+      setIdeas((prev) => {
+        const next = prev.map((item) =>
           item.id === id
             ? {
                 ...item,
                 likes: res.likes,
                 dislikes: res.dislikes,
-                userVote: res.active ? type : null
+                userVote: res.active ? type : null,
               }
             : item
-        )
-      );
+        );
+        saveIdeas(next);
+        return next;
+      });
     } catch (e) {
       console.warn('Backend vote note:', e);
     }
@@ -294,21 +326,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const email = currentUser.email;
-    const { ideas: updated } = toggleTestingParticipation(id, email);
-    setIdeas(updated);
+    setIdeas((prev) => {
+      const next = prev.map((item) => {
+        if (item.id !== id) return item;
+
+        const exists = item.testersList.includes(email);
+        const newList = exists
+          ? item.testersList.filter((e) => e !== email)
+          : [...item.testersList, email];
+        const count = exists ? Math.max(0, item.testersCount - 1) : item.testersCount + 1;
+
+        return {
+          ...item,
+          testersCount: count,
+          testersList: newList,
+        };
+      });
+      saveIdeas(next);
+      return next;
+    });
 
     try {
       const res = await toggleIdeaReaction(id, 'volunteer');
-      setIdeas((prev) =>
-        prev.map((item) =>
+      setIdeas((prev) => {
+        const next = prev.map((item) =>
           item.id === id
             ? {
                 ...item,
-                testersCount: res.volunteers
+                testersCount: res.volunteers,
+                testersList: res.active
+                  ? Array.from(new Set([...item.testersList, email]))
+                  : item.testersList.filter((e) => e !== email),
               }
             : item
-        )
-      );
+        );
+        saveIdeas(next);
+        return next;
+      });
     } catch (e) {
       console.warn('Backend volunteer note:', e);
     }
@@ -319,15 +373,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const created = await createIdeaOnBackend({
         title: newIdeaData.title,
         description: newIdeaData.description || newIdeaData.summary,
-        category: newIdeaData.category
+        category: newIdeaData.category,
       });
-      setIdeas((prev) => [created, ...prev]);
+      setIdeas((prev) => {
+        const next = [created, ...prev];
+        saveIdeas(next);
+        return next;
+      });
       router.push(`/discover/${created.id}`);
       return created;
     } catch (e) {
       console.warn('Backend create fallback to local:', e);
-      const created = storeAddIdea(newIdeaData);
-      setIdeas(getIdeas());
+      const created = storeAddIdea(newIdeaData, ideas);
+      setIdeas((prev) => {
+        const next = [created, ...prev];
+        saveIdeas(next);
+        return next;
+      });
       router.push(`/discover/${created.id}`);
       return created;
     }
@@ -335,7 +397,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // For ideas already saved by another service (e.g. Idea Creator), so they are not POSTed twice.
   const handleAddPublishedIdea = (idea: Idea) => {
-    setIdeas((prev) => [idea, ...prev.filter((i) => i.id !== idea.id)]);
+    setIdeas((prev) => {
+      const next = [idea, ...prev.filter((i) => i.id !== idea.id)];
+      saveIdeas(next);
+      return next;
+    });
   };
 
   const handleDeleteIdea = async (id: string) => {
@@ -344,8 +410,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.warn('Backend delete note:', e);
     }
-    const updated = storeDeleteIdea(id);
-    setIdeas(updated);
+    setIdeas((prev) => {
+      const next = prev.filter((item) => item.id !== id);
+      saveIdeas(next);
+      return next;
+    });
   };
 
   const handleUpdateIdeaStatus = async (

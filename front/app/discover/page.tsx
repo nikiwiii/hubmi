@@ -83,19 +83,27 @@ export default function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Wszystkie");
   const [onlyLookingForPartner, setOnlyLookingForPartner] = useState(false);
-  const [sortBy, setSortBy] = useState<"popular" | "newest" | "testers">("popular");
+  const [sortBy, setSortBy] = useState<"popular" | "newest" | "testers">(
+    "popular",
+  );
 
   // Modale: Partnerstwo oraz Przypisywanie mentora
   const [partnerModalIdea, setPartnerModalIdea] = useState<Idea | null>(null);
   const [partnerName, setPartnerName] = useState("");
-  const [partnerType, setPartnerType] = useState("Organizacja pozarządowa (NGO)");
+  const [partnerType, setPartnerType] = useState(
+    "Organizacja pozarządowa (NGO)",
+  );
   const [partnerEmail, setPartnerEmail] = useState("");
   const [partnerMsg, setPartnerMsg] = useState("");
-  const [partnerSuccessNotice, setPartnerSuccessNotice] = useState<string | null>(null);
+  const [partnerSuccessNotice, setPartnerSuccessNotice] = useState<
+    string | null
+  >(null);
 
   const [assignModalIdea, setAssignModalIdea] = useState<Idea | null>(null);
   const [expertsList, setExpertsList] = useState<RopsExpert[]>([]);
-  const [assignSuccessNotice, setAssignSuccessNotice] = useState<string | null>(null);
+  const [assignSuccessNotice, setAssignSuccessNotice] = useState<string | null>(
+    null,
+  );
 
   const isAdminOrExpert =
     currentUser?.role === "admin" || currentUser?.role === "expert";
@@ -121,7 +129,9 @@ export default function DiscoverPage() {
             .toLowerCase()
             .includes(selectedCategory.toLowerCase().slice(0, 4));
 
-        const matchesPartner = onlyLookingForPartner ? Boolean(idea.lookingForPartner) : true;
+        const matchesPartner = onlyLookingForPartner
+          ? Boolean(idea.lookingForPartner)
+          : true;
 
         return matchesQuery && matchesCategory && matchesPartner;
       })
@@ -139,13 +149,17 @@ export default function DiscoverPage() {
     if (!partnerModalIdea) return;
     try {
       await submitPartnershipRequest(partnerModalIdea.id, {
-        partner_name: partnerName.trim() || currentUser?.name || "Zainteresowany Partner",
+        partner_name:
+          partnerName.trim() || currentUser?.name || "Zainteresowany Partner",
         partner_type: partnerType,
-        contact_email: partnerEmail.trim() || currentUser?.email || "kontakt@partner.org",
-        message: partnerMsg.trim() || "Chcemy nawiązać współpracę przy realizacji pomysłu.",
+        contact_email:
+          partnerEmail.trim() || currentUser?.email || "kontakt@partner.org",
+        message:
+          partnerMsg.trim() ||
+          "Chcemy nawiązać współpracę przy realizacji pomysłu.",
       });
       setPartnerSuccessNotice(
-        `Wysłano zgłoszenie partnerstwa do autora pomysłu "${partnerModalIdea.title}"!`
+        `Wysłano zgłoszenie partnerstwa do autora pomysłu "${partnerModalIdea.title}"!`,
       );
       setTimeout(() => {
         setPartnerModalIdea(null);
@@ -166,7 +180,7 @@ export default function DiscoverPage() {
         expert_specialization: expert.specialization,
       });
       setAssignSuccessNotice(
-        `Przypisano mentora ${expert.name} do pomysłu "${assignModalIdea.title}"!`
+        `Przypisano mentora ${expert.name} do pomysłu "${assignModalIdea.title}"!`,
       );
       if (refreshIdeas) refreshIdeas();
       setTimeout(() => {
@@ -188,7 +202,8 @@ export default function DiscoverPage() {
             <span className="block text-stone-300">Inspiruj Zmiany</span>
           </div>
           <p className="text-xs sm:text-sm text-stone-500 mt-2 max-w-lg">
-            Przeglądaj innowacje i oddolne projekty mieszkańców Małopolski, nawiązuj partnerstwa i współpracuj z ekspertami ROPS.
+            Przeglądaj innowacje i oddolne projekty mieszkańców Małopolski,
+            nawiązuj partnerstwa i współpracuj z ekspertami ROPS.
           </p>
         </div>
 
@@ -294,6 +309,7 @@ export default function DiscoverPage() {
             const isUserTester = currentUser
               ? idea.testersList.includes(currentUser.email)
               : false;
+
             return (
               <IdeaCard
                 key={idea.id}
@@ -348,13 +364,17 @@ export default function DiscoverPage() {
             </div>
 
             <div className="p-3 bg-[#FAF9F5] rounded-xl text-xs text-stone-700 space-y-1">
-              <div className="font-bold text-stone-900">Pomysł: {partnerModalIdea.title}</div>
+              <div className="font-bold text-stone-900">
+                Pomysł: {partnerModalIdea.title}
+              </div>
               <div>Autor: {partnerModalIdea.authorName}</div>
-              {partnerModalIdea.partnerTypes && partnerModalIdea.partnerTypes.length > 0 && (
-                <div className="text-[11px] text-amber-900">
-                  Poszukiwany profil: <strong>{partnerModalIdea.partnerTypes.join(", ")}</strong>
-                </div>
-              )}
+              {partnerModalIdea.partnerTypes &&
+                partnerModalIdea.partnerTypes.length > 0 && (
+                  <div className="text-[11px] text-amber-900">
+                    Poszukiwany profil:{" "}
+                    <strong>{partnerModalIdea.partnerTypes.join(", ")}</strong>
+                  </div>
+                )}
             </div>
 
             {partnerSuccessNotice ? (
@@ -363,7 +383,10 @@ export default function DiscoverPage() {
                 <span>{partnerSuccessNotice}</span>
               </div>
             ) : (
-              <form onSubmit={handleSubmitPartnerOffer} className="space-y-3 text-xs">
+              <form
+                onSubmit={handleSubmitPartnerOffer}
+                className="space-y-3 text-xs"
+              >
                 <div>
                   <label className="block font-semibold text-stone-700 mb-1">
                     Nazwa organizacji / podmiotu
@@ -388,11 +411,21 @@ export default function DiscoverPage() {
                       onChange={(e) => setPartnerType(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white focus:outline-none"
                     >
-                      <option value="Organizacja pozarządowa (NGO)">Organizacja pozarządowa (NGO)</option>
-                      <option value="Jednostka samorządu (gmina / OPS)">Jednostka samorządu (gmina / OPS)</option>
-                      <option value="Firma / Biznes odpowiedzialny społecznie">Firma / Biznes odpowiedzialny społecznie</option>
-                      <option value="Instytucja naukowa / uczelnia">Instytucja naukowa / uczelnia</option>
-                      <option value="Grupa nieformalna mieszkańców">Grupa nieformalna mieszkańców</option>
+                      <option value="Organizacja pozarządowa (NGO)">
+                        Organizacja pozarządowa (NGO)
+                      </option>
+                      <option value="Jednostka samorządu (gmina / OPS)">
+                        Jednostka samorządu (gmina / OPS)
+                      </option>
+                      <option value="Firma / Biznes odpowiedzialny społecznie">
+                        Firma / Biznes odpowiedzialny społecznie
+                      </option>
+                      <option value="Instytucja naukowa / uczelnia">
+                        Instytucja naukowa / uczelnia
+                      </option>
+                      <option value="Grupa nieformalna mieszkańców">
+                        Grupa nieformalna mieszkańców
+                      </option>
                     </select>
                   </div>
 
@@ -468,8 +501,12 @@ export default function DiscoverPage() {
             </div>
 
             <div className="p-3 bg-[#FAF9F5] rounded-xl text-xs text-stone-700 space-y-0.5">
-              <div className="font-bold text-stone-900">Projekt: {assignModalIdea.title}</div>
-              <div className="text-[11px] text-stone-500">Kategoria: {assignModalIdea.category}</div>
+              <div className="font-bold text-stone-900">
+                Projekt: {assignModalIdea.title}
+              </div>
+              <div className="text-[11px] text-stone-500">
+                Kategoria: {assignModalIdea.category}
+              </div>
             </div>
 
             {assignSuccessNotice ? (
@@ -489,9 +526,13 @@ export default function DiscoverPage() {
                     className="p-3.5 rounded-xl border border-black/5 bg-stone-50/70 hover:bg-white hover:border-black/15 transition-all cursor-pointer flex items-center justify-between gap-3 text-xs shadow-2xs group"
                   >
                     <div>
-                      <h4 className="font-bold text-stone-900 group-hover:text-black">{exp.name}</h4>
+                      <h4 className="font-bold text-stone-900 group-hover:text-black">
+                        {exp.name}
+                      </h4>
                       <p className="text-[11px] text-stone-600">{exp.title}</p>
-                      <p className="text-[10px] text-stone-500 pt-0.5">Specjalizacja: {exp.specialization}</p>
+                      <p className="text-[10px] text-stone-500 pt-0.5">
+                        Specjalizacja: {exp.specialization}
+                      </p>
                     </div>
 
                     <button
@@ -520,4 +561,3 @@ export default function DiscoverPage() {
     </div>
   );
 }
-
