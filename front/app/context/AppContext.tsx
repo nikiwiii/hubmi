@@ -15,6 +15,7 @@ import {
   getIdeas,
   saveIdeas,
   addIdea as storeAddIdea,
+  updateIdea as storeUpdateIdea,
 } from '../lib/ideasStore';
 import { EMPTY_PROFILE } from '../lib/middleman';
 import {

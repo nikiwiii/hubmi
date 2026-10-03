@@ -126,6 +126,29 @@ INDICATORS_CONFIG = [
         "unit": "mieszkańców/muzeum",
         "description": "Liczba mieszkańców przypadających na jedno muzeum lub oddział muzealny.",
     },
+    {
+        "key": "disability_support_share",
+        "pointer_id": 37,
+        "name": "Pomoc społeczna z powodu niepełnosprawności",
+        "unit": "%",
+        "description": "Udział rodzin i osób z niepełnosprawnościami objętych świadczeniami pomocy społecznej w ogólnej liczbie rodzin korzystających ze wsparcia ROPS.",
+    },
+    {
+        "key": "severe_disability_share",
+        "pointer_id": 219,
+        "name": "Osoby ze znacznym stopniem niepełnosprawności",
+        "unit": "%",
+        "description": "Odsetek osób ze znacznym stopniem niepełnosprawności (w tym osób poruszających się na wózkach inwalidzkich i z ograniczeniami ruchowymi) wśród osób z orzeczeniem (NSP).",
+        "fallback_years": ["2021"],
+    },
+    {
+        "key": "total_disability_share",
+        "pointer_id": 215,
+        "name": "Odsetek osób z niepełnosprawnościami",
+        "unit": "%",
+        "description": "Odsetek osób posiadających orzeczenie o niepełnosprawności w ogólnej liczbie mieszkańców danego powiatu (NSP).",
+        "fallback_years": ["2021"],
+    },
 ]
 
 

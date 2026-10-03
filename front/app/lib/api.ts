@@ -17,6 +17,7 @@ import {
   TestingSummary,
   FeedbackSubmitPayload,
   TesterApplication,
+  KnowledgeRagResponse,
 } from "./types";
 import { setCurrentUser } from "./auth";
 import { saveStoredInnovations } from "./innovationsStore";
@@ -950,5 +951,28 @@ export async function submitIdeaComment(
   }
   return await res.json();
 }
+
+// ==========================================
+// 8. RAG RAPORTÓW I BADAŃ SPOŁECZNYCH (/api/indicators/rag)
+// ==========================================
+export async function searchKnowledgeRag(
+  query: string,
+  powiatId?: string
+): Promise<KnowledgeRagResponse> {
+  const res = await apiFetch(`${API_BASE}/api/indicators/rag`, {
+    method: "POST",
+    headers: getHeaders(false),
+    body: JSON.stringify({
+      query,
+      powiat_id: powiatId || null,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd wyszukiwania analitycznego w bazie raportów.");
+  }
+  return await res.json();
+}
+
 
 

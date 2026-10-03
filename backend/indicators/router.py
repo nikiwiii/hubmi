@@ -51,6 +51,7 @@ def fetch_indicators_from_supabase() -> Dict[str, Any]:
                 continue
             result[ind_id] = {
                 "name": ind.get("name", ind_id),
+                "category_id": ind.get("category_id"),
                 "unit": ind.get("unit", ""),
                 "description": ind.get("description", ""),
                 "years": [],
@@ -130,3 +131,60 @@ def refresh_indicators_cache():
     _CACHE_DATA = None
     _CACHE_TIMESTAMP = 0
     return {"success": True, "message": "Cache wskaźników został wyczyszczony."}
+
+
+@router.get("/categories", summary="Pobierz kategorie wskaźników")
+def get_indicator_categories():
+    if is_supabase_connected and supabase_client:
+        try:
+            r = supabase_client.table("indicator_categories").select("*").order("sort_order").execute()
+            if r.data:
+                return {"success": True, "categories": r.data}
+        except Exception as e:
+            logger.warning(f"Błąd pobierania kategorii z Supabase: {e}")
+
+    # Fallback lokalny
+    from seed_indicators import CATEGORIES_DATA
+    return {"success": True, "categories": CATEGORIES_DATA}
+
+
+@router.get("/powiaty", summary="Pobierz listę 22 małopolskich powiatów")
+def get_powiaty_list():
+    if is_supabase_connected and supabase_client:
+        try:
+            r = supabase_client.table("powiaty").select("*").order("name").execute()
+            if r.data:
+                return {"success": True, "powiaty": r.data}
+        except Exception as e:
+            logger.warning(f"Błąd pobierania powiatów z Supabase: {e}")
+
+    # Fallback lokalny
+    from seed_indicators import POWIATY_DATA
+    return {"success": True, "powiaty": POWIATY_DATA}
+
+
+from pydantic import BaseModel, Field
+from indicators.rag_service import KnowledgeRagService
+
+class IndicatorsRagRequest(BaseModel):
+    query: str = Field(..., min_length=2, description="Zapytanie analityczne, np. 'osoby na wózkach w powiecie krakowskim'")
+    powiat_id: Optional[str] = Field(None, description="Opcjonalny identyfikator powiatu do zawężenia analizy")
+
+@router.post("/rag", summary="RAG Raportów i Wskaźników: Inteligentne dopasowanie badań, wykresów powiatowych i synteza AI")
+def query_indicators_rag(req: IndicatorsRagRequest):
+    """
+    Punkt wejścia dla RAG Raportów Społecznych:
+    - Rozpoznaje powiat (np. Powiat Krakowski) i tematykę (np. niepełnosprawność ruchowa, wózki).
+    - Zwraca dokładne dane liczbowe, pozycję w regionie, serie czasowe do wykresów oraz syntezę analityczną AI.
+    - Wzbogaca wyniki o powiązane innowacje z bazy ROPS Kraków oraz dedykowanego eksperta.
+    """
+    try:
+        result = KnowledgeRagService.execute_rag(
+            query=req.query,
+            preferred_powiat_id=req.powiat_id
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Błąd podczas wykonywania RAG wskaźników: {e}")
+        raise HTTPException(status_code=500, detail=f"Błąd przetwarzania zapytania analitycznego: {str(e)}")
+

@@ -61,12 +61,14 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
   onToggleTesting,
 }) => {
   const router = useRouter();
+  const isAdmin = currentUser?.role === "admin";
   const [summary, setSummary] = useState<TestingSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"reviews" | "add_review" | "comments">("reviews");
 
   // Tester application states
   const [myAppStatus, setMyAppStatus] = useState<"none" | "pending" | "approved" | "rejected">("none");
+  const isApprovedTester = isTester || myAppStatus === "approved" || isAdmin;
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [motivationInput, setMotivationInput] = useState("");
   const [isSubmittingApp, setIsSubmittingApp] = useState(false);
@@ -300,10 +302,10 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
 
         {/* Tester status CTA */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
-          {isTester || myAppStatus === "approved" ? (
+          {isApprovedTester ? (
             <div className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold bg-emerald-600 text-white shadow-md ring-2 ring-emerald-300/40">
               <Check className="w-4 h-4 stroke-[3]" />
-              <span>Aktywny Tester Projektu</span>
+              <span>{isAdmin ? "Status Administratora (Uprawnienia testera)" : "Aktywny Zaakceptowany Tester"}</span>
             </div>
           ) : myAppStatus === "pending" ? (
             <div className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold bg-amber-500 text-white shadow-md ring-2 ring-amber-300/40">
@@ -553,7 +555,7 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
 
       {/* TAB CONTENT: 2. ADD FEEDBACK FORM */}
       {activeTab === "add_review" && (
-        !(isTester || myAppStatus === "approved") ? (
+        !isApprovedTester ? (
           <div className="p-8 sm:p-12 text-center max-w-lg mx-auto space-y-4">
             <div
               className={`w-14 h-14 rounded-2xl mx-auto flex items-center justify-center ${myAppStatus === "pending"
@@ -571,13 +573,13 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
             <h3 className="text-base font-bold text-stone-900">
               {myAppStatus === "pending"
                 ? "Twoje zgłoszenie do roli testera oczekuje na decyzję administratora"
-                : "Wymagany status zatwierdzonego testera"}
+                : "Wymagany status zaakceptowanego testera"}
             </h3>
 
             <p className="text-xs text-stone-600 leading-relaxed">
               {myAppStatus === "pending"
-                ? "Administrator weryfikuje Twoją aplikację. Gdy zostanie zaakceptowana, otrzymasz powiadomienie e-mail i formularz ocen użyteczności zostanie automatycznie odblokowany."
-                : "Aby oceniać użyteczność prototypu i zgłaszać formalny feedback, należy wysłać zapytanie o zostanie testerem innowacji. Administrator zweryfikuje zgłoszenie."}
+                ? "Administrator weryfikuje Twoją aplikację. Gdy zostanie zaakceptowana, otrzymasz powiadomienie i formularz ocen użyteczności zostanie automatycznie odblokowany."
+                : "Aby oceniać użyteczność prototypu i wystawić formalną opinię, musisz najpierw zostać zaakceptowany jako tester przez administratora. Wyślij zapytanie poniżej."}
             </p>
 
             {myAppStatus !== "pending" && (
@@ -793,32 +795,57 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
             )}
           </div>
 
-          {/* Add comment input */}
-          <form onSubmit={handleAddComment} className="space-y-2 pt-2 border-t border-stone-200">
-            <label className="text-xs font-bold text-stone-900 block">
-              Dodaj komentarz do wątku testowego
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={commentInput}
-                onChange={(e) => setCommentInput(e.target.value)}
-                placeholder="Wpisz treść komentarza lub zapytania..."
-                className="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 focus:outline-none focus:border-stone-900"
-              />
-              <button
-                type="submit"
-                disabled={isSubmittingComment || !commentInput.trim()}
-                className="flex items-center gap-1.5 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Dodaj</span>
-              </button>
+          {/* Add comment input - restricted to approved testers & admins */}
+          {isApprovedTester ? (
+            <form onSubmit={handleAddComment} className="space-y-2 pt-2 border-t border-stone-200">
+              <label className="text-xs font-bold text-stone-900 block">
+                Dodaj komentarz do wątku testowego (Aktywny Tester)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={commentInput}
+                  onChange={(e) => setCommentInput(e.target.value)}
+                  placeholder="Wpisz treść komentarza lub zapytania..."
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 focus:outline-none focus:border-stone-900"
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmittingComment || !commentInput.trim()}
+                  className="flex items-center gap-1.5 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Dodaj</span>
+                </button>
+              </div>
+              {commentError && (
+                <p className="text-[11px] text-rose-600 font-semibold">{commentError}</p>
+              )}
+            </form>
+          ) : (
+            <div className="pt-4 border-t border-stone-200 p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5 max-w-md">
+                <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+                  Komentowanie wymaga akceptacji zgłoszenia testera
+                </span>
+                <p className="text-[11px] text-stone-600 leading-relaxed">
+                  {myAppStatus === "pending"
+                    ? "Twoje zgłoszenie do testów oczekuje na decyzję administratora. Po zatwierdzeniu będziesz mógł dodawać pytania i komentarze."
+                    : "Wątek dyskusyjny testów jest przeznaczony dla zaakceptowanych testerów projektu oraz administratorów."}
+                </p>
+              </div>
+              {myAppStatus !== "pending" && (
+                <button
+                  type="button"
+                  onClick={handleOpenApplyModal}
+                  className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs"
+                >
+                  {currentUser ? "Zgłoś się do testów" : "Zaloguj się"}
+                </button>
+              )}
             </div>
-            {commentError && (
-              <p className="text-[11px] text-rose-600 font-semibold">{commentError}</p>
-            )}
-          </form>
+          )}
         </div>
       )}
 

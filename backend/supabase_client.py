@@ -453,6 +453,7 @@ class DatabaseRepository:
     def get_tester_applications(
         idea_id: Optional[str] = None,
         user_id: Optional[str] = None,
+        user_email: Optional[str] = None,
         status: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         remote_data = None
@@ -463,6 +464,8 @@ class DatabaseRepository:
                     q = q.eq("idea_id", idea_id)
                 if user_id:
                     q = q.eq("user_id", user_id)
+                if user_email:
+                    q = q.eq("user_email", user_email)
                 if status:
                     q = q.eq("status", status)
                 res = q.execute()
@@ -476,7 +479,7 @@ class DatabaseRepository:
                 local_save_tester_application(itm)
             return remote_data
 
-        local_data = local_get_tester_applications(idea_id=idea_id, user_id=user_id, status=status)
+        local_data = local_get_tester_applications(idea_id=idea_id, user_id=user_id, user_email=user_email, status=status)
         if local_data:
             return local_data
 
