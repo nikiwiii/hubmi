@@ -19,6 +19,7 @@ import { BrowseIdeasScreen } from './components/BrowseIdeasScreen';
 import { ChatScreen } from './components/ChatScreen';
 import { AdminCrudScreen } from './components/AdminCrudScreen';
 import { UserDashboardScreen } from './components/UserDashboardScreen';
+import { KnowledgeHubScreen } from './components/KnowledgeHubScreen';
 
 export default function Home() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('discover');
@@ -142,6 +143,13 @@ export default function Home() {
           <ChatScreen
             currentUser={currentUser}
             initialRecipientId={chatRecipientId}
+          />
+        );
+
+      case 'knowledge':
+        return (
+          <KnowledgeHubScreen
+            onNavigate={handleNavigate}
           />
         );
 

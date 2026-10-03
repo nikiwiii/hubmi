@@ -67,7 +67,31 @@ export type ScreenId =
   | 'browse'
   | 'chat'
   | 'admin'
-  | 'dashboard';
+  | 'dashboard'
+  | 'knowledge';
+
+export type KnowledgeType = 'challenge' | 'innovation' | 'education';
+
+export interface KnowledgeResource {
+  id: string;
+  title: string;
+  subtitle: string;
+  type: KnowledgeType;
+  categoryLabel: string;
+  theme: ColorTheme;
+  shape: ShapeType;
+  summary: string;
+  content: string;
+  keyMetric?: string;
+  metricLabel?: string;
+  videoUrl?: string;
+  videoDuration?: string;
+  tags: string[];
+  source: string;
+  date: string;
+  readTime: string;
+  statusBadge?: string;
+}
 
 // Deterministic category to color theme & shape mapping
 export function getCategoryThemeAndShape(category: string): {
