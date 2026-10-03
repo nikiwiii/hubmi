@@ -352,7 +352,7 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
     title: b.title,
     subtitle: b.category ? `Kategoria: ${b.category}` : "Innowacja społeczna",
     authorId: b.user_id,
-    authorName: b.author_name || "Użytkownik minno",
+    authorName: b.author_name || "Użytkownik MiNNO",
     authorEmail: `${b.user_id}@minno.pl`,
     category: b.category || "Społeczność",
     summary:

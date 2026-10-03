@@ -39,7 +39,7 @@ def publish_project(
                 role_target="admin",
                 link="/admin",
                 recipient_email="admin@rops.krakow.pl",
-                subject=f"[minno / ROPS Kraków] Nowe zgłoszenie w Kreatorze Pomysłów: {project.tytul}"
+                subject=f"[MiNNO / ROPS Kraków] Nowe zgłoszenie w Kreatorze Pomysłów: {project.tytul}"
             )
         except Exception:
             pass

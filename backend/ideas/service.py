@@ -74,7 +74,7 @@ class IdeaService:
             role_target="admin",
             link="/admin",
             recipient_email="admin@rops.krakow.pl",
-            subject=f"[minno / ROPS Kraków] Nowe zgłoszenie pomysłu: {data.title}"
+            subject=f"[MiNNO / ROPS Kraków] Nowe zgłoszenie pomysłu: {data.title}"
         )
 
         return cls._compute_stats(created, user_id)
@@ -123,7 +123,7 @@ class IdeaService:
             role_target="user",
             link=f"/chat?topic={idea.get('title')}",
             recipient_email="autor@hubmi.org",
-            subject=f"[minno / ROPS] Twój projekt '{idea.get('title')}' otrzymał mentora merytorycznego"
+            subject=f"[MiNNO / ROPS] Twój projekt '{idea.get('title')}' otrzymał mentora merytorycznego"
         )
 
         return cls._compute_stats(updated, user_id)
@@ -142,7 +142,7 @@ class IdeaService:
             role_target="user",
             link="/discover",
             recipient_email="autor@hubmi.org",
-            subject=f"[minno / Partnerstwo] {data.partner_name} chce nawiązać partnerstwo przy '{idea.get('title')}'"
+            subject=f"[MiNNO / Partnerstwo] {data.partner_name} chce nawiązać partnerstwo przy '{idea.get('title')}'"
         )
 
         return {

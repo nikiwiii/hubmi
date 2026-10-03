@@ -155,7 +155,7 @@ export function mapProjectToIdea(p: PublishedProject): Idea {
     title: p.tytul,
     subtitle: `Etap: ${stageLabel(p.etap)}`,
     authorId: p.user_id || '',
-    authorName: p.author_name || 'Użytkownik minno',
+    authorName: p.author_name || 'Użytkownik MiNNO',
     authorEmail: `${p.user_id}@minno.pl`,
     category: p.category || 'general',
     summary: opis.slice(0, 140) + (opis.length > 140 ? '...' : ''),

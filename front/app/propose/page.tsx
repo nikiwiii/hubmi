@@ -1016,7 +1016,7 @@ export default function ProposePage() {
                 ) : (
                   <>
                     <Check className="w-4 h-4 stroke-[2.5]" />
-                    <span>Opublikuj pomysł w minno</span>
+                    <span>Opublikuj pomysł w MiNNO</span>
                   </>
                 )}
               </button>
