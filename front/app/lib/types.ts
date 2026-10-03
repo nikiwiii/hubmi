@@ -82,7 +82,8 @@ export type ScreenId =
   | "chat"
   | "admin"
   | "dashboard"
-  | "knowledge";
+  | "knowledge"
+  | "matching";
 
 export type KnowledgeType = "challenge" | "innovation" | "education";
 

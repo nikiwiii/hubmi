@@ -13,7 +13,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   const isAuthPage = pathname?.startsWith('/auth');
   const isKnowledgePage = pathname?.startsWith('/knowledge');
-  const isPublicPage = isAuthPage || isKnowledgePage;
+  const isMatchingPage = pathname?.startsWith('/matching');
+  const isPublicPage = isAuthPage || isKnowledgePage || isMatchingPage;
 
   useEffect(() => {
     if (!isLoadingUser && !currentUser && !isPublicPage) {
@@ -31,7 +32,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   // While checking session or redirecting unauthenticated users on protected pages
-  if (!isKnowledgePage && (isLoadingUser || !currentUser)) {
+  if (!isKnowledgePage && !isMatchingPage && (isLoadingUser || !currentUser)) {
     return (
       <>
         <Navbar

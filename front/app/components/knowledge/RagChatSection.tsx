@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import { sendMatchingChat } from '../../lib/api';
 import { MatchResponse } from '../../lib/types';
 import {
-  Sparkles,
+  Bot,
   Search,
   ExternalLink,
   ShieldAlert,
@@ -56,11 +56,11 @@ export const RagChatSection: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-[#EFE5C6] flex items-center justify-center text-stone-900 font-bold">
-            <Sparkles className="w-5 h-5" />
+            <Bot className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-xl font-bold text-stone-900">
-              Inteligentny Doradca Innowacji Społecznych (RAG + Groq AI)
+              Inteligentny Doradca Innowacji Społecznych
             </h3>
             <p className="text-xs text-stone-500 font-medium mt-0.5">
               Wektorowe przeszukiwanie bazy 115 innowacji ROPS Kraków, Guardrails, Explainability i Tracing.
@@ -179,13 +179,10 @@ export const RagChatSection: React.FC = () => {
             <div className="flex items-center justify-between border-b border-stone-200/70 pb-3">
               <div className="flex items-center gap-2 text-xs font-bold text-stone-900">
                 <div className="w-5 h-5 rounded-md bg-[#EFE5C6] flex items-center justify-center text-stone-900">
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Bot className="w-3.5 h-3.5" />
                 </div>
                 <span>Rekomendacja Doradcy Społecznego ROPS</span>
               </div>
-              <span className="text-[11px] font-medium text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-md">
-                Groq AI • RAG
-              </span>
             </div>
 
             <div className="text-sm text-stone-800 leading-relaxed font-normal">
