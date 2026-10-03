@@ -19,6 +19,7 @@ import {
   TesterApplication,
 } from "./types";
 import { setCurrentUser } from "./auth";
+import { saveStoredInnovations } from "./innovationsStore";
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -358,7 +359,7 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
     title: b.title,
     subtitle: b.category ? `Kategoria: ${b.category}` : "Innowacja społeczna",
     authorId: b.user_id,
-    authorName: b.author_name || "Użytkownik minno",
+    authorName: b.author_name || "Użytkownik MiNNO",
     authorEmail: `${b.user_id}@minno.pl`,
     category: b.category || "Społeczność",
     summary:
@@ -581,25 +582,17 @@ export async function sendMatchingChat(
   return await res.json();
 }
 
-export async function fetchInnovations(): Promise<any[]> {
-  const res = await apiFetch(`${API_BASE}/api/matching/innovations`, {
-    method: "GET",
-    headers: getHeaders(false),
-  });
-
-  if (!res.ok) {
-    throw new Error("Błąd pobierania innowacji.");
-  }
-
-  return await res.json();
+export async function fetchInnovations(): Promise<InnovationRecord[]> {
+  return searchInnovations("");
 }
 
 export async function searchInnovations(
   search: string,
   limit?: number,
 ): Promise<InnovationRecord[]> {
+  const trimmed = search.trim();
   const url = new URL(`${API_BASE}/api/innovations`);
-  if (search.trim()) url.searchParams.set("search", search.trim());
+  if (trimmed) url.searchParams.set("search", trimmed);
   if (limit !== undefined && limit > 0) {
     url.searchParams.set("limit", String(limit));
   }
@@ -610,7 +603,11 @@ export async function searchInnovations(
   if (!res.ok) {
     throw new Error("Błąd pobierania innowacji.");
   }
-  return await res.json();
+  const data: InnovationRecord[] = await res.json();
+  if (!trimmed && (!limit || limit >= 50)) {
+    saveStoredInnovations(data);
+  }
+  return data;
 }
 
 export async function fetchInnovationById(

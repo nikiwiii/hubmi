@@ -46,7 +46,7 @@ class IdeaService:
             category=idea.get("category", "general"),
             user_id=str(idea["user_id"]),
             author_name=idea.get("author_name") or "Anonim",
-            image_url=idea.get("image_url"),
+            image_url=idea.get("image_url") or idea.get("essence"),
             created_at=str(idea["created_at"]),
             status=idea.get("status", "pending"),
             likes_count=likes,
@@ -149,7 +149,7 @@ class IdeaService:
             role_target="user",
             link=f"/chat?topic={idea.get('title')}",
             recipient_email="autor@hubmi.org",
-            subject=f"[minno / ROPS] Twój projekt '{idea.get('title')}' otrzymał mentora merytorycznego"
+            subject=f"[MiNNO / ROPS] Twój projekt '{idea.get('title')}' otrzymał mentora merytorycznego"
         )
 
         return cls._compute_stats(updated, user_id)
@@ -168,7 +168,7 @@ class IdeaService:
             role_target="user",
             link="/discover",
             recipient_email="autor@hubmi.org",
-            subject=f"[minno / Partnerstwo] {data.partner_name} chce nawiązać partnerstwo przy '{idea.get('title')}'"
+            subject=f"[MiNNO / Partnerstwo] {data.partner_name} chce nawiązać partnerstwo przy '{idea.get('title')}'"
         )
 
         return {

@@ -65,7 +65,7 @@ export function CustomTabList(props: TabListProps) {
           <ThemedText style={styles.brandBadgeText}>m</ThemedText>
         </View>
         <ThemedText type="smallBold" style={styles.brandText}>
-          minno
+          MiNNO
         </ThemedText>
 
         {props.children}

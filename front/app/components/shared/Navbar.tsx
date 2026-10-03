@@ -77,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="w-8.5 h-8.5 rounded-xl overflow-hidden shadow-xs group-hover:scale-105 transition-transform duration-200 shrink-0">
               <img
                 src="/logo.svg"
-                alt="minno logo"
+                alt="MiNNO logo"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -85,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="text-2xl font-bold bg-gradient-to-r from-stone-900 via-stone-800 to-stone-600 bg-clip-text text-transparent tracking-tight font-ubuntu"
               style={{ fontFamily: "var(--font-ubuntu), 'Ubuntu', sans-serif" }}
             >
-              minno
+              MiNNO
             </span>
           </div>
 

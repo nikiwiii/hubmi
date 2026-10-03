@@ -158,7 +158,7 @@ export default function AuthPage() {
         <div className="w-11 h-11 rounded-xl overflow-hidden shadow-xs mb-2">
           <img
             src="/logo.svg"
-            alt="minno logo"
+            alt="MiNNO logo"
             className="w-full h-full object-cover"
           />
         </div>
@@ -166,7 +166,7 @@ export default function AuthPage() {
           className="text-xl font-bold text-stone-900 tracking-tight font-ubuntu"
           style={{ fontFamily: "var(--font-ubuntu), 'Ubuntu', sans-serif" }}
         >
-          minno
+          MiNNO
         </span>
         <p className="text-[11px] text-stone-500 font-medium mt-0.5">
           Małopolskie Innowacje Społeczne &amp; ROPS Kraków

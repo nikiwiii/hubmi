@@ -176,7 +176,7 @@ export default function ProfileScreen() {
             onPress={() =>
               Alert.alert(
                 "Wyloguj",
-                "Czy na pewno chcesz się wylogować z minno?",
+                "Czy na pewno chcesz się wylogować z MiNNO?",
                 [
                   { text: "Anuluj", style: "cancel" },
                   { text: "Wyloguj", style: "destructive" },

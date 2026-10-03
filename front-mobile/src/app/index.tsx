@@ -102,7 +102,7 @@ export default function DiscoverScreen() {
               <Text style={styles.logoText}>m</Text>
             </View>
             <View>
-              <Text style={styles.brandTitle}>minno</Text>
+              <Text style={styles.brandTitle}>MiNNO</Text>
               <Text style={styles.brandSubtitle}>Społeczność & Innowacje</Text>
             </View>
           </View>

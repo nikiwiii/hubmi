@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ChatMessage, ChatContact, BackendConversation, RopsExpert } from "../lib/types";
+import {
+  ChatMessage,
+  ChatContact,
+  BackendConversation,
+  RopsExpert,
+} from "../lib/types";
 import {
   INITIAL_CONTACTS,
   getChatMessages,
@@ -59,7 +64,8 @@ function ChatContent() {
 
   const currentUserId = currentUser?.id || "";
   const currentUserName = currentUser?.name || "";
-  const isExpertOrAdmin = currentUser?.role === "admin" || currentUser?.role === "expert";
+  const isExpertOrAdmin =
+    currentUser?.role === "admin" || currentUser?.role === "expert";
 
   // Auth guard — redirect to /auth when not logged in
   useEffect(() => {
@@ -332,7 +338,8 @@ function ChatContent() {
               </h2>
             </div>
             <p className="text-xs text-stone-500 font-medium">
-              Bezpośredni dialog mieszkańców, ekspertów regionalnych i mentorów innowacji społecznych.
+              Bezpośredni dialog mieszkańców, ekspertów regionalnych i mentorów
+              innowacji społecznych.
             </p>
           </div>
         </div>
@@ -372,7 +379,8 @@ function ChatContent() {
                     Katalog Ekspertów i Mentorów ROPS Kraków
                   </h3>
                   <p className="text-xs text-stone-500">
-                    Wybierz eksperta dziedzinowego do indywidualnej konsultacji lub mentoringu projektu.
+                    Wybierz eksperta dziedzinowego do indywidualnej konsultacji
+                    lub mentoringu projektu.
                   </p>
                 </div>
               </div>
@@ -393,13 +401,16 @@ function ChatContent() {
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-stone-900">{exp.name}</h4>
+                      <h4 className="text-sm font-bold text-stone-900">
+                        {exp.name}
+                      </h4>
                       <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
                         Dostępny mentor
                       </span>
                     </div>
                     <p className="text-xs font-medium text-stone-700">
-                      {exp.title} • <span className="text-stone-500">{exp.department}</span>
+                      {exp.title} •{" "}
+                      <span className="text-stone-500">{exp.department}</span>
                     </p>
                     <p className="text-[11px] text-stone-600 pt-1">
                       <strong>Specjalizacja:</strong> {exp.specialization}
@@ -492,10 +503,6 @@ function ChatContent() {
         <div className="md:col-span-4 border-r border-stone-100 bg-[#FAF9F5] flex flex-col">
           <div className="p-3 border-b border-stone-100 bg-white/50 text-[11px] font-bold text-stone-400 uppercase tracking-wider flex items-center justify-between">
             <span>Aktywne dialogi ({contacts.length})</span>
-            <span className="text-emerald-700 font-mono text-[10px] flex items-center gap-1 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Realtime
-            </span>
           </div>
           <div className="flex-1 overflow-y-auto divide-y divide-stone-100/80">
             {contacts.length === 0 ? (
@@ -612,7 +619,8 @@ function ChatContent() {
                       Napisz do eksperta ({activeContact.name})
                     </p>
                     <p className="text-xs text-stone-400 mt-1">
-                      Wiadomości synchronizowane są automatycznie przez API backendu i bazę danych.
+                      Wiadomości synchronizowane są automatycznie przez API
+                      backendu i bazę danych.
                     </p>
                   </div>
                 ) : (
@@ -633,7 +641,9 @@ function ChatContent() {
                           <p className="whitespace-pre-wrap">{m.text}</p>
                           <div
                             className={`flex items-center gap-1 text-[10px] font-mono mt-1 ${
-                              isMe ? "text-stone-300 justify-end" : "text-stone-400"
+                              isMe
+                                ? "text-stone-300 justify-end"
+                                : "text-stone-400"
                             }`}
                           >
                             <span>{m.timestamp}</span>
@@ -693,4 +703,3 @@ export default function ChatPage() {
     </Suspense>
   );
 }
-

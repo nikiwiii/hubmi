@@ -14,6 +14,7 @@ import {
   X,
   MessageSquareText,
   BookOpen,
+  Lightbulb,
 } from "lucide-react";
 import { getAllResearches, ResearchInfo } from "../../lib/researchData";
 
@@ -343,14 +344,10 @@ export function ResearchAIChat({ onClose }: ResearchAIChatProps = {}) {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm sm:text-base font-bold text-stone-900">
-                Doradca Badań i Raportów Społecznych
+              <h3 className="text-sm sm:text-xl font-bold text-stone-900">
+                Czat
               </h3>
             </div>
-            <p className="text-xs text-stone-500">
-              Wyszukuje diagnozy ROPS i dane powiatów dopasowane do Twojego
-              pomysłu
-            </p>
           </div>
         </div>
 
@@ -360,22 +357,20 @@ export function ResearchAIChat({ onClose }: ResearchAIChatProps = {}) {
           <div className="flex lg:hidden bg-stone-200/70 p-0.5 rounded-xl text-xs font-semibold">
             <button
               onClick={() => setMobileTab("chat")}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                mobileTab === "chat"
-                  ? "bg-white text-stone-900 shadow-2xs"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${mobileTab === "chat"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-600 hover:text-stone-900"
+                }`}
             >
               <MessageSquareText className="w-3.5 h-3.5" />
               <span>Czat</span>
             </button>
             <button
               onClick={() => setMobileTab("reports")}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                mobileTab === "reports"
-                  ? "bg-white text-stone-900 shadow-2xs"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${mobileTab === "reports"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-600 hover:text-stone-900"
+                }`}
             >
               <FileText className="w-3.5 h-3.5" />
               <span>Raporty ({activeMatches.length})</span>
@@ -408,9 +403,8 @@ export function ResearchAIChat({ onClose }: ResearchAIChatProps = {}) {
       <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
         {/* LEWA KOLUMNA: Czysty czat konwersacyjny */}
         <div
-          className={`lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-stone-200/70 bg-white ${
-            mobileTab === "reports" ? "hidden lg:flex" : "flex"
-          }`}
+          className={`lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-stone-200/70 bg-white ${mobileTab === "reports" ? "hidden lg:flex" : "flex"
+            }`}
         >
           {/* Okno wiadomości */}
           <div
@@ -420,17 +414,15 @@ export function ResearchAIChat({ onClose }: ResearchAIChatProps = {}) {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex flex-col ${
-                  msg.sender === "user" ? "items-end" : "items-start"
-                }`}
+                className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"
+                  }`}
               >
                 {/* Dymek wiadomości */}
                 <div
-                  className={`max-w-xl rounded-2xl p-4 sm:p-5 text-sm leading-relaxed shadow-2xs ${
-                    msg.sender === "user"
-                      ? "bg-stone-900 text-white rounded-br-xs"
-                      : "bg-white border border-stone-200/80 text-stone-800 rounded-bl-xs space-y-2.5"
-                  }`}
+                  className={`max-w-xl rounded-2xl p-4 sm:p-5 text-sm leading-relaxed shadow-2xs ${msg.sender === "user"
+                    ? "bg-stone-900 text-white rounded-br-xs"
+                    : "bg-white border border-stone-200/80 text-stone-800 rounded-bl-xs space-y-2.5"
+                    }`}
                 >
                   <p className="whitespace-pre-line font-medium">
                     {msg.displayedText !== undefined
@@ -519,9 +511,8 @@ export function ResearchAIChat({ onClose }: ResearchAIChatProps = {}) {
 
         {/* PRAWA KOLUMNA: Odrębny panel dopasowanych raportów (Separacja raportów) */}
         <div
-          className={`lg:col-span-5 flex flex-col bg-stone-50/50 p-4 sm:p-6 space-y-4 overflow-y-auto max-h-[600px] ${
-            mobileTab === "chat" ? "hidden lg:flex" : "flex"
-          }`}
+          className={`lg:col-span-5 flex flex-col bg-stone-50/50 p-4 sm:p-6 space-y-4 overflow-y-auto max-h-[600px] ${mobileTab === "chat" ? "hidden lg:flex" : "flex"
+            }`}
         >
           {/* Nagłówek panelu raportów */}
           <div className="flex items-center justify-between pb-2 border-b border-stone-200/60">
@@ -562,14 +553,14 @@ export function ResearchAIChat({ onClose }: ResearchAIChatProps = {}) {
           {!isAnalyzing && activeMatches.length === 0 && (
             <div className="py-2">
               <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-2xs text-left space-y-2">
-                <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
-                  💡
+                <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <Lightbulb className="w-4 h-4 text-amber-700" />
                 </div>
                 <h5 className="text-sm font-bold text-stone-900">
                   Jak działa doradca?
                 </h5>
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  Opisz w oknie czatu swój pomysł, a w tym miejscu pojawią się
+                  W tym miejscu pojawią się
                   konkretne badania ROPS Kraków, mapy powiatów oraz argumenty do
                   wniosku dotacyjnego.
                 </p>
@@ -611,9 +602,13 @@ export function ResearchAIChat({ onClose }: ResearchAIChatProps = {}) {
                     </h5>
 
                     {/* Dlaczego raport pasuje */}
-                    <p className="text-xs text-stone-700 leading-relaxed font-medium bg-stone-50 p-2.5 rounded-xl border border-stone-200/60">
-                      💡 <strong>Dlaczego to ważne:</strong> {relevanceReason}
-                    </p>
+                    <div className="flex items-start gap-2 text-xs text-stone-700 leading-relaxed font-medium bg-stone-50 p-2.5 rounded-xl border border-stone-200/60">
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                      <span>
+                        <strong className="text-stone-900">Dlaczego to ważne:</strong>{" "}
+                        {relevanceReason}
+                      </span>
+                    </div>
 
                     {/* Sugestia lokalizacji */}
                     <div className="flex items-start gap-1.5 text-xs text-stone-600">
