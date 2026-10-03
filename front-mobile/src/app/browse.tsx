@@ -276,7 +276,7 @@ export default function BrowseScreen() {
 
                       <Pressable
                         style={styles.chatButton}
-                        onPress={() => router.push("/chat")}
+                        onPress={() => router.push(`/chat/${idea.authorId}` as any)}
                       >
                         <Text style={styles.chatButtonText}>💬 Czat</Text>
                       </Pressable>
