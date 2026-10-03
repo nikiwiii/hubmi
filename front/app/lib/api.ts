@@ -10,6 +10,7 @@ import {
   ServiceCardResponse,
   getCategoryThemeAndShape,
 } from "./types";
+import { setCurrentUser } from "./auth";
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -61,11 +62,16 @@ async function apiFetch(
   if (res.status === 401 && !isAuthEndpoint) {
     // Token wygasł lub jest nieprawidłowy w zapytaniach wymagających autoryzacji
     setAuthToken(null);
+    setCurrentUser(null);
     if (
       typeof window !== "undefined" &&
       !window.location.pathname.startsWith("/auth")
     ) {
-      window.location.href = "/auth";
+      const redirect =
+        window.location.pathname && window.location.pathname !== "/"
+          ? `?redirect=${encodeURIComponent(window.location.pathname)}`
+          : "";
+      window.location.href = `/auth${redirect}`;
     }
   }
 
@@ -153,15 +159,22 @@ export async function loginUser(
   email: string,
   password: string,
 ): Promise<User> {
-  const res = await apiFetch(`${API_BASE}/api/login/user`, {
-    method: "POST",
-    headers: getHeaders(false),
-    body: JSON.stringify({ email, password }),
-  });
+  let res: Response;
+  try {
+    res = await apiFetch(`${API_BASE}/api/login/user`, {
+      method: "POST",
+      headers: getHeaders(false),
+      body: JSON.stringify({ email, password }),
+    });
+  } catch {
+    throw new Error(
+      "Nie udało się połączyć z serwerem. Upewnij się, że backend jest uruchomiony na porcie 8000."
+    );
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(extractErrorMessage(err, "Błąd logowania użytkownika."));
+    throw new Error(extractErrorMessage(err, "Nieprawidłowy adres e-mail lub hasło."));
   }
 
   const data: LoginResponse = await res.json();
@@ -178,7 +191,7 @@ export async function loginUser(
   const isAdmin =
     userRole === "admin" || userEmail.toLowerCase().includes("admin");
 
-  return {
+  const userObj: User = {
     id: userId,
     email: userEmail,
     name: userName,
@@ -189,21 +202,30 @@ export async function loginUser(
       new Date().toISOString().split("T")[0],
     status: "active",
   };
+  setCurrentUser(userObj);
+  return userObj;
 }
 
 export async function loginAdmin(
   email: string,
   password: string,
 ): Promise<User> {
-  const res = await apiFetch(`${API_BASE}/api/login/admin`, {
-    method: "POST",
-    headers: getHeaders(false),
-    body: JSON.stringify({ email, password }),
-  });
+  let res: Response;
+  try {
+    res = await apiFetch(`${API_BASE}/api/login/admin`, {
+      method: "POST",
+      headers: getHeaders(false),
+      body: JSON.stringify({ email, password }),
+    });
+  } catch {
+    throw new Error(
+      "Nie udało się połączyć z serwerem. Upewnij się, że backend jest uruchomiony na porcie 8000."
+    );
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(extractErrorMessage(err, "Błąd logowania administratora."));
+    throw new Error(extractErrorMessage(err, "Nieprawidłowy adres e-mail lub hasło administratora."));
   }
 
   const data: LoginResponse = await res.json();
@@ -217,7 +239,7 @@ export async function loginAdmin(
     data.full_name ||
     "Główny Administrator";
 
-  return {
+  const userObj: User = {
     id: userId,
     email: userEmail,
     name: userName,
@@ -228,6 +250,8 @@ export async function loginAdmin(
       new Date().toISOString().split("T")[0],
     status: "active",
   };
+  setCurrentUser(userObj);
+  return userObj;
 }
 
 export async function registerUser(
@@ -236,11 +260,18 @@ export async function registerUser(
   name: string,
   role: string = "user",
 ): Promise<User> {
-  const res = await apiFetch(`${API_BASE}/api/login/register`, {
-    method: "POST",
-    headers: getHeaders(false),
-    body: JSON.stringify({ email, password, full_name: name, role }),
-  });
+  let res: Response;
+  try {
+    res = await apiFetch(`${API_BASE}/api/login/register`, {
+      method: "POST",
+      headers: getHeaders(false),
+      body: JSON.stringify({ email, password, full_name: name, role }),
+    });
+  } catch {
+    throw new Error(
+      "Nie udało się połączyć z serwerem. Upewnij się, że backend jest uruchomiony na porcie 8000."
+    );
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -270,7 +301,7 @@ export async function fetchCurrentProfile(): Promise<User | null> {
     const userRole = data.role === "admin" ? "admin" : "creator";
     const userName =
       data.full_name || data.name || data.email?.split("@")[0] || "Użytkownik";
-    return {
+    const userObj: User = {
       id: data.id,
       email: data.email,
       name: userName,
@@ -279,6 +310,8 @@ export async function fetchCurrentProfile(): Promise<User | null> {
       createdAt: data.created_at?.split("T")[0] || "2026-03-01",
       status: "active",
     };
+    setCurrentUser(userObj);
+    return userObj;
   } catch {
     return null;
   }

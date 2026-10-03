@@ -18,7 +18,8 @@ import {
   deleteIdeaOnBackend,
   toggleIdeaReaction,
   fetchCurrentProfile,
-  setAuthToken
+  setAuthToken,
+  getAuthToken,
 } from '../lib/api';
 
 interface AppContextType {
@@ -45,7 +46,9 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
-  const [currentUser, setCurrentUserState] = useState<User | null>(null);
+  const [currentUser, setCurrentUserState] = useState<User | null>(() => {
+    return getCurrentUser();
+  });
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -72,17 +75,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const loadUser = async () => {
       setIsLoadingUser(true);
       try {
+        const token = getAuthToken();
+        if (!token) {
+          // Brak aktywnego tokenu JWT -> użytkownik niezalogowany
+          setCurrentUserState(null);
+          setStoredCurrentUser(null);
+          return;
+        }
+
         const profile = await fetchCurrentProfile();
         if (profile) {
           setCurrentUserState(profile);
           setStoredCurrentUser(profile);
         } else {
-          setCurrentUserState(null);
-          setStoredCurrentUser(null);
+          // Jeśli token jest nieważny (401 wyczyścił token w apiFetch)
+          if (!getAuthToken()) {
+            setCurrentUserState(null);
+            setStoredCurrentUser(null);
+          }
         }
-      } catch {
-        setCurrentUserState(null);
-        setStoredCurrentUser(null);
+      } catch (err) {
+        console.warn('Błąd weryfikacji profilu użytkownika:', err);
       } finally {
         setIsLoadingUser(false);
       }
