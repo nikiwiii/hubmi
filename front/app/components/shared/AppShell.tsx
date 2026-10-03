@@ -83,7 +83,15 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         ideasCount={ideas.length}
         onNavigate={navigate}
       />
-      <main className="flex-1 pb-20 md:pb-8">{children}</main>
+      <main
+        className={`flex-1 ${
+          pathname === "/matching"
+            ? "pb-2 sm:pb-3 flex flex-col min-h-0"
+            : "pb-20 md:pb-8"
+        }`}
+      >
+        {children}
+      </main>
     </>
   );
 };
