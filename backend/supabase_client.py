@@ -80,8 +80,6 @@ class MemoryDB:
         # ============================================================
         # Baza innowacji (Innovations) - Domyślne dane dla RAG matching
         # ============================================================
-        from matching.embeddings import compute_embedding
-
         raw_innovations = [
             {
                 "id": "11111111-aaaa-bbbb-cccc-000000000001",
@@ -151,9 +149,7 @@ class MemoryDB:
         ]
 
         for item in raw_innovations:
-            # Tworzymy bogaty tekst do embeddingu (problem + opis + grupa docelowa + dofinansowanie)
-            text_to_embed = f"{item['title']}. Problem: {item['addressed_problems']}. Grupa docelowa: {item['target_group']}. Dofinansowanie: {item['funding_info']}"
-            item["embedding"] = compute_embedding(text_to_embed)
+            item["embedding"] = None
             item["created_at"] = datetime.now(timezone.utc).isoformat()
             self.innovations.append(item)
 
