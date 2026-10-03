@@ -152,7 +152,9 @@ export default function DashboardPage() {
                 isTester={true}
                 onChat={(e) => {
                   e.stopPropagation();
-                  openChatWithAuthor(idea.authorId);
+                  router.push(
+                    `/chat?topic=${encodeURIComponent(`Testy projektu: ${idea.title}`)}`,
+                  );
                 }}
               />
             ))}

@@ -7,6 +7,7 @@ import { GeometricIllustration } from "../../components/shared/GeometricIllustra
 import { getThemeStyles } from "../../components/shared/IdeaCard";
 import { InnovationTestPanel } from "../../components/testing/InnovationTestPanel";
 import { useApp } from "../../context/AppContext";
+import { startExpertConversation } from "../../lib/api";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -40,6 +41,7 @@ export default function DiscoverIdeaDetailPage() {
   } = useApp();
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isOpeningChat, setIsOpeningChat] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -243,10 +245,39 @@ export default function DiscoverIdeaDetailPage() {
           {/* Right Action buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => openChatWithAuthor(currentIdea.authorId)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-sm font-semibold transition-colors cursor-pointer"
+              onClick={async () => {
+                if (!currentUser) {
+                  router.push(
+                    `/auth?redirect=${encodeURIComponent(`/discover/${currentIdea.id}`)}`,
+                  );
+                  return;
+                }
+                setIsOpeningChat(true);
+                try {
+                  const conv = await startExpertConversation({
+                    idea_id: currentIdea.id,
+                    idea_title: currentIdea.title,
+                    topic: `Konsultacja pomysłu: ${currentIdea.title}`,
+                    initial_message: `Dzień dobry, chciałbym skonsultować pomysł „${currentIdea.title}” w obszarze: ${currentIdea.category}.`,
+                  });
+                  router.push(`/chat?recipient=${encodeURIComponent(conv.id)}`);
+                } catch (err) {
+                  console.warn("Błąd startExpertConversation:", err);
+                  router.push(
+                    `/chat?topic=${encodeURIComponent(`Konsultacja: ${currentIdea.title}`)}`,
+                  );
+                } finally {
+                  setIsOpeningChat(false);
+                }
+              }}
+              disabled={isOpeningChat}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60"
             >
-              <MessageSquare className="w-4 h-4 text-stone-500" />
+              {isOpeningChat ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-stone-500" />
+              ) : (
+                <MessageSquare className="w-4 h-4 text-stone-500" />
+              )}
               <span>Zapytaj eksperta</span>
             </button>
 
