@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { User } from "../lib/types";
 import { setCurrentUser } from "../lib/auth";
 import { loginUser, loginAdmin, registerUser } from "../lib/api";
@@ -18,7 +19,8 @@ import {
 import { useApp } from "../context/AppContext";
 
 export default function AuthPage() {
-  const { setCurrentUser: onUserChange, navigate } = useApp();
+  const router = useRouter();
+  const { currentUser, setCurrentUser: onUserChange } = useApp();
 
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState("");
@@ -28,6 +30,24 @@ export default function AuthPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [redirectPath, setRedirectPath] = useState("/");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const redir = params.get("redirect");
+      if (redir && redir.startsWith("/")) {
+        setRedirectPath(redir);
+      }
+    }
+  }, []);
+
+  // Jeśli użytkownik jest już zalogowany, automatycznie przekieruj
+  useEffect(() => {
+    if (currentUser) {
+      router.replace(redirectPath);
+    }
+  }, [currentUser, redirectPath, router]);
 
   const handleLoginOrRegister = async (
     e: React.SyntheticEvent<HTMLFormElement>,
@@ -53,7 +73,7 @@ export default function AuthPage() {
       }
 
       if (password.length < 4) {
-        setErrorMsg("Za krótkie hasło!");
+        setErrorMsg("Hasło musi mieć co najmniej 4 znaki!");
         setIsSubmitting(false);
         return;
       }
@@ -69,43 +89,36 @@ export default function AuthPage() {
         setCurrentUser(user);
         onUserChange(user);
         setSuccessMsg(`Konto utworzone pomyślnie. Witaj, ${user.name}!`);
-        setTimeout(() => navigate("discover"), 600);
-      } catch (backendErr: any) {
-        let msg =
-          backendErr?.message || "Wystąpił błąd podczas rejestracji konta.";
+        setTimeout(() => {
+          router.replace(redirectPath);
+        }, 500);
+      } catch (backendErr: unknown) {
+        const err = backendErr as { message?: string };
+        let msg = err?.message || "Wystąpił błąd podczas rejestracji konta.";
         if (
           typeof msg !== "string" ||
           msg.includes("[object Object]") ||
           msg.includes("object Object")
         ) {
-          msg =
-            password.length < 4
-              ? "Za krótkie hasło!"
-              : "Wystąpił błąd podczas rejestracji konta.";
-        }
-        if (
-          msg.toLowerCase().includes("hasło") &&
-          (msg.toLowerCase().includes("krótki") ||
-            msg.toLowerCase().includes("znaki") ||
-            msg.toLowerCase().includes("short"))
-        ) {
-          msg = "Za krótkie hasło!";
+          msg = "Wystąpił błąd podczas rejestracji konta.";
         }
         setErrorMsg(msg);
         setIsSubmitting(false);
       }
     } else {
       try {
-        const isAdmin = trimmedEmail.toLowerCase().includes("admin");
+        const isAdminHint = trimmedEmail.toLowerCase().includes("admin");
         let loggedUser: User;
-        if (isAdmin) {
+
+        if (isAdminHint) {
           try {
             loggedUser = await loginAdmin(trimmedEmail, password);
-          } catch (adminErr: any) {
-            // Fallback to normal user login if role wasn't admin
+          } catch (adminErr: unknown) {
+            // Jeśli logowanie admina zwróciło brak uprawnień lub błąd specyficzny dla admina, spróbuj standardowego
+            const aErr = adminErr as { message?: string };
             if (
-              adminErr?.message?.includes("Dostęp zabroniony") ||
-              adminErr?.message?.includes("uprawnień")
+              aErr?.message?.includes("uprawnień") ||
+              aErr?.message?.includes("Dostęp zabroniony")
             ) {
               loggedUser = await loginUser(trimmedEmail, password);
             } else {
@@ -119,9 +132,20 @@ export default function AuthPage() {
         setCurrentUser(loggedUser);
         onUserChange(loggedUser);
         setSuccessMsg(`Zalogowano pomyślnie: ${loggedUser.name}`);
-        setTimeout(() => navigate("discover"), 600);
-      } catch (backendErr: any) {
-        setErrorMsg(backendErr?.message || "Niepoprawne dane logowania.");
+        setTimeout(() => {
+          router.replace(redirectPath);
+        }, 500);
+      } catch (backendErr: unknown) {
+        const err = backendErr as { message?: string };
+        let msg = err?.message || "Niepoprawne dane logowania.";
+        if (
+          typeof msg !== "string" ||
+          msg.includes("[object Object]") ||
+          msg.includes("object Object")
+        ) {
+          msg = "Niepoprawne dane logowania.";
+        }
+        setErrorMsg(msg);
         setIsSubmitting(false);
       }
     }
@@ -145,13 +169,13 @@ export default function AuthPage() {
           minno
         </span>
         <p className="text-xs text-stone-500 font-medium mt-1">
-          Platforma Pomysłów &amp; Społeczność
+          Małopolskie Innowacje Społeczne &amp; ROPS Kraków
         </p>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs h-112.5 flex flex-col justify-between">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs flex flex-col gap-4">
         <div>
-          {/* Toggle Login / Register */}
+          {/* Przełącznik Logowanie / Rejestracja */}
           <div className="flex bg-stone-100 p-1 rounded-xl mb-3 shrink-0">
             <button
               type="button"
@@ -185,8 +209,8 @@ export default function AuthPage() {
             </button>
           </div>
 
-          {/* Reserved height alert area */}
-          <div className="min-h-5 mb-2 flex flex-col justify-center">
+          {/* Komunikaty błędów i sukcesów */}
+          <div className="min-h-5 mb-1 flex flex-col justify-center">
             {errorMsg && (
               <div className="p-2.5 bg-rose-50 border border-rose-200/60 text-rose-700 rounded-xl text-xs font-medium flex items-start gap-2 animate-in fade-in duration-150">
                 <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
@@ -205,84 +229,78 @@ export default function AuthPage() {
 
         <form
           onSubmit={handleLoginOrRegister}
-          className="flex-1 flex flex-col justify-between pt-1"
+          className="flex flex-col gap-3.5"
         >
-          <div className="space-y-3.5">
-            {isRegister ? (
-              <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
-                  Imię i nazwisko
-                </label>
-                <div className="relative">
-                  <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Anna Kowalska"
-                    disabled={isSubmitting}
-                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
-                  />
-                </div>
-              </div>
-            ) : (
-              <></>
-            )}
-
+          {isRegister && (
             <div>
               <label className="block text-xs font-medium text-stone-700 mb-1">
-                E-mail
+                Imię i nazwisko
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="twoj@email.pl"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Anna Kowalska"
                   disabled={isSubmitting}
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
                 />
               </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-xs font-medium text-stone-700 mb-1">
-                Hasło
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <div>
+            <label className="block text-xs font-medium text-stone-700 mb-1">
+              E-mail
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="twoj@email.pl"
+                disabled={isSubmitting}
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
+              />
+            </div>
+          </div>
 
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Hasło"
-                  disabled={isSubmitting}
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  disabled={isSubmitting}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 transition-colors p-1 rounded-lg cursor-pointer"
-                  title={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-700 mb-1">
+              Hasło
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Hasło"
+                disabled={isSubmitting}
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                disabled={isSubmitting}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 transition-colors p-1 rounded-lg cursor-pointer"
+                title={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-4 disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
+            className="w-full py-3 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 shadow-2xs"
           >
             {isSubmitting ? (
               <>

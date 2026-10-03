@@ -14,6 +14,7 @@ import {
   BookOpen,
   Search,
   Handshake,
+  LogOut,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 
@@ -23,6 +24,7 @@ interface NavbarProps {
   currentUser: User | null;
   isLargeFont: boolean;
   onToggleFontSize: () => void;
+  onLogout?: () => void;
   unreadCount?: number;
   ideasCount?: number;
 }
@@ -33,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   isLargeFont,
   onToggleFontSize,
+  onLogout,
 }) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -143,15 +146,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Czat
             </button>
-            <button
-              onClick={() => navigateTo("dashboard")}
-              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${activeScreen === "dashboard"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-600 hover:text-stone-900"
-                }`}
-            >
-              Pulpit
-            </button>
             {isAdmin && (
               <button
                 onClick={() => navigateTo("admin")}
@@ -187,21 +181,36 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {currentUser ? (
-              <div
-                onClick={() => navigateTo("dashboard")}
-                className="flex items-center gap-2 p-1 pl-2.5 rounded-xl bg-white border border-stone-200 hover:border-stone-300 cursor-pointer transition-colors"
-              >
-                <span className="hidden sm:inline-block text-xs font-semibold text-stone-800 truncate max-w-25">
-                  {currentUser.name || currentUser.email || "Konto"}
-                </span>
+              <div className="flex items-center gap-1.5">
                 <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-stone-800"
-                  style={{ backgroundColor: currentUser.avatarBg || "#A4B3F6" }}
+                  onClick={() => navigateTo("dashboard")}
+                  title="Przejdź do profilu użytkownika"
+                  className="flex items-center gap-2 p-1 pl-2.5 rounded-xl bg-white border border-stone-200 hover:border-stone-300 cursor-pointer transition-colors shadow-2xs"
                 >
-                  {(currentUser.name || currentUser.email || "U")
-                    .charAt(0)
-                    .toUpperCase()}
+                  <span className="hidden sm:inline-block text-xs font-semibold text-stone-800 truncate max-w-28">
+                    {currentUser.name || currentUser.email || "Konto"}
+                  </span>
+                  <div
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-stone-800"
+                    style={{ backgroundColor: currentUser.avatarBg || "#A4B3F6" }}
+                  >
+                    {(currentUser.name || currentUser.email || "U")
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
                 </div>
+
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    title="Wyloguj się"
+                    aria-label="Wyloguj się"
+                    className="p-2 rounded-xl text-stone-400 hover:text-stone-900 hover:bg-stone-200/60 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             ) : (
               <button
@@ -294,7 +303,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <UserIcon className="w-5 h-5" />
             <span className="text-[10px]">
-              {currentUser ? "Pulpit" : "Konto"}
+              {currentUser ? "Konto" : "Zaloguj"}
             </span>
           </button>
         </div>
