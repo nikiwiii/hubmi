@@ -2,7 +2,14 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Idea, ScreenId } from '../lib/types';
+import {
+  User,
+  Idea,
+  ScreenId,
+  InnovationRecord,
+  InstitutionProfile,
+  ServiceCardResponse,
+} from '../lib/types';
 import { getCurrentUser, setCurrentUser as setStoredCurrentUser } from '../lib/auth';
 import {
   getIdeas,
@@ -10,8 +17,17 @@ import {
   toggleTestingParticipation,
   addIdea as storeAddIdea,
   updateIdea as storeUpdateIdea,
-  deleteIdea as storeDeleteIdea
+  deleteIdea as storeDeleteIdea,
 } from '../lib/ideasStore';
+import { EMPTY_PROFILE } from '../lib/middleman';
+import {
+  getStoredInnovations,
+  saveStoredInnovations,
+  filterInnovations,
+  getStoredMiddlemanDraft,
+  saveStoredMiddlemanDraft,
+  clearStoredMiddlemanDraft,
+} from '../lib/innovationsStore';
 import {
   fetchIdeasFromBackend,
   createIdeaOnBackend,
@@ -20,7 +36,10 @@ import {
   fetchCurrentProfile,
   setAuthToken,
   getAuthToken,
+  searchInnovations,
 } from '../lib/api';
+
+export type MiddlemanStep = 'pick' | 'profile' | 'result';
 
 interface AppContextType {
   currentUser: User | null;
@@ -40,6 +59,32 @@ interface AppContextType {
   selectIdea: (idea: Idea) => void;
   openChatWithAuthor: (authorId: string) => void;
   refreshIdeas: () => Promise<void>;
+
+  // Innowacje (ROPS Kraków)
+  innovations: InnovationRecord[];
+  isLoadingInnovations: boolean;
+  innovationsError: string | null;
+  loadInnovations: (forceRefresh?: boolean) => Promise<InnovationRecord[]>;
+  searchLocalInnovations: (query: string) => InnovationRecord[];
+
+  // Middleman (Innowacja -> Usługa)
+  middlemanStep: MiddlemanStep;
+  setMiddlemanStep: (step: MiddlemanStep) => void;
+  selectedInnovation: InnovationRecord | null;
+  setSelectedInnovation: (inn: InnovationRecord | null) => void;
+  institutionProfile: InstitutionProfile;
+  setInstitutionProfile: React.Dispatch<React.SetStateAction<InstitutionProfile>>;
+  serviceCardResult: ServiceCardResponse | null;
+  setServiceCardResult: (result: ServiceCardResponse | null) => void;
+  pickerQuery: string;
+  setPickerQuery: (query: string) => void;
+  pickerPage: number;
+  setPickerPage: (page: number) => void;
+  resetMiddleman: () => void;
+
+  // Asystent Innowacji (Matching chat history)
+  matchingMessages: any[];
+  setMatchingMessages: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -53,6 +98,91 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isLargeFont, setIsLargeFont] = useState(false);
+
+  // Innowacje (centralna baza danych i pamięć podręczna)
+  const [innovations, setInnovations] = useState<InnovationRecord[]>(() => {
+    return getStoredInnovations();
+  });
+  const [isLoadingInnovations, setIsLoadingInnovations] = useState(false);
+  const [innovationsError, setInnovationsError] = useState<string | null>(null);
+
+  // Middleman (Innowacja -> Usługa) stan z pamięcią podręczną
+  const initialDraft = getStoredMiddlemanDraft();
+  const [middlemanStep, setMiddlemanStepState] = useState<MiddlemanStep>(
+    initialDraft?.step || 'pick'
+  );
+  const [selectedInnovation, setSelectedInnovationState] = useState<InnovationRecord | null>(
+    initialDraft?.selectedInnovation || null
+  );
+  const [institutionProfile, setInstitutionProfile] = useState<InstitutionProfile>(
+    initialDraft?.profile || EMPTY_PROFILE
+  );
+  const [serviceCardResult, setServiceCardResultState] = useState<ServiceCardResponse | null>(
+    initialDraft?.result || null
+  );
+  const [pickerQuery, setPickerQueryState] = useState<string>(
+    initialDraft?.pickerQuery || ''
+  );
+  const [pickerPage, setPickerPageState] = useState<number>(
+    initialDraft?.pickerPage || 1
+  );
+
+  // Matching Chat Turn history
+  const [matchingMessages, setMatchingMessages] = useState<any[]>([]);
+
+  // Synchronizacja szkicu middleman z sessionStorage
+  useEffect(() => {
+    saveStoredMiddlemanDraft({
+      step: middlemanStep,
+      selectedInnovation,
+      profile: institutionProfile,
+      result: serviceCardResult,
+      pickerQuery,
+      pickerPage,
+    });
+  }, [
+    middlemanStep,
+    selectedInnovation,
+    institutionProfile,
+    serviceCardResult,
+    pickerQuery,
+    pickerPage,
+  ]);
+
+  const loadInnovations = async (forceRefresh = false): Promise<InnovationRecord[]> => {
+    if (!forceRefresh && innovations.length > 0) {
+      return innovations;
+    }
+    setIsLoadingInnovations(true);
+    setInnovationsError(null);
+    try {
+      const data = await searchInnovations('');
+      if (data && data.length > 0) {
+        setInnovations(data);
+        saveStoredInnovations(data);
+        return data;
+      }
+      return innovations;
+    } catch (err: any) {
+      const msg = err?.message || 'Nie udało się pobrać bazy innowacji.';
+      setInnovationsError(msg);
+      return innovations;
+    } finally {
+      setIsLoadingInnovations(false);
+    }
+  };
+
+  const searchLocalInnovations = (query: string): InnovationRecord[] => {
+    return filterInnovations(innovations, query);
+  };
+
+  const resetMiddleman = () => {
+    setMiddlemanStepState('pick');
+    setSelectedInnovationState(null);
+    setInstitutionProfile(EMPTY_PROFILE);
+    setServiceCardResultState(null);
+    clearStoredMiddlemanDraft();
+  };
 
   const loadIdeas = async () => {
     setIsLoadingIdeas(true);
@@ -105,6 +235,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // 2. Pobierz pomysły z backendu FastAPI lub lokalnie
     loadIdeas();
+
+    // 3. Pobierz innowacje do globalnego stanu (aby były natychmiast dostępne na wszystkich ekranach)
+    loadInnovations();
   }, []);
 
   const handleSetCurrentUser = (user: User | null) => {
@@ -248,6 +381,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         selectIdea: handleSelectIdea,
         openChatWithAuthor: handleOpenChatWithAuthor,
         refreshIdeas: loadIdeas,
+
+        // Innowacje
+        innovations,
+        isLoadingInnovations,
+        innovationsError,
+        loadInnovations,
+        searchLocalInnovations,
+
+        // Middleman
+        middlemanStep,
+        setMiddlemanStep: setMiddlemanStepState,
+        selectedInnovation,
+        setSelectedInnovation: setSelectedInnovationState,
+        institutionProfile,
+        setInstitutionProfile,
+        serviceCardResult,
+        setServiceCardResult: setServiceCardResultState,
+        pickerQuery,
+        setPickerQuery: setPickerQueryState,
+        pickerPage,
+        setPickerPage: setPickerPageState,
+        resetMiddleman,
+
+        // Matching
+        matchingMessages,
+        setMatchingMessages,
       }}
     >
       <div className={`min-h-screen flex flex-col bg-[#F7F6F1] ${isLargeFont ? 'font-scale-large' : ''}`}>

@@ -28,6 +28,7 @@ import {
   User,
 } from "lucide-react";
 import { VoiceDictationPopup, useSpeechToText } from "../components/voice";
+import { useApp } from "../context/AppContext";
 
 interface ChatTurn {
   id: string;
@@ -40,10 +41,10 @@ interface ChatTurn {
 function MatchingContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
+  const { matchingMessages: messages, setMatchingMessages: setMessages } = useApp();
 
   const [inputIdea, setInputIdea] = useState(initialQuery);
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<ChatTurn[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -503,7 +504,7 @@ function MatchingContent() {
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {turn.matchResponse.close_solutions.map(
-                                  (alt) => (
+                                  (alt: InnovationMatchItem) => (
                                     <div
                                       key={alt.id}
                                       className="p-3.5 bg-[#FAF9F5] border border-black/5 rounded-2xl space-y-2 flex flex-col justify-between text-xs"

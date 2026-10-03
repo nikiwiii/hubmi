@@ -117,13 +117,23 @@ function MiddlemanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const innovationFromUrl = searchParams.get("innovation");
-  const { currentUser } = useApp();
+  const {
+    currentUser,
+    innovations,
+    middlemanStep: step,
+    setMiddlemanStep: setStep,
+    selectedInnovation: innovation,
+    setSelectedInnovation: setInnovation,
+    institutionProfile: profile,
+    setInstitutionProfile: setProfile,
+    serviceCardResult: result,
+    setServiceCardResult: setResult,
+    resetMiddleman,
+  } = useApp();
 
-  const [step, setStep] = useState<Step>("pick");
-  const [innovation, setInnovation] = useState<InnovationRecord | null>(null);
-  const [profile, setProfile] = useState<InstitutionProfile>(EMPTY_PROFILE);
-  const [result, setResult] = useState<ServiceCardResponse | null>(null);
-  const [isLoadingInnovation, setIsLoadingInnovation] = useState(!!innovationFromUrl);
+  const [isLoadingInnovation, setIsLoadingInnovation] = useState(
+    Boolean(innovationFromUrl && (!innovation || innovation.id !== innovationFromUrl))
+  );
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refineText, setRefineText] = useState("");
@@ -134,11 +144,26 @@ function MiddlemanContent() {
 
   useEffect(() => {
     if (!innovationFromUrl) return;
+    if (innovation?.id === innovationFromUrl) return;
+
+    // Najpierw sprawdź, czy innowacja jest już w globalnym stanie
+    const found = innovations.find((inn) => inn.id === innovationFromUrl);
+    if (found) {
+      setInnovation(found);
+      setResult(null);
+      setError(null);
+      setStep("profile");
+      return;
+    }
+
     let cancelled = false;
+    setIsLoadingInnovation(true);
     fetchInnovationById(innovationFromUrl)
       .then((inn) => {
         if (cancelled) return;
         setInnovation(inn);
+        setResult(null);
+        setError(null);
         setStep("profile");
       })
       .catch((err) => {
@@ -150,7 +175,7 @@ function MiddlemanContent() {
     return () => {
       cancelled = true;
     };
-  }, [innovationFromUrl]);
+  }, [innovationFromUrl, innovation?.id, innovations, setInnovation, setResult, setStep]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -238,12 +263,9 @@ function MiddlemanContent() {
   };
 
   const handleStartOver = () => {
-    setResult(null);
-    setInnovation(null);
-    setProfile(EMPTY_PROFILE);
+    resetMiddleman();
     setError(null);
     setConsultMessage(null);
-    setStep("pick");
     if (innovationFromUrl) router.replace("/middleman");
   };
 
