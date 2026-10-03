@@ -142,15 +142,21 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         title="Powiadomienia i wiadomości"
-        className={`relative p-2 rounded-xl border text-stone-700 transition-all cursor-pointer ${
+        aria-label={`Powiadomienia i wiadomości ${unreadCount > 0 ? `(${unreadCount} nieprzeczytanych)` : ''}`}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        className={`relative min-w-[32px] min-h-[32px] p-2 rounded-xl border text-stone-800 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${
           isOpen
             ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-            : 'bg-white border-stone-200 hover:bg-stone-50'
+            : 'bg-white border-stone-300 hover:bg-stone-50'
         }`}
       >
-        <Bell className="w-4 h-4" />
+        <Bell className="w-4 h-4" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-extrabold text-white shadow-xs animate-in zoom-in">
+          <span
+            aria-label={`${unreadCount} nieprzeczytane powiadomienia`}
+            className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-extrabold text-white shadow-xs animate-in zoom-in"
+          >
             {unreadCount}
           </span>
         )}
@@ -158,13 +164,17 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
 
       {/* Dropdown Powiadomień */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-black/10 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div
+          role="dialog"
+          aria-label="Panel powiadomień"
+          className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-stone-300 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+        >
           {/* Header */}
-          <div className="p-3.5 border-b border-black/5 bg-[#FAF9F5] flex items-center justify-between">
+          <div className="p-3.5 border-b border-stone-200 bg-[#FAF9F5] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-bold text-xs text-stone-900">Powiadomienia</span>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                   {unreadCount} nowe
                 </span>
               )}
@@ -228,12 +238,20 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
               filteredNotifications.map((notif) => (
                 <div
                   key={notif.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleMarkAsRead(notif)}
-                  className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-stone-50 ${
-                    !notif.read ? 'bg-amber-50/30' : 'bg-white'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleMarkAsRead(notif);
+                    }
+                  }}
+                  className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-stone-900 ${
+                    !notif.read ? 'bg-amber-50/50' : 'bg-white'
                   }`}
                 >
-                  <div className="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center shrink-0 mt-0.5 border border-black/5">
+                  <div className="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center shrink-0 mt-0.5 border border-stone-200">
                     {getNotifIcon(notif.type)}
                   </div>
 
@@ -243,17 +261,20 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
                         {notif.title}
                       </h4>
                       {!notif.read && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1" />
+                        <div
+                          className="w-2 h-2 rounded-full bg-amber-600 shrink-0 mt-1"
+                          aria-label="Nowe powiadomienie"
+                        />
                       )}
                     </div>
 
-                    <p className="text-[11px] text-stone-600 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-stone-700 line-clamp-2 leading-relaxed">
                       {notif.message}
                     </p>
 
                     <div className="flex items-center justify-between gap-2 pt-1">
-                      <span className="text-[10px] text-stone-400 flex items-center gap-1 font-mono">
-                        <Clock className="w-2.5 h-2.5" />
+                      <span className="text-[10px] text-stone-600 flex items-center gap-1 font-mono">
+                        <Clock className="w-2.5 h-2.5" aria-hidden="true" />
                         {new Date(notif.created_at).toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit'
@@ -266,9 +287,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
                           type="button"
                           onClick={(e) => handleOpenEmailPreview(notif.id, e)}
                           title="Zobacz kopię e-mail wysłaną przez system"
-                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-stone-700 hover:text-stone-950 bg-stone-100 hover:bg-stone-200/80 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+                          aria-label={`Zobacz kopię e-mail: ${notif.title}`}
+                          className="min-h-[24px] inline-flex items-center gap-1 text-[10px] font-semibold text-stone-800 hover:text-stone-950 bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
                         >
-                          <Mail className="w-3 h-3 text-stone-600" />
+                          <Mail className="w-3 h-3 text-stone-700" aria-hidden="true" />
                           <span>Podgląd e-mail</span>
                         </button>
                       )}
@@ -283,22 +305,31 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
 
       {/* Modal Podglądu Symulowanego E-maila (Kluczowy dla oceny jury!) */}
       {activeEmail && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full border border-black/10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="email-preview-title"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div className="bg-white rounded-3xl max-w-xl w-full border border-black/15 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
             {/* Modal Header */}
             <div className="p-4 bg-stone-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-[#EFE5C6]" />
-                <span className="text-xs font-bold uppercase tracking-wider text-[#EFE5C6]">
+                <Mail className="w-4 h-4 text-[#EFE5C6]" aria-hidden="true" />
+                <h3
+                  id="email-preview-title"
+                  className="text-xs font-bold uppercase tracking-wider text-[#EFE5C6]"
+                >
                   Symulacja powiadomienia e-mail (dla oceny jury)
-                </span>
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveEmail(null)}
-                className="p-1 rounded-lg text-stone-400 hover:text-white transition-colors cursor-pointer"
+                aria-label="Zamknij podgląd wiadomości e-mail"
+                className="min-w-[28px] min-h-[28px] p-1.5 rounded-lg text-stone-300 hover:text-white hover:bg-stone-800 transition-colors cursor-pointer flex items-center justify-center"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
 

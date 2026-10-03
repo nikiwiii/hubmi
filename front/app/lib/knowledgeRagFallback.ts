@@ -4,7 +4,8 @@ import {
   KnowledgeRagDetectedPowiat,
   KnowledgeRagMatchedReport,
   KnowledgeRagChartData,
-  KnowledgeRagMatchedInnovation
+  KnowledgeRagMatchedInnovation,
+  MatchedExpert
 } from './types';
 
 const POWIATY_MAPPING_CLIENT: Record<string, { id: string; name: string; display_name: string; is_city: boolean; keywords: string[] }> = {
@@ -13,14 +14,14 @@ const POWIATY_MAPPING_CLIENT: Record<string, { id: string; name: string; display
     name: "powiat krakowski",
     display_name: "Powiat Krakowski",
     is_city: false,
-    keywords: ["krakowski", "krakowskim", "krakowskiego", "krakowskie", "powiecie krakowskim", "ziemski krakowski"]
+    keywords: ["krakowski", "krakowskim", "krakowskiego", "krakowskie", "powiecie krakowskim", "powiatu krakowskiego", "ziemski krakowski"]
   },
   krakow: {
     id: "krakow",
     name: "powiat m. Kraków",
     display_name: "Kraków (miasto)",
     is_city: true,
-    keywords: ["krakow", "kraków", "krakowie", "krakowa", "m. kraków", "miasto kraków"]
+    keywords: ["krakow", "kraków", "krakowie", "krakowa", "m. kraków", "miasto kraków", "w krakowie"]
   },
   bochenski: {
     id: "bochenski",
@@ -132,21 +133,21 @@ const POWIATY_MAPPING_CLIENT: Record<string, { id: string; name: string; display
     name: "powiat m. Tarnów",
     display_name: "Tarnów (miasto)",
     is_city: true,
-    keywords: ["tarnów", "tarnowie", "tarnowa", "tarnow", "m. tarnów"]
+    keywords: ["tarnów", "tarnowie", "tarnowa", "tarnow", "m. tarnów", "w tarnowie"]
   },
   tarnowski: {
     id: "tarnowski",
     name: "powiat tarnowski",
     display_name: "Powiat Tarnowski",
     is_city: false,
-    keywords: ["tarnowski", "tarnowskim", "tarnowskiego"]
+    keywords: ["tarnowski", "tarnowskim", "tarnowskiego", "powiecie tarnowskim"]
   },
   tatrzanski: {
     id: "tatrzanski",
     name: "powiat tatrzański",
     display_name: "Powiat Tatrzański",
     is_city: false,
-    keywords: ["tatrzański", "tatrzanski", "zakopane", "zakopanem", "tatrzańskim"]
+    keywords: ["tatrzański", "tatrzanski", "zakopane", "zakopanem", "tatrzańskim", "podhale"]
   },
   wadowicki: {
     id: "wadowicki",
@@ -164,45 +165,234 @@ const POWIATY_MAPPING_CLIENT: Record<string, { id: string; name: string; display
   }
 };
 
-const FALLBACK_INNOVATIONS: KnowledgeRagMatchedInnovation[] = [
-  {
-    id: "ev-modul-wozki",
-    title: "EV moduł do wózków inwalidzkich",
-    description: "Modułowy napęd elektryczny montowany do tradycyjnych wózków inwalidzkich, zwiększający samodzielność użytkowników na terenach podmiejskich i górzystych.",
-    addressed_problems: "Bariery w przemieszczaniu się, ograniczona mobilność, wykluczenie komunikacyjne.",
-    funding_info: "Grant Małopolskiego Inkubatora Innowacji Społecznych ROPS Kraków",
-    score: 95
+interface TopicProfile {
+  category: string;
+  indicators: string[];
+  innovations: KnowledgeRagMatchedInnovation[];
+  expert: MatchedExpert;
+  conclusionTitle: string;
+  points: string[];
+}
+
+const TOPIC_PROFILES: Record<string, TopicProfile> = {
+  disability: {
+    category: "Niepełnosprawność i Dostępność",
+    indicators: ["severe_disability_share", "disability_support_share", "total_disability_share", "residents_per_social_worker"],
+    innovations: [
+      {
+        id: "ev-modul-wozki",
+        title: "EV moduł do wózków inwalidzkich",
+        description: "Modułowy napęd elektryczny montowany do tradycyjnych wózków inwalidzkich, zwiększający samodzielność użytkowników na terenach podmiejskich i górzystych.",
+        addressed_problems: "Bariery w przemieszczaniu się, ograniczona mobilność, wykluczenie komunikacyjne.",
+        funding_info: "Grant Małopolskiego Inkubatora Innowacji Społecznych ROPS Kraków",
+        score: 95
+      },
+      {
+        id: "puzzles-ramp",
+        title: "Puzzle's Ramp - Modułowe rampy podjazdowe",
+        description: "Lekkie i adaptowalne segmentowe podjazdy dla osób na wózkach inwalidzkich do szybkiego niwelowania progów i schodów w budynkach użyteczności publicznej.",
+        addressed_problems: "Bariery architektoniczne, niedostępne wejścia do urzędów i przychodni.",
+        funding_info: "Dofinansowanie ze środków PFRON i funduszy regionalnych",
+        score: 90
+      },
+      {
+        id: "zakupy-na-jednym-wozku",
+        title: "Zakupy na jednym wózku z dzieckiem z niepełnosprawnością ruchową",
+        description: "System zintegrowanych koszy i mocowań sklepowych ułatwiający codzienne zakupy opiekunom osób i dzieci poruszających się na wózkach.",
+        addressed_problems: "Codzienne trudności w załatwianiu spraw życiowych, brak ergonomicznych rozwiązań w przestrzeniach handlowych.",
+        funding_info: "Program Innowacji Społecznych ROPS Kraków",
+        score: 85
+      },
+      {
+        id: "dostepny-transport",
+        title: "Dostępny transport publiczny i door-to-door",
+        description: "Model organizacji lokalnych przewozów na żądanie dla mieszkańców z ograniczeniami ruchowymi i osób na wózkach w gminach wiejsko-miejskich.",
+        addressed_problems: "Brak dostosowanego transportu zbiorowego w mniejszych miejscowościach powiatu.",
+        funding_info: "Środki samorządowe i programy wyrównywania różnic regionalnych",
+        score: 80
+      }
+    ],
+    expert: {
+      name: "inż. Paweł Zieliński",
+      title: "Koordynator Dostępności i Likwidacji Barier",
+      department: "Ośrodek Dostępności Przestrzennej ROPS Kraków",
+      specialization: "Likwidacja barier architektonicznych, audyty dostępności, innowacje transportowe dla osób na wózkach",
+      chat_topic: "Dostępność i wózki inwalidzkie",
+      chat_url: "/chat?topic=Dostepnosc-i-likwidacja-barier"
+    },
+    conclusionTitle: "Wnioski w zakresie niepełnosprawności i likwidacji barier",
+    points: [
+      "Wysoki odsetek osób ze znacznym stopniem niepełnosprawności wymaga rozwoju usług asystenckich oraz opieki wytchnieniowej dla rodzin.",
+      "Kluczowym wyzwaniem w gminach powiatu pozostają bariery w transporcie publicznym i brak modułowych podjazdów do placówek publicznych.",
+      "Zaleca się replikację innowacji ROPS Kraków z zakresu transportu door-to-door oraz adaptacji wózków inwalidzkich."
+    ]
   },
-  {
-    id: "puzzles-ramp",
-    title: "Puzzle's Ramp - Modułowe rampy podjazdowe",
-    description: "Lekkie i adaptowalne segmentowe podjazdy dla osób na wózkach inwalidzkich do szybkiego niwelowania progów i schodów w budynkach użyteczności publicznej.",
-    addressed_problems: "Bariery architektoniczne, niedostępne wejścia do urzędów i przychodni.",
-    funding_info: "Dofinansowanie ze środków PFRON i funduszy regionalnych",
-    score: 90
+  work: {
+    category: "Rynek Pracy i Aktywizacja",
+    indicators: ["unemployed_longer_than_1_year", "working_age_population", "cash_social_assistance_benefits", "municipal_budget_expenditures"],
+    innovations: [
+      {
+        id: "niewypaleni",
+        title: "NIEwypaleni - powrót do aktywności zawodowej",
+        description: "Program mentoringu i przeciwdziałania wypaleniu oraz długotrwałej bierności zawodowej w społecznościach lokalnych.",
+        addressed_problems: "Dezaktywizacja zawodowa, utrata motywacji, wykluczenie z rynku pracy.",
+        funding_info: "Europejski Fundusz Społeczny / ROPS Kraków",
+        score: 94
+      },
+      {
+        id: "drogowskazy-ajkum",
+        title: "Drogowskazy AJKUM",
+        description: "Narzędzie doradztwa zawodowego i ścieżek edukacyjnych dla osób poszukujących nowych kwalifikacji w małych ośrodkach.",
+        addressed_problems: "Niedopasowanie kompetencji do lokalnego rynku pracy.",
+        funding_info: "Granty innowacji społecznych Małopolski",
+        score: 88
+      },
+      {
+        id: "moduly-niezaleznosci",
+        title: "Moduły niezależności",
+        description: "Treningi samodzielności ekonomicznej i przedsiębiorczości społecznej dla osób zagrożonych ubóstwem.",
+        addressed_problems: "Trwałe uzależnienie od zasiłków pomocy społecznej.",
+        funding_info: "Środki regionalne polityki społecznej",
+        score: 82
+      }
+    ],
+    expert: {
+      name: "mgr Tomasz Lewandowski",
+      title: "Konsultant ds. Ekonomii Społecznej i Pracy",
+      department: "Małopolskie Obserwatorium Polityki Społecznej",
+      specialization: "Centra integracji społecznej, spółdzielnie socjalne, zatrudnienie wspierane",
+      chat_topic: "Rynek pracy i ekonomia społeczna",
+      chat_url: "/chat?topic=Rynek-pracy-i-aktywizacja"
+    },
+    conclusionTitle: "Wnioski w zakresie rynku pracy i zatrudnienia",
+    points: [
+      "Wskaźnik długotrwałego bezrobocia wskazuje na potrzebę ukierunkowanych programów reintegracji zawodowej i podnoszenia kwalifikacji.",
+      "Istotne jest łączenie świadczeń socjalnych z kontraktami socjalnymi i stażami w podmiotach ekonomii społecznej.",
+      "Rekomendowane jest tworzenie lokalnych spółdzielni socjalnych i centrów integracji społecznej."
+    ]
   },
-  {
-    id: "zakupy-na-jednym-wozku",
-    title: "Zakupy na jednym wózku z dzieckiem z niepełnosprawnością ruchową",
-    description: "System zintegrowanych koszy i mocowań sklepowych ułatwiający codzienne zakupy opiekunom osób i dzieci poruszających się na wózkach.",
-    addressed_problems: "Codzienne trudności w załatwianiu spraw życiowych, brak ergonomicznych rozwiązań w przestrzeniach handlowych.",
-    funding_info: "Program Innowacji Społecznych ROPS Kraków",
-    score: 85
+  seniors: {
+    category: "Seniorzy i Polityka Senioralna",
+    indicators: ["disability_support_share", "average_hospital_stay", "residents_per_social_worker", "cash_social_assistance_benefits"],
+    innovations: [
+      {
+        id: "inteligentny-organizer",
+        title: "Inteligentny organizer do leków",
+        description: "Automatyczny dyspenser leków z powiadomieniami głosowymi i SMS dla samotnych seniorów.",
+        addressed_problems: "Pomyłki w zażywaniu leków, brak codziennego nadzoru opiekuńczego.",
+        funding_info: "Innowacje Senioralne ROPS Kraków",
+        score: 92
+      },
+      {
+        id: "to-nie-koniec-swiata",
+        title: "To nie koniec świata - to początek świata",
+        description: "Model klubów integracji międzypokoleniowej i aktywizacji osób w wieku poprodukcyjnym.",
+        addressed_problems: "Samotność i izolacja osób starszych na obszarach wiejskich.",
+        funding_info: "Dotacje Województwa Małopolskiego",
+        score: 89
+      },
+      {
+        id: "czas-na-aktywnosc",
+        title: "Czas na aktywność!",
+        description: "Zajęcia ruchowe i rehabilitacyjne organizowane w remizach i świetlicach wiejskich dla seniorów.",
+        addressed_problems: "Ograniczony dostęp do rehabilitacji geriatrycznej poza miastami.",
+        funding_info: "Regionalne programy zdrowotne",
+        score: 84
+      }
+    ],
+    expert: {
+      name: "mgr Anna Kowalska",
+      title: "Starszy Doradca ds. Usług Społecznych i Senioralnych",
+      department: "Dział Rozwoju Usług Społecznych ROPS Kraków",
+      specialization: "Opieka wytchnieniowa, integracja seniorów, asystentura osobista",
+      chat_topic: "Wsparcie seniorów i usługi opiekuńcze",
+      chat_url: "/chat?topic=Seniorzy-i-uslugi-opiekuncze"
+    },
+    conclusionTitle: "Wnioski w obszarze wsparcia seniorów",
+    points: [
+      "Starzenie się populacji wymaga rozwijania dziennych domów pobytu i opieki wytchnieniowej dla opiekunów faktycznych.",
+      "Wysokie zapotrzebowanie na usługi opiekuńcze w miejscu zamieszkania wymaga wzmocnienia kadr pracowników socjalnych.",
+      "Warto wdrażać innowacyjne rozwiązania teleopieki i automatyzacji podawania leków."
+    ]
   },
-  {
-    id: "dostepny-transport",
-    title: "Dostępny transport publiczny i door-to-door",
-    description: "Model organizacji lokalnych przewozów na żądanie dla mieszkańców z ograniczeniami ruchowymi i osób na wózkach w gminach wiejsko-miejskich.",
-    addressed_problems: "Brak dostosowanego transportu zbiorowego w mniejszych miejscowościach powiatu.",
-    funding_info: "Środki samorządowe i programy wyrównywania różnic regionalnych",
-    score: 80
+  health: {
+    category: "Zdrowie i Opieka Medyczna",
+    indicators: ["average_hospital_stay", "cancer_incidence", "pharmacy_availability", "disability_support_share"],
+    innovations: [
+      {
+        id: "telerehabilitacja",
+        title: "Telerehabilitacja oddechowa i ruchowa",
+        description: "Platforma zdalnego monitorowania i ćwiczeń usprawniających po hospitalizacji bez konieczności dojazdu do szpitala.",
+        addressed_problems: "Kolejki do sanatoriów, długie pobyty w szpitalu, utrudniony dojazd z peryferii.",
+        funding_info: "Innowacje Zdrowotne ROPS",
+        score: 93
+      },
+      {
+        id: "pelnia-zdrowia",
+        title: "Pełnia zdrowia - mobilne punkty profilaktyki",
+        description: "Cykl badań przesiewowych i wczesnego wykrywania chorób onkologicznych w małych gminach.",
+        addressed_problems: "Niska zgłaszalność na badania profilaktyczne, wysoka zachorowalność.",
+        funding_info: "Środki regionalne ochrony zdrowia",
+        score: 87
+      }
+    ],
+    expert: {
+      name: "mgr Michał Wiśniewski",
+      title: "Konsultant ds. Mobilności i Usług Wiejskich",
+      department: "Dział Innowacji Regionalnych ROPS Kraków",
+      specialization: "Dostępność placówek zdrowotnych, transport chorych na badania",
+      chat_topic: "Zdrowie i profilaktyka",
+      chat_url: "/chat?topic=Zdrowie-i-profilaktyka"
+    },
+    conclusionTitle: "Wnioski w zakresie ochrony zdrowia",
+    points: [
+      "Dłuższy średni pobyt w szpitalu wskazuje na potrzebę rozbudowy bazy opieki poszpitalnej i hospicyjnej w powiecie.",
+      "Konieczne jest rozwijanie profilaktyki onkologicznej i dostępności aptek całodobowych.",
+      "Telemedycyna i mobilne punkty diagnostyczne stanowią skuteczną odpowiedź na nierówności w dostępie do opieki."
+    ]
+  },
+  family: {
+    category: "Rodzina i Piecza Zastępcza",
+    indicators: ["foster_families_count", "care_and_education_centers", "kindergarten_availability", "large_families_share"],
+    innovations: [
+      {
+        id: "patryk-i-kropka",
+        title: "Patryk i Kropka - terapeutyczne wsparcie dzieci w pieczy",
+        description: "Metodyka bajkoterapii i wsparcia emocjonalnego dla dzieci w rodzinach zastępczych.",
+        addressed_problems: "Trauma rozłąki, trudności adaptacyjne dzieci w pieczy zastępczej.",
+        funding_info: "Fundusz Innowacji Społecznych ROPS",
+        score: 91
+      },
+      {
+        id: "bawita",
+        title: "BaWita - rodzinne kluby wsparcia",
+        description: "Przestrzenie integracji rodziców małych dzieci z warsztatami kompetencji wychowawczych.",
+        addressed_problems: "Izolacja matek, brak miejsc w przedszkolach i żłobkach.",
+        funding_info: "Granty regionalne",
+        score: 86
+      }
+    ],
+    expert: {
+      name: "mgr Magdalena Wójcik",
+      title: "Ekspert ds. Pieczy Zastępczej i Wsparcia Rodzin",
+      department: "Zespół Deinstytucjonalizacji Pieczy ROPS Kraków",
+      specialization: "Rodzicielstwo zastępcze, wsparcie kryzysowe, placówki opiekuńcze",
+      chat_topic: "Wsparcie rodzin i piecza zastępcza",
+      chat_url: "/chat?topic=Piecza-zastepcza-i-rodziny"
+    },
+    conclusionTitle: "Wnioski w zakresie wsparcia rodzin i pieczy",
+    points: [
+      "Rozwój rodzicielstwa zastępczego pozwala na stopniowe odchodzenie od instytucjonalnych domów dziecka.",
+      "Zwiększenie dostępności miejsc w przedszkolach jest kluczowe dla powrotu rodziców na rynek pracy.",
+      "Należy wspierać rodziny wielodzietne poprzez lokalne karty rodziny i ulgi samorządowe."
+    ]
   }
-];
+};
 
 export function executeClientKnowledgeRag(query: string, preferredPowiatId?: string): KnowledgeRagResponse {
   const qLower = query.toLowerCase();
 
-  // 1. Wykryj powiat
+  // 1. NAJPIERW wykryj powiat z treści zapytania
   let detectedPowiat: KnowledgeRagDetectedPowiat = {
     id: "krakowski",
     name: "powiat krakowski",
@@ -210,43 +400,50 @@ export function executeClientKnowledgeRag(query: string, preferredPowiatId?: str
     is_city: false
   };
 
-  if (preferredPowiatId && POWIATY_MAPPING_CLIENT[preferredPowiatId]) {
-    detectedPowiat = POWIATY_MAPPING_CLIENT[preferredPowiatId];
+  let foundInQuery = false;
+  // Najpierw specyficzne frazy
+  if (qLower.includes("powiat krakow") || qLower.includes("powiecie krakow") || qLower.includes("ziemski krakow")) {
+    detectedPowiat = POWIATY_MAPPING_CLIENT["krakowski"];
+    foundInQuery = true;
+  } else if (qLower.includes("nowy sacz") || qLower.includes("nowym saczu")) {
+    detectedPowiat = qLower.includes("powiat nowosad") ? POWIATY_MAPPING_CLIENT["nowosadecki"] : POWIATY_MAPPING_CLIENT["nowy-sacz"];
+    foundInQuery = true;
+  } else if (qLower.includes("powiat tarnow") || qLower.includes("powiecie tarnow")) {
+    detectedPowiat = POWIATY_MAPPING_CLIENT["tarnowski"];
+    foundInQuery = true;
   } else {
     for (const [pId, pInfo] of Object.entries(POWIATY_MAPPING_CLIENT)) {
       if (pInfo.keywords.some((kw) => qLower.includes(kw))) {
         detectedPowiat = pInfo;
+        foundInQuery = true;
         break;
       }
     }
   }
 
-  // 2. Określ wskaźniki na podstawie tematu
-  const data = rawData as any;
-  const isDisability = ["wózk", "wozk", "niepełn", "inwalid", "ruch", "barier", "dostępn"].some((kw) => qLower.includes(kw));
-
-  let indicatorKeys = [
-    "severe_disability_share",
-    "disability_support_share",
-    "total_disability_share",
-    "residents_per_social_worker"
-  ];
-
-  if (!isDisability) {
-    if (["senior", "starsz", "emeryt"].some((kw) => qLower.includes(kw))) {
-      indicatorKeys = ["disability_support_share", "average_hospital_stay", "residents_per_social_worker", "cash_social_assistance_benefits"];
-    } else if (["prac", "bezroboc"].some((kw) => qLower.includes(kw))) {
-      indicatorKeys = ["unemployed_longer_than_1_year", "working_age_population", "cash_social_assistance_benefits"];
-    } else if (["zdrow", "szpital"].some((kw) => qLower.includes(kw))) {
-      indicatorKeys = ["average_hospital_stay", "cancer_incidence", "pharmacy_availability"];
-    } else if (["rodzin", "dziec", "zastępc"].some((kw) => qLower.includes(kw))) {
-      indicatorKeys = ["foster_families_count", "care_and_education_centers", "kindergarten_availability"];
-    }
+  // Jeśli w zapytaniu nie ma powiatu, a użytkownik wybrał dropdown, użyj dropdownu
+  if (!foundInQuery && preferredPowiatId && POWIATY_MAPPING_CLIENT[preferredPowiatId]) {
+    detectedPowiat = POWIATY_MAPPING_CLIENT[preferredPowiatId];
   }
 
+  // 2. Określ tematykę zapytania
+  let profile = TOPIC_PROFILES.disability;
+  if (["prac", "bezroboc", "zatrudn", "zarob", "ubostw", "staz"].some((kw) => qLower.includes(kw))) {
+    profile = TOPIC_PROFILES.work;
+  } else if (["senior", "starsz", "emeryt", "starosc"].some((kw) => qLower.includes(kw))) {
+    profile = TOPIC_PROFILES.seniors;
+  } else if (["szpital", "zdrow", "rak", "nowotwor", "lecz", "aptek"].some((kw) => qLower.includes(kw))) {
+    profile = TOPIC_PROFILES.health;
+  } else if (["rodzin", "dziec", "zastepc", "piecz", "przedszkol", "wielodziet"].some((kw) => qLower.includes(kw))) {
+    profile = TOPIC_PROFILES.family;
+  } else if (["wozk", "niepelnosprawn", "inwalid", "ruch", "barier", "dostepn"].some((kw) => qLower.includes(kw))) {
+    profile = TOPIC_PROFILES.disability;
+  }
+
+  const data = rawData as any;
   const matchedReports: KnowledgeRagMatchedReport[] = [];
 
-  for (const k of indicatorKeys) {
+  for (const k of profile.indicators) {
     const ind = data[k];
     if (!ind) continue;
 
@@ -277,7 +474,7 @@ export function executeClientKnowledgeRag(query: string, preferredPowiatId?: str
     matchedReports.push({
       id: k,
       title: ind.name || k,
-      category: isDisability ? "Niepełnosprawność" : "Polityka Społeczna",
+      category: profile.category,
       unit,
       description: ind.description || "",
       latest_year: latestYear,
@@ -287,9 +484,7 @@ export function executeClientKnowledgeRag(query: string, preferredPowiatId?: str
       region_avg: regionAvg,
       rank,
       total_powiats: Object.keys(danePowiaty).length || 22,
-      reason: isDisability
-        ? "Diagnoza sytuacji osób z niepełnosprawnościami oraz ograniczeniami ruchowymi."
-        : "Powiązany wskaźnik społeczny dla wybranego obszaru.",
+      reason: `Diagnoza powiązana z tematem: ${profile.category}`,
       time_series: timeSeries
     });
   }
@@ -331,7 +526,7 @@ export function executeClientKnowledgeRag(query: string, preferredPowiatId?: str
   }
 
   const chartData: KnowledgeRagChartData = {
-    report_id: primaryReport?.id || "disability_support_share",
+    report_id: primaryReport?.id || "unemployed_longer_than_1_year",
     report_title: primaryReport?.title || "Diagnoza Społeczna",
     unit: primaryReport?.unit || "%",
     latest_year: primaryReport?.latest_year || "2024",
@@ -347,32 +542,24 @@ export function executeClientKnowledgeRag(query: string, preferredPowiatId?: str
 
   const aiSynthesis = `### Diagnoza sytuacji w: ${detectedPowiat.display_name}
 
-Na podstawie badań **Regionalnego Ośrodka Polityki Społecznej w Krakowie** oraz danych spisowych GUS dla **${detectedPowiat.display_name}**:
+Na podstawie badań **Regionalnego Ośrodka Polityki Społecznej w Krakowie** oraz oficjalnych danych statystycznych dla **${detectedPowiat.display_name}**:
 
-${matchedReports.map((r) => `- **${r.title}**: w ${detectedPowiat.display_name} wskaźnik wynosi **${r.latest_value} ${r.unit}** (stan na rok ${r.latest_year}), przy średniej wojewódzkiej **${r.region_avg} ${r.unit}**. Zajmuje to **${r.rank}. miejsce** w Małopolsce (zmiana od ${r.time_series[0]?.year || 'początku okresu'}: ${r.delta > 0 ? '+' : ''}${r.delta} ${r.unit}).`).join('\n')}
+${matchedReports.map((r) => `- **${r.title}**: w ${detectedPowiat.display_name} wynosi **${r.latest_value} ${r.unit}** (rok ${r.latest_year}), przy średniej regionalnej **${r.region_avg} ${r.unit}**. Zajmuje to **${r.rank}. miejsce** w Małopolsce (zmiana: ${r.delta > 0 ? '+' : ''}${r.delta} ${r.unit}).`).join('\n')}
 
-#### ♿ Wnioski dla osób poruszających się na wózkach i z niepełnosprawnościami:
-1. **Wysokie zapotrzebowanie na usługi asystenckie**: Wskaźnik pomocy z powodu niepełnosprawności w **${detectedPowiat.display_name}** wynosi **${pVal} ${pUnit}** (średnia regionu: ${pAvg} ${pUnit}), co świadczy o istotnej potrzebie wsparcia środowiskowego.
-2. **Likwidacja barier architektonicznych**: Szczególnie w gminach wiejskich i podmiejskich powiatu krakowskiego kluczowe jest wdrażanie modułowych ramp (np. Puzzle's Ramp) oraz transportu adaptowanego door-to-door.
-3. **Dobre praktyki**: W panelu poniżej wskazano innowacje społeczne ROPS Kraków gotowe do wdrożenia na terenie powiatu.`;
+#### 🔍 ${profile.conclusionTitle}:
+${profile.points.map((p, idx) => `${idx + 1}. **${p.split(' ')[0]}**: ${p}`).join('\n')}
+Wskaźnik wiodący (*${primary?.title}*) w **${detectedPowiat.display_name}** wynosi **${pVal} ${pUnit}** (średnia Małopolski: **${pAvg} ${pUnit}**), co plasuje powiat na **${pRank}. pozycji** w województwie.`;
 
   return {
     success: true,
     query,
     detected_powiat: detectedPowiat,
-    detected_topics: isDisability ? ["Niepełnosprawność i Dostępność", "Pomoc Społeczna"] : ["Diagnozy Społeczne"],
+    detected_topics: [profile.category],
     ai_synthesis: aiSynthesis,
     primary_report: primaryReport,
     matched_reports: matchedReports,
     chart_data: chartData,
-    matched_innovations: FALLBACK_INNOVATIONS,
-    matched_expert: {
-      name: "inż. Paweł Zieliński",
-      title: "Koordynator Dostępności i Likwidacji Barier",
-      department: "Ośrodek Dostępności Przestrzennej ROPS Kraków",
-      specialization: "Likwidacja barier architektonicznych, audyty dostępności, innowacje transportowe dla osób na wózkach",
-      chat_topic: "Dostępność i wózki w powiecie krakowskim",
-      chat_url: "/chat?topic=Dostepnosc-i-wozki-powiat-krakowski"
-    }
+    matched_innovations: profile.innovations,
+    matched_expert: profile.expert
   };
 }

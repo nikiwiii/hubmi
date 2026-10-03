@@ -114,7 +114,8 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
     setIsLoading(true);
     setError(null);
 
-    const targetPowiat = explicitPowiatId || selectedPowiatId;
+    // Gdy explicitPowiatId nie jest przekazany, backend sam wykrywa powiat z zapytania
+    const targetPowiat = explicitPowiatId || undefined;
 
     try {
       // 1. Próba wykonania przez API backendu
@@ -795,3 +796,4 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
     </div>
   );
 };
+

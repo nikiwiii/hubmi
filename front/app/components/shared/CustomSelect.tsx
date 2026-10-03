@@ -59,7 +59,7 @@ export function CustomSelect<T extends string = string>({
     };
   }, [isOpen]);
 
-  // Close on Escape key
+  // Close on Escape key and navigate with ArrowUp/ArrowDown
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -75,6 +75,20 @@ export function CustomSelect<T extends string = string>({
     };
   }, [isOpen]);
 
+  const handleListKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const currentIndex = options.findIndex((o) => o.value === value);
+      const nextIndex = (currentIndex + 1) % options.length;
+      onChange(options[nextIndex].value);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const currentIndex = options.findIndex((o) => o.value === value);
+      const prevIndex = (currentIndex - 1 + options.length) % options.length;
+      onChange(options[prevIndex].value);
+    }
+  };
+
   const hasSelection = Boolean(selectedOption && selectedOption.value !== "");
   const displayText = hasSelection
     ? selectedOption!.label
@@ -83,6 +97,7 @@ export function CustomSelect<T extends string = string>({
   return (
     <div
       ref={containerRef}
+      onKeyDown={handleListKeyDown}
       className={`relative ${fullWidth ? "w-full block" : "inline-block"} ${className}`}
     >
       {/* Trigger Button */}
@@ -92,32 +107,33 @@ export function CustomSelect<T extends string = string>({
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-label={labelPrefix ? `${labelPrefix} ${displayText}` : displayText}
         className={`${
           isMd
-            ? `w-full px-4 py-3 bg-white hover:bg-stone-50/70 border rounded-xl text-base flex items-center justify-between transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900/15 ${
+            ? `w-full min-h-[44px] px-4 py-3 bg-white hover:bg-stone-50 border rounded-xl text-base flex items-center justify-between transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900 ${
                 error
-                  ? "border-red-400 focus:border-red-500"
+                  ? "border-red-500 focus:border-red-600"
                   : isOpen
-                  ? "border-stone-900/30 ring-2 ring-stone-900/10"
-                  : "border-black/10 hover:border-black/20"
+                  ? "border-stone-900 ring-2 ring-stone-900/20"
+                  : "border-stone-300 hover:border-stone-400"
               }`
-            : "px-3 py-1.5 bg-white hover:bg-stone-50/80 active:bg-stone-100 border border-stone-200/80 hover:border-stone-300 rounded-xl text-xs font-medium text-stone-700 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none"
+            : "min-h-[32px] px-3 py-1.5 bg-white hover:bg-stone-50 active:bg-stone-100 border border-stone-300 hover:border-stone-400 rounded-xl text-xs font-semibold text-stone-900 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900"
         }`}
       >
         <div className="flex items-center gap-2 overflow-hidden text-left">
           {labelPrefix && (
-            <span className="text-stone-400 font-normal shrink-0">{labelPrefix}</span>
+            <span className="text-stone-600 font-medium shrink-0">{labelPrefix}</span>
           )}
           {selectedOption?.icon && (
-            <span className="text-stone-500 shrink-0">{selectedOption.icon}</span>
+            <span className="text-stone-700 shrink-0" aria-hidden="true">{selectedOption.icon}</span>
           )}
           <span
             className={`truncate ${
               !hasSelection && placeholder
-                ? "text-stone-400 font-normal"
+                ? "text-stone-600 font-medium"
                 : isMd
-                ? "font-medium text-stone-900"
-                : "font-semibold text-stone-800"
+                ? "font-medium text-stone-950"
+                : "font-semibold text-stone-900"
             }`}
           >
             {displayText}
@@ -125,8 +141,9 @@ export function CustomSelect<T extends string = string>({
         </div>
 
         <ChevronDown
-          className={`${isMd ? "w-4 h-4 ml-2" : "w-3.5 h-3.5"} text-stone-400 shrink-0 transition-transform duration-200 ease-out ${
-            isOpen ? "rotate-180 text-stone-700" : ""
+          aria-hidden="true"
+          className={`${isMd ? "w-4 h-4 ml-2" : "w-3.5 h-3.5"} text-stone-600 shrink-0 transition-transform duration-200 ease-out ${
+            isOpen ? "rotate-180 text-stone-900" : ""
           }`}
         />
       </button>
@@ -135,9 +152,11 @@ export function CustomSelect<T extends string = string>({
       {isOpen && (
         <div
           role="listbox"
+          tabIndex={-1}
+          aria-label={labelPrefix || "Wybierz opcję"}
           className={`absolute ${
-            fullWidth ? "left-0 right-0 w-full" : "right-0 min-w-[180px]"
-          } top-full mt-1.5 max-h-64 overflow-y-auto bg-white border border-stone-200/90 rounded-2xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 origin-top divide-y divide-stone-100/60`}
+            fullWidth ? "left-0 right-0 w-full" : "right-0 min-w-[190px]"
+          } top-full mt-1.5 max-h-64 overflow-y-auto bg-white border border-stone-300 rounded-2xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 origin-top divide-y divide-stone-100/60`}
         >
           <div className="space-y-0.5">
             {options.map((option) => {

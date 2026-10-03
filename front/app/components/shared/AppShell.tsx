@@ -80,6 +80,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   // Użytkownik jest zalogowany – pełny dostęp do aplikacji
   return (
     <>
+      {/* WCAG 2.4.1 Bypass Blocks: Skip to main content link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-stone-900 focus:text-white focus:rounded-xl focus:ring-4 focus:ring-amber-400 focus:shadow-2xl focus:font-bold focus:outline-none transition-all"
+      >
+        Przejdź do treści głównej (Naciśnij Enter)
+      </a>
+
       <Navbar
         currentUser={currentUser}
         isLargeFont={isLargeFont}
@@ -88,7 +96,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         onNavigate={navigate}
       />
       <main
-        className={`flex-1 ${
+        id="main-content"
+        tabIndex={-1}
+        className={`flex-1 focus:outline-none ${
           pathname === "/matching"
             ? "pb-2 sm:pb-3 flex flex-col min-h-0"
             : "pb-20 md:pb-8"
