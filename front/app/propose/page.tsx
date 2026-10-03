@@ -1,25 +1,19 @@
+'use client';
+
 import React, { useState } from 'react';
-import { User, Idea, ScreenId } from '../lib/types';
 import {
   generateInitialQuestions,
   generateFinalConcept,
   LLMDialogueMessage,
   GeneratedConcept
 } from '../lib/llmSimulator';
-import { IdeaMockupVisualizer } from './IdeaMockupVisualizer';
-import { ArrowRight, RotateCcw, Check, Bot, User as UserIcon, Send } from 'lucide-react';
+import { IdeaMockupVisualizer } from '../components/propose/IdeaMockupVisualizer';
+import { ArrowRight, RotateCcw, Check, Send } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
-interface ProposeIdeaScreenProps {
-  currentUser: User | null;
-  onAddIdea: (newIdea: Omit<Idea, 'id' | 'createdAt' | 'likes' | 'dislikes' | 'testersCount' | 'testersList' | 'commentsCount'>) => void;
-  onNavigate: (screen: ScreenId) => void;
-}
+export default function ProposePage() {
+  const { currentUser, addIdea, navigate } = useApp();
 
-export const ProposeIdeaScreen: React.FC<ProposeIdeaScreenProps> = ({
-  currentUser,
-  onAddIdea,
-  onNavigate
-}) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [rawIdea, setRawIdea] = useState('');
   const [dialogueHistory, setDialogueHistory] = useState<LLMDialogueMessage[]>([]);
@@ -107,7 +101,7 @@ export const ProposeIdeaScreen: React.FC<ProposeIdeaScreenProps> = ({
       email: 'anna.kowalska@hubmi.pl'
     };
 
-    onAddIdea({
+    addIdea({
       title: generatedConcept.title,
       subtitle: generatedConcept.subtitle,
       authorId: author.id,
@@ -125,7 +119,7 @@ export const ProposeIdeaScreen: React.FC<ProposeIdeaScreenProps> = ({
 
     setIsPublished(true);
     setTimeout(() => {
-      onNavigate('discover');
+      navigate('discover');
     }, 900);
   };
 
@@ -340,4 +334,4 @@ export const ProposeIdeaScreen: React.FC<ProposeIdeaScreenProps> = ({
       )}
     </div>
   );
-};
+}

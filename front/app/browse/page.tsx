@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import { Idea, User, ScreenId, getCategoryThemeAndShape } from '../lib/types';
-import { GeometricIllustration } from './GeometricIllustration';
-import { getThemeStyles } from './IdeaCard';
+"use client";
+
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Idea, getCategoryThemeAndShape } from "../lib/types";
+import { GeometricIllustration } from "../components/shared/GeometricIllustration";
+import { getThemeStyles } from "../components/shared/IdeaCard";
+import { useApp } from "../context/AppContext";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -12,51 +16,56 @@ import {
   ChevronUp,
   MessageSquare,
   Check,
-  Send
-} from 'lucide-react';
+  Send,
+} from "lucide-react";
 
-interface BrowseIdeasScreenProps {
-  ideas: Idea[];
-  selectedIdeaId: string | null;
-  currentUser: User | null;
-  onVote: (id: string, type: 'like' | 'dislike') => void;
-  onToggleTesting: (id: string) => void;
-  onSelectIdea: (idea: Idea) => void;
-  onOpenChatWithAuthor: (authorId: string) => void;
-  onNavigate: (screen: ScreenId) => void;
-}
+function BrowseIdeasContent() {
+  const { ideas, currentUser, vote, toggleTesting, openChatWithAuthor } =
+    useApp();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
-  ideas,
-  selectedIdeaId,
-  currentUser,
-  onVote,
-  onToggleTesting,
-  onSelectIdea,
-  onOpenChatWithAuthor
-}) => {
-  const currentIndex = ideas.findIndex(i => i.id === selectedIdeaId);
+  const urlId = searchParams?.get("id");
+  const [internalSelectedId, setInternalSelectedId] = useState<string | null>(
+    urlId || (ideas[0]?.id ?? null),
+  );
+
+  useEffect(() => {
+    if (urlId) {
+      setInternalSelectedId(urlId);
+    }
+  }, [urlId]);
+
+  const activeId = internalSelectedId || (ideas[0]?.id ?? null);
+  const currentIndex = ideas.findIndex((i) => i.id === activeId);
   const activeIndex = currentIndex >= 0 ? currentIndex : 0;
   const currentIdea = ideas[activeIndex] || ideas[0];
+
+  const handleSelectIdea = (idea: Idea) => {
+    setInternalSelectedId(idea.id);
+    router.replace(`/browse?id=${idea.id}`);
+  };
 
   // Collapsible states - hidden by default
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
 
-  const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState<Array<{ id: string; author: string; text: string; date: string }>>([
+  const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState<
+    Array<{ id: string; author: string; text: string; date: string }>
+  >([
     {
-      id: 'c1',
-      author: 'Tadeusz M.',
-      text: 'Dobre, przejrzyste podejście. Zgłosiłem się na testy.',
-      date: 'Wczoraj'
+      id: "c1",
+      author: "Tadeusz M.",
+      text: "Dobre, przejrzyste podejście. Zgłosiłem się na testy.",
+      date: "Wczoraj",
     },
     {
-      id: 'c2',
-      author: 'Barbara W.',
-      text: 'Chętnie sprawdzę wersję próbną w praktyce.',
-      date: '09:40'
-    }
+      id: "c2",
+      author: "Barbara W.",
+      text: "Chętnie sprawdzę wersję próbną w praktyce.",
+      date: "09:40",
+    },
   ]);
 
   if (!currentIdea) {
@@ -67,19 +76,21 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
     );
   }
 
-  const isTester = currentUser ? currentIdea.testersList.includes(currentUser.email) : false;
+  const isTester = currentUser
+    ? currentIdea.testersList.includes(currentUser.email)
+    : false;
   // Category-driven theme and shape
   const { theme, shape } = getCategoryThemeAndShape(currentIdea.category);
   const styles = getThemeStyles(theme);
 
   const handlePrev = () => {
     const nextIdx = (activeIndex - 1 + ideas.length) % ideas.length;
-    onSelectIdea(ideas[nextIdx]);
+    handleSelectIdea(ideas[nextIdx]);
   };
 
   const handleNext = () => {
     const nextIdx = (activeIndex + 1) % ideas.length;
-    onSelectIdea(ideas[nextIdx]);
+    handleSelectIdea(ideas[nextIdx]);
   };
 
   const handleAddComment = (e: React.FormEvent) => {
@@ -88,18 +99,18 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
 
     const newComment = {
       id: `c-${Date.now()}`,
-      author: currentUser?.name || 'Użytkownik',
+      author: currentUser?.name || "Użytkownik",
       text: commentText.trim(),
-      date: 'Teraz'
+      date: "Teraz",
     };
 
     setComments([newComment, ...comments]);
-    setCommentText('');
+    setCommentText("");
   };
 
   return (
     <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6">
-      {/* Navigation Header (Clean, without redundant Back button) */}
+      {/* Navigation Header */}
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">
           Pomysł {activeIndex + 1} z {ideas.length}
@@ -125,15 +136,21 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
       </div>
 
       {/* Hero Card Container */}
-      <div className="bg-white rounded-[32px] border border-black/[0.05] shadow-2xs overflow-hidden">
+      <div className="bg-white rounded-4xl border border-black/5 shadow-2xs overflow-hidden">
         {/* Banner with category-bound subtle color palette */}
-        <div className={`p-6 sm:p-10 ${styles.bg} flex flex-col md:flex-row md:items-center justify-between gap-6`}>
+        <div
+          className={`p-6 sm:p-10 ${styles.bg} flex flex-col md:flex-row md:items-center justify-between gap-6`}
+        >
           <div className="space-y-2 max-w-xl">
-            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${styles.badge}`}>
+            <span
+              className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${styles.badge}`}
+            >
               {currentIdea.category}
             </span>
 
-            <h2 className={`text-3xl sm:text-4xl font-bold tracking-tight leading-tight ${styles.text}`}>
+            <h2
+              className={`text-3xl sm:text-4xl font-bold tracking-tight leading-tight ${styles.text}`}
+            >
               {currentIdea.title}
             </h2>
 
@@ -147,41 +164,41 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
           </div>
 
           <div className="shrink-0 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xs rounded-2xl border border-white/50">
-            <GeometricIllustration
-              shape={shape}
-              theme={theme}
-              size={120}
-            />
+            <GeometricIllustration shape={shape} theme={theme} size={120} />
           </div>
         </div>
 
         {/* Action Bar */}
         <div className="p-6 sm:p-8 bg-white border-b border-stone-100 flex flex-wrap items-center justify-between gap-4">
-          {/* Like / Dislike (No labels, clean icons + numbers) */}
+          {/* Like / Dislike */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => onVote(currentIdea.id, 'like')}
+              onClick={() => vote(currentIdea.id, "like")}
               title="Polub"
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                currentIdea.userVote === 'like'
-                  ? 'bg-stone-900 text-white'
-                  : 'bg-stone-100 hover:bg-stone-200 text-stone-800'
+                currentIdea.userVote === "like"
+                  ? "bg-stone-900 text-white"
+                  : "bg-stone-100 hover:bg-stone-200 text-stone-800"
               }`}
             >
-              <ThumbsUp className={`w-4 h-4 ${currentIdea.userVote === 'like' ? 'fill-white' : ''}`} />
+              <ThumbsUp
+                className={`w-4 h-4 ${currentIdea.userVote === "like" ? "fill-white" : ""}`}
+              />
               <span>{currentIdea.likes}</span>
             </button>
 
             <button
-              onClick={() => onVote(currentIdea.id, 'dislike')}
+              onClick={() => vote(currentIdea.id, "dislike")}
               title="Nie podoba mi się"
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                currentIdea.userVote === 'dislike'
-                  ? 'bg-stone-800 text-white'
-                  : 'bg-stone-100 hover:bg-stone-200 text-stone-600'
+                currentIdea.userVote === "dislike"
+                  ? "bg-stone-800 text-white"
+                  : "bg-stone-100 hover:bg-stone-200 text-stone-600"
               }`}
             >
-              <ThumbsDown className={`w-4 h-4 ${currentIdea.userVote === 'dislike' ? 'fill-white' : ''}`} />
+              <ThumbsDown
+                className={`w-4 h-4 ${currentIdea.userVote === "dislike" ? "fill-white" : ""}`}
+              />
               <span>{currentIdea.dislikes}</span>
             </button>
           </div>
@@ -189,7 +206,7 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
           {/* Right Action buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => onOpenChatWithAuthor(currentIdea.authorId)}
+              onClick={() => openChatWithAuthor(currentIdea.authorId)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-sm font-semibold transition-colors cursor-pointer"
             >
               <MessageSquare className="w-4 h-4 text-stone-500" />
@@ -197,11 +214,11 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
             </button>
 
             <button
-              onClick={() => onToggleTesting(currentIdea.id)}
+              onClick={() => toggleTesting(currentIdea.id)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 isTester
-                  ? 'bg-emerald-700 text-white'
-                  : 'bg-stone-900 hover:bg-stone-800 text-white'
+                  ? "bg-emerald-700 text-white"
+                  : "bg-stone-900 hover:bg-stone-800 text-white"
               }`}
             >
               {isTester ? (
@@ -228,7 +245,9 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
               className="w-full px-6 sm:px-8 py-4 flex items-center justify-between text-left hover:bg-stone-50/50 transition-colors cursor-pointer"
             >
               <span className="text-sm font-bold text-stone-800">
-                {isDetailsExpanded ? 'Ukryj opis pomysłu' : 'Rozwiń opis pomysłu'}
+                {isDetailsExpanded
+                  ? "Ukryj opis pomysłu"
+                  : "Rozwiń opis pomysłu"}
               </span>
               {isDetailsExpanded ? (
                 <ChevronUp className="w-4 h-4 text-stone-500" />
@@ -262,7 +281,9 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
               className="w-full px-6 sm:px-8 py-4 flex items-center justify-between text-left hover:bg-stone-50/50 transition-colors cursor-pointer"
             >
               <span className="text-sm font-bold text-stone-800">
-                {isCommentsExpanded ? 'Ukryj opinie' : `Pokaż opinie (${comments.length})`}
+                {isCommentsExpanded
+                  ? "Ukryj opinie"
+                  : `Pokaż opinie (${comments.length})`}
               </span>
               {isCommentsExpanded ? (
                 <ChevronUp className="w-4 h-4 text-stone-500" />
@@ -293,9 +314,14 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
 
                 <div className="space-y-2 pt-2">
                   {comments.map((c) => (
-                    <div key={c.id} className="p-3 bg-stone-50 rounded-xl space-y-0.5">
+                    <div
+                      key={c.id}
+                      className="p-3 bg-stone-50 rounded-xl space-y-0.5"
+                    >
                       <div className="flex items-center justify-between text-xs text-stone-400">
-                        <span className="font-semibold text-stone-700">{c.author}</span>
+                        <span className="font-semibold text-stone-700">
+                          {c.author}
+                        </span>
                         <span>{c.date}</span>
                       </div>
                       <p className="text-stone-800 text-sm">{c.text}</p>
@@ -309,4 +335,18 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
       </div>
     </div>
   );
-};
+}
+
+export default function BrowsePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-stone-400">
+          Ładowanie pomysłów...
+        </div>
+      }
+    >
+      <BrowseIdeasContent />
+    </Suspense>
+  );
+}

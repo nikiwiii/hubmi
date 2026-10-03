@@ -1,5 +1,5 @@
 import React from 'react';
-import { Idea, ColorTheme, getCategoryThemeAndShape } from '../lib/types';
+import { Idea, ColorTheme, getCategoryThemeAndShape } from '../../lib/types';
 import { GeometricIllustration } from './GeometricIllustration';
 import { ThumbsUp, Users, Check, MessageSquare } from 'lucide-react';
 

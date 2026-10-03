@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Minimalistyczna, profesjonalna przestrzeń do zgłaszania, opiniowania i testowania pomysłów.",
 };
 
+import { Providers } from "./providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,9 @@ export default function RootLayout({
       lang="pl"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#F4F4F0] text-stone-900">{children}</body>
+      <body className="min-h-full flex flex-col bg-[#F4F4F0] text-stone-900">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

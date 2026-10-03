@@ -1,31 +1,37 @@
-import React, { useState, useEffect, useRef } from "react";
-import { User, ChatMessage, ChatContact } from "../lib/types";
+'use client';
+
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { ChatMessage, ChatContact } from '../lib/types';
 import {
   INITIAL_CONTACTS,
   getChatMessages,
-  sendChatMessage,
-} from "../lib/chatStore";
-import { Send, MessageCircle } from "lucide-react";
+  sendChatMessage
+} from '../lib/chatStore';
+import { Send, MessageCircle } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
-interface ChatScreenProps {
-  currentUser: User | null;
-  initialRecipientId?: string | null;
-}
+function ChatContent() {
+  const { currentUser } = useApp();
+  const searchParams = useSearchParams();
+  const recipientFromUrl = searchParams?.get('recipient');
 
-export const ChatScreen: React.FC<ChatScreenProps> = ({
-  currentUser,
-  initialRecipientId,
-}) => {
-  const currentUserId = currentUser?.id || "user-anna-2";
-  const currentUserName = currentUser?.name || "Anna Kowalska";
+  const currentUserId = currentUser?.id || 'user-anna-2';
+  const currentUserName = currentUser?.name || 'Anna Kowalska';
 
   const [contacts] = useState<ChatContact[]>(INITIAL_CONTACTS);
   const [activeContactId, setActiveContactId] = useState<string>(
-    initialRecipientId || INITIAL_CONTACTS[0].id,
+    recipientFromUrl || INITIAL_CONTACTS[0].id
   );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (recipientFromUrl) {
+      setActiveContactId(recipientFromUrl);
+    }
+  }, [recipientFromUrl]);
 
   // 1-second polling mechanism running silently
   useEffect(() => {
@@ -34,7 +40,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       const conversation = allMsgs.filter(
         (m) =>
           (m.senderId === currentUserId && m.receiverId === activeContactId) ||
-          (m.senderId === activeContactId && m.receiverId === currentUserId),
+          (m.senderId === activeContactId && m.receiverId === currentUserId)
       );
       setMessages(conversation);
     };
@@ -49,7 +55,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   }, [currentUserId, activeContactId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
   const activeContact =
@@ -63,15 +69,15 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       currentUserId,
       currentUserName,
       activeContactId,
-      text.trim(),
+      text.trim()
     );
-    setInputText("");
+    setInputText('');
 
     const all = getChatMessages();
     const conversation = all.filter(
       (m) =>
         (m.senderId === currentUserId && m.receiverId === activeContactId) ||
-        (m.senderId === activeContactId && m.receiverId === currentUserId),
+        (m.senderId === activeContactId && m.receiverId === currentUserId)
     );
     setMessages(conversation);
   };
@@ -90,7 +96,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                   key={contact.id}
                   onClick={() => setActiveContactId(contact.id)}
                   className={`w-full p-3.5 flex items-center gap-3 text-left transition-colors cursor-pointer ${
-                    isSelected ? "bg-stone-200/50" : "hover:bg-stone-100/60"
+                    isSelected ? 'bg-stone-200/50' : 'hover:bg-stone-100/60'
                   }`}
                 >
                   <div
@@ -164,13 +170,13 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                 return (
                   <div
                     key={m.id}
-                    className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
+                    className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                   >
                     <div
                       className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed ${
                         isMe
-                          ? "bg-stone-900 text-white rounded-br-xs"
-                          : "bg-stone-100 text-stone-900 rounded-bl-xs"
+                          ? 'bg-stone-900 text-white rounded-br-xs'
+                          : 'bg-stone-100 text-stone-900 rounded-bl-xs'
                       }`}
                     >
                       {m.text}
@@ -185,27 +191,27 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick suggestions (clean, no verbose labels) */}
+          {/* Quick suggestions */}
           <div className="px-4 py-2 bg-stone-50/60 border-t border-stone-100 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
             <button
               onClick={() =>
-                handleSendMessage("Chętnie wezmę udział w testach.")
+                handleSendMessage('Chętnie wezmę udział w testach.')
               }
-              className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors"
+              className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
             >
               Chętnie wezmę udział w testach
             </button>
             <button
               onClick={() =>
-                handleSendMessage("Kiedy planowane jest spotkanie?")
+                handleSendMessage('Kiedy planowane jest spotkanie?')
               }
-              className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors"
+              className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
             >
               Kiedy planowane jest spotkanie?
             </button>
             <button
-              onClick={() => handleSendMessage("Świetny pomysł!")}
-              className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors"
+              onClick={() => handleSendMessage('Świetny pomysł!')}
+              className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
             >
               Świetny pomysł!
             </button>
@@ -240,4 +246,12 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       </div>
     </div>
   );
-};
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-stone-400">Ładowanie czatu...</div>}>
+      <ChatContent />
+    </Suspense>
+  );
+}

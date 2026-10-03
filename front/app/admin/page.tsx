@@ -1,51 +1,46 @@
-import React, { useState } from 'react';
-import { User, Idea, UserRole, ScreenId } from '../lib/types';
-import { getUsers, saveUsers, setCurrentUser } from '../lib/auth';
+"use client";
+
+import React, { useState } from "react";
+import { User, UserRole } from "../lib/types";
+import { getUsers, saveUsers, setCurrentUser } from "../lib/auth";
 import {
   ShieldAlert,
-  ShieldCheck,
   UserPlus,
   Edit2,
   Trash2,
   CheckCircle2,
-  Search
-} from 'lucide-react';
+  Search,
+} from "lucide-react";
+import { useApp } from "../context/AppContext";
 
-interface AdminCrudScreenProps {
-  currentUser: User | null;
-  ideas: Idea[];
-  onUserChange: (user: User | null) => void;
-  onDeleteIdea: (id: string) => void;
-  onUpdateIdeaStatus: (id: string, status: 'active' | 'testing' | 'archived') => void;
-  onNavigate: (screen: ScreenId) => void;
-}
+export default function AdminPage() {
+  const {
+    currentUser,
+    ideas,
+    setCurrentUser: onUserChange,
+    deleteIdea,
+    updateIdeaStatus,
+  } = useApp();
 
-export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
-  currentUser,
-  ideas,
-  onUserChange,
-  onDeleteIdea,
-  onUpdateIdeaStatus
-}) => {
   const [usersList, setUsersList] = useState<User[]>(getUsers());
-  const [searchUserQuery, setSearchUserQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'users' | 'ideas'>('users');
+  const [searchUserQuery, setSearchUserQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"users" | "ideas">("users");
 
   // Modal / Form states for Create/Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [formName, setFormName] = useState('');
-  const [formEmail, setFormEmail] = useState('');
-  const [formRole, setFormRole] = useState<UserRole>('creator');
-  const [formStatus, setFormStatus] = useState<'active' | 'blocked'>('active');
-  const [formBio, setFormBio] = useState('');
-  const [adminFeedback, setAdminFeedback] = useState<string>('');
+  const [formName, setFormName] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formRole, setFormRole] = useState<UserRole>("creator");
+  const [formStatus, setFormStatus] = useState<"active" | "blocked">("active");
+  const [formBio, setFormBio] = useState("");
+  const [adminFeedback, setAdminFeedback] = useState<string>("");
 
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = currentUser?.role === "admin";
 
   const handleElevateToAdmin = () => {
     const all = getUsers();
-    const adminAccount = all.find(u => u.role === 'admin') || all[0];
+    const adminAccount = all.find((u) => u.role === "admin") || all[0];
     setCurrentUser(adminAccount);
     onUserChange(adminAccount);
     setAdminFeedback(`Zalogowano jako ${adminAccount.name}.`);
@@ -53,11 +48,11 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
 
   const openCreateModal = () => {
     setEditingUserId(null);
-    setFormName('');
-    setFormEmail('');
-    setFormRole('creator');
-    setFormStatus('active');
-    setFormBio('');
+    setFormName("");
+    setFormEmail("");
+    setFormRole("creator");
+    setFormStatus("active");
+    setFormBio("");
     setIsModalOpen(true);
   };
 
@@ -67,7 +62,7 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
     setFormEmail(u.email);
     setFormRole(u.role);
     setFormStatus(u.status);
-    setFormBio(u.bio || '');
+    setFormBio(u.bio || "");
     setIsModalOpen(true);
   };
 
@@ -76,7 +71,7 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
     if (!formName.trim() || !formEmail.trim()) return;
 
     if (editingUserId) {
-      const updated = usersList.map(u => {
+      const updated = usersList.map((u) => {
         if (u.id !== editingUserId) return u;
         return {
           ...u,
@@ -84,7 +79,7 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
           email: formEmail.trim(),
           role: formRole,
           status: formStatus,
-          bio: formBio.trim()
+          bio: formBio.trim(),
         };
       });
       setUsersList(updated);
@@ -96,10 +91,15 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
         name: formName.trim(),
         email: formEmail.trim(),
         role: formRole,
-        avatarBg: formRole === 'admin' ? '#EFE5C6' : formRole === 'tester' ? '#CAD7CE' : '#D2D8EE',
-        createdAt: new Date().toISOString().split('T')[0],
+        avatarBg:
+          formRole === "admin"
+            ? "#EFE5C6"
+            : formRole === "tester"
+              ? "#CAD7CE"
+              : "#D2D8EE",
+        createdAt: new Date().toISOString().split("T")[0],
         status: formStatus,
-        bio: formBio.trim() || 'Nowy użytkownik.'
+        bio: formBio.trim() || "Nowy użytkownik.",
       };
       const updated = [newUser, ...usersList];
       setUsersList(updated);
@@ -112,7 +112,7 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
 
   const handleDeleteUser = (id: string, name: string) => {
     if (confirm(`Usunąć użytkownika "${name}"?`)) {
-      const updated = usersList.filter(u => u.id !== id);
+      const updated = usersList.filter((u) => u.id !== id);
       setUsersList(updated);
       saveUsers(updated);
       setAdminFeedback(`Usunięto: ${name}`);
@@ -130,9 +130,9 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
           Wymagane uprawnienia administratora
         </h1>
 
-        <div className="p-5 bg-white rounded-2xl border border-black/[0.05] shadow-2xs space-y-3">
+        <div className="p-5 bg-white rounded-2xl border border-black/5 shadow-2xs space-y-3">
           <p className="text-xs text-stone-600">
-            Zalogowany: <strong>{currentUser?.name || 'Gość'}</strong>
+            Zalogowany: <strong>{currentUser?.name || "Gość"}</strong>
           </p>
 
           <button
@@ -147,10 +147,10 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
   }
 
   const filteredUsers = usersList.filter(
-    u =>
+    (u) =>
       u.name.toLowerCase().includes(searchUserQuery.toLowerCase()) ||
       u.email.toLowerCase().includes(searchUserQuery.toLowerCase()) ||
-      u.role.toLowerCase().includes(searchUserQuery.toLowerCase())
+      u.role.toLowerCase().includes(searchUserQuery.toLowerCase()),
   );
 
   return (
@@ -166,21 +166,21 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
         {/* Tab Switcher */}
         <div className="flex bg-stone-200/50 p-1 rounded-xl self-start sm:self-auto">
           <button
-            onClick={() => setActiveTab('users')}
+            onClick={() => setActiveTab("users")}
             className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === 'users'
-                ? 'bg-white text-stone-900 shadow-2xs'
-                : 'text-stone-600 hover:text-stone-900'
+              activeTab === "users"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-600 hover:text-stone-900"
             }`}
           >
             Użytkownicy ({usersList.length})
           </button>
           <button
-            onClick={() => setActiveTab('ideas')}
+            onClick={() => setActiveTab("ideas")}
             className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === 'ideas'
-                ? 'bg-white text-stone-900 shadow-2xs'
-                : 'text-stone-600 hover:text-stone-900'
+              activeTab === "ideas"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-600 hover:text-stone-900"
             }`}
           >
             Pomysły ({ideas.length})
@@ -194,15 +194,18 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{adminFeedback}</span>
           </div>
-          <button onClick={() => setAdminFeedback('')} className="text-emerald-700 font-semibold text-xs">
+          <button
+            onClick={() => setAdminFeedback("")}
+            className="text-emerald-700 font-semibold text-xs"
+          >
             ✕
           </button>
         </div>
       )}
 
       {/* TAB 1: USERS CRUD */}
-      {activeTab === 'users' && (
-        <div className="bg-white rounded-2xl border border-black/[0.05] shadow-2xs overflow-hidden p-5 space-y-4">
+      {activeTab === "users" && (
+        <div className="bg-white rounded-2xl border border-black/5 shadow-2xs overflow-hidden p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
@@ -247,8 +250,12 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
                           {u.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-semibold text-stone-900">{u.name}</p>
-                          <p className="text-[10px] text-stone-400">{u.email}</p>
+                          <p className="font-semibold text-stone-900">
+                            {u.name}
+                          </p>
+                          <p className="text-[10px] text-stone-400">
+                            {u.email}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -260,9 +267,13 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
                     </td>
 
                     <td className="py-3 px-3">
-                      <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${u.status === 'active' ? 'text-emerald-700' : 'text-stone-400'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'active' ? 'bg-emerald-500' : 'bg-stone-400'}`} />
-                        {u.status === 'active' ? 'Aktywny' : 'Zablokowany'}
+                      <span
+                        className={`inline-flex items-center gap-1 text-[11px] font-medium ${u.status === "active" ? "text-emerald-700" : "text-stone-400"}`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${u.status === "active" ? "bg-emerald-500" : "bg-stone-400"}`}
+                        />
+                        {u.status === "active" ? "Aktywny" : "Zablokowany"}
                       </span>
                     </td>
 
@@ -270,13 +281,13 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => openEditModal(u)}
-                          className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-600"
+                          className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-600 cursor-pointer"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteUser(u.id, u.name)}
-                          className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600"
+                          className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -291,25 +302,34 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
       )}
 
       {/* TAB 2: IDEAS MODERATION */}
-      {activeTab === 'ideas' && (
-        <div className="bg-white rounded-2xl border border-black/[0.05] shadow-2xs overflow-hidden p-5 space-y-3">
+      {activeTab === "ideas" && (
+        <div className="bg-white rounded-2xl border border-black/5 shadow-2xs overflow-hidden p-5 space-y-3">
           <div className="divide-y divide-stone-100">
             {ideas.map((idea) => (
-              <div key={idea.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div
+                key={idea.id}
+                className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
                       {idea.category}
                     </span>
-                    <span className="text-[11px] text-stone-400">{idea.authorName}</span>
+                    <span className="text-[11px] text-stone-400">
+                      {idea.authorName}
+                    </span>
                   </div>
-                  <h4 className="text-sm font-semibold text-stone-900">{idea.title}</h4>
+                  <h4 className="text-sm font-semibold text-stone-900">
+                    {idea.title}
+                  </h4>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <select
                     value={idea.status}
-                    onChange={(e) => onUpdateIdeaStatus(idea.id, e.target.value as any)}
+                    onChange={(e) =>
+                      updateIdeaStatus(idea.id, e.target.value as any)
+                    }
                     className="text-xs font-medium px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none"
                   >
                     <option value="active">Aktywny</option>
@@ -320,11 +340,11 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
                   <button
                     onClick={() => {
                       if (confirm(`Usunąć pomysł "${idea.title}"?`)) {
-                        onDeleteIdea(idea.id);
-                        setAdminFeedback(`Usunięto pomysł.`);
+                        deleteIdea(idea.id);
+                        setAdminFeedback("Usunięto pomysł.");
                       }
                     }}
-                    className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg"
+                    className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -340,7 +360,7 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full border border-stone-200 shadow-xl space-y-4">
             <h3 className="text-base font-bold text-stone-900">
-              {editingUserId ? 'Edytuj użytkownika' : 'Nowy użytkownik'}
+              {editingUserId ? "Edytuj użytkownika" : "Nowy użytkownik"}
             </h3>
 
             <form onSubmit={handleSaveUser} className="space-y-3">
@@ -422,4 +442,4 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
       )}
     </div>
   );
-};
+}

@@ -8,7 +8,7 @@ import {
   SUBREGION_PALETTE,
   PowiatItem,
   PATH_TO_POWIAT_MAP,
-} from "../lib/malopolskaMapData";
+} from "../../lib/malopolskaMapData";
 import {
   MapPin,
   Sparkles,
@@ -24,7 +24,7 @@ import {
   CheckCircle2,
   Building2,
 } from "lucide-react";
-import { ScreenId } from "../lib/types";
+import { ScreenId } from "../../lib/types";
 
 interface MalopolskaMapProps {
   onSelectPowiat?: (powiat: PowiatItem | null) => void;

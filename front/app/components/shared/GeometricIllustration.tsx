@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShapeType, ColorTheme } from '../lib/types';
+import { ShapeType, ColorTheme } from '../../lib/types';
 
 interface GeometricIllustrationProps {
   shape: ShapeType;

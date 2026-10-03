@@ -1,19 +1,14 @@
+'use client';
+
 import React, { useState } from 'react';
-import { User, ScreenId } from '../lib/types';
+import { User } from '../lib/types';
 import { computeSha256, getUsers, saveUsers, setCurrentUser } from '../lib/auth';
 import { Lock, Mail, User as UserIcon, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
-interface AuthScreenProps {
-  currentUser: User | null;
-  onUserChange: (user: User | null) => void;
-  onNavigate: (screen: ScreenId) => void;
-}
+export default function AuthPage() {
+  const { setCurrentUser: onUserChange, navigate } = useApp();
 
-export const AuthScreen: React.FC<AuthScreenProps> = ({
-  currentUser,
-  onUserChange,
-  onNavigate
-}) => {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -45,7 +40,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     }
 
     setIsSubmitting(true);
-    const hash = await computeSha256(password);
+    await computeSha256(password);
     const users = getUsers();
 
     if (isRegister) {
@@ -55,7 +50,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
         return;
       }
 
-      const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
       if (existing) {
         setErrorMsg('Konto z tym adresem już istnieje.');
         setIsSubmitting(false);
@@ -77,9 +72,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       setCurrentUser(newUser);
       onUserChange(newUser);
       setSuccessMsg('Konto utworzone.');
-      setTimeout(() => onNavigate('discover'), 800);
+      setTimeout(() => navigate('discover'), 800);
     } else {
-      const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
       if (!user) {
         setErrorMsg('Nie znaleziono konta. Skorzystaj z szybkiego wyboru profilu poniżej.');
         setIsSubmitting(false);
@@ -95,7 +90,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       setCurrentUser(user);
       onUserChange(user);
       setSuccessMsg(`Zalogowano: ${user.name}`);
-      setTimeout(() => onNavigate('discover'), 600);
+      setTimeout(() => navigate('discover'), 600);
     }
 
     setIsSubmitting(false);
@@ -103,11 +98,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
   const handleQuickLogin = (demoEmail: string) => {
     const users = getUsers();
-    const user = users.find(u => u.email === demoEmail);
+    const user = users.find((u) => u.email === demoEmail);
     if (user) {
       setCurrentUser(user);
       onUserChange(user);
-      setTimeout(() => onNavigate(user.role === 'admin' ? 'admin' : 'discover'), 400);
+      setTimeout(() => navigate(user.role === 'admin' ? 'admin' : 'discover'), 400);
     }
   };
 
@@ -125,7 +120,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           <button
             type="button"
             onClick={() => { setIsRegister(false); setErrorMsg(''); }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               !isRegister ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-500'
             }`}
           >
@@ -134,7 +129,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           <button
             type="button"
             onClick={() => { setIsRegister(true); setErrorMsg(''); }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               isRegister ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-500'
             }`}
           >
@@ -256,4 +251,4 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       </div>
     </div>
   );
-};
+}

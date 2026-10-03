@@ -1,7 +1,7 @@
-import React from 'react';
-import { ColorTheme, ShapeType } from '../lib/types';
-import { GeometricIllustration } from './GeometricIllustration';
-import { Check } from 'lucide-react';
+import React from "react";
+import { ColorTheme, ShapeType } from "../../lib/types";
+import { GeometricIllustration } from "../shared/GeometricIllustration";
+import { Check } from "lucide-react";
 
 interface IdeaMockupVisualizerProps {
   title: string;
@@ -19,12 +19,12 @@ export const IdeaMockupVisualizer: React.FC<IdeaMockupVisualizerProps> = ({
   theme,
   shape,
   category,
-  keyBenefits
+  keyBenefits,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-[#FAF9F5] rounded-[32px] border border-black/[0.05]">
+    <div className="flex flex-col items-center justify-center p-6 bg-[#FAF9F5] rounded-4xl border border-black/5">
       {/* Phone Screen Mockup Preview */}
-      <div className="relative w-full max-w-[280px] aspect-[9/18] bg-stone-900 rounded-[42px] p-2.5 shadow-xl border border-stone-800">
+      <div className="relative w-full max-w-70 aspect-9/18 bg-stone-900 rounded-[42px] p-2.5 shadow-xl border border-stone-800">
         {/* Dynamic Island */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-20" />
 
@@ -32,10 +32,10 @@ export const IdeaMockupVisualizer: React.FC<IdeaMockupVisualizerProps> = ({
         <div className="relative w-full h-full bg-[#F7F6F1] rounded-[34px] overflow-hidden flex flex-col p-4 pt-8 select-none">
           <div className="mb-3">
             <h4 className="text-xl font-bold tracking-tight text-stone-900 leading-tight">
-              {title.split(' ').slice(0, 2).join(' ')}
+              {title.split(" ").slice(0, 2).join(" ")}
             </h4>
             <p className="text-base font-semibold tracking-tight text-stone-400 leading-tight">
-              {title.split(' ').slice(2).join(' ') || 'Rozwiązanie'}
+              {title.split(" ").slice(2).join(" ") || "Rozwiązanie"}
             </p>
           </div>
 
@@ -50,17 +50,15 @@ export const IdeaMockupVisualizer: React.FC<IdeaMockupVisualizerProps> = ({
             </div>
 
             <div className="flex items-center justify-center my-auto py-2">
-              <GeometricIllustration
-                shape={shape}
-                theme={theme}
-                size={75}
-              />
+              <GeometricIllustration shape={shape} theme={theme} size={75} />
             </div>
 
             <div className="pt-2 border-t border-stone-100">
               <p className="text-[11px] font-medium text-stone-700 flex items-center gap-1">
                 <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                <span className="truncate">{keyBenefits[0] || 'Prosty interfejs'}</span>
+                <span className="truncate">
+                  {keyBenefits[0] || "Prosty interfejs"}
+                </span>
               </p>
             </div>
           </div>

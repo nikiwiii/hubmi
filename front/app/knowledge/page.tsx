@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from "react";
-import { KnowledgeResource, KnowledgeType, ScreenId } from "../lib/types";
-import { getKnowledgeResources } from "../lib/knowledgeStore";
-import { GeometricIllustration } from "./GeometricIllustration";
-import { getThemeStyles } from "./IdeaCard";
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { KnowledgeResource, KnowledgeType } from '../lib/types';
+import { getKnowledgeResources } from '../lib/knowledgeStore';
+import { GeometricIllustration } from '../components/shared/GeometricIllustration';
+import { getThemeStyles } from '../components/shared/IdeaCard';
 import {
   Search,
   BookOpen,
@@ -12,32 +14,26 @@ import {
   ChevronUp,
   X,
   Play,
-  Sparkles,
-} from "lucide-react";
+  Sparkles
+} from 'lucide-react';
 
-import { MalopolskaMap } from "./MalopolskaMap";
-import { PowiatItem } from "../lib/malopolskaMapData";
+import { MalopolskaMap } from '../components/knowledge/MalopolskaMap';
+import { PowiatItem } from '../lib/malopolskaMapData';
+import { useApp } from '../context/AppContext';
 
-interface KnowledgeHubScreenProps {
-  onNavigate: (screen: ScreenId) => void;
-}
+export default function KnowledgePage() {
+  const { navigate } = useApp();
 
-export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
-  onNavigate,
-}) => {
   const [resources] = useState<KnowledgeResource[]>(getKnowledgeResources());
-  const [activeFilter, setActiveFilter] = useState<"all" | KnowledgeType>(
-    "all",
-  );
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<'all' | KnowledgeType>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
-  const [activeVideoModal, setActiveVideoModal] =
-    useState<KnowledgeResource | null>(null);
+  const [activeVideoModal, setActiveVideoModal] = useState<KnowledgeResource | null>(null);
   const [selectedPowiat, setSelectedPowiat] = useState<PowiatItem | null>(null);
 
   const filteredResources = useMemo(() => {
     return resources.filter((item) => {
-      const matchesType = activeFilter === "all" || item.type === activeFilter;
+      const matchesType = activeFilter === 'all' || item.type === activeFilter;
       const q = searchQuery.toLowerCase();
       const matchesQuery =
         item.title.toLowerCase().includes(q) ||
@@ -63,14 +59,13 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
             <span className="block text-stone-300">ROPS Kraków</span>
           </div>
           <p className="mt-2 text-stone-500 text-sm font-medium">
-            Diagnozy wyzwań Małopolski, baza przetestowanych innowacji oraz
-            materiały edukacyjne.
+            Diagnozy wyzwań Małopolski, baza przetestowanych innowacji oraz materiały edukacyjne.
           </p>
         </div>
 
         {/* Quick action to propose innovation inspired by knowledge */}
         <button
-          onClick={() => onNavigate("propose")}
+          onClick={() => navigate('propose')}
           className="self-start sm:self-auto flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer"
         >
           <Sparkles className="w-3.5 h-3.5" />
@@ -82,7 +77,7 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
       <MalopolskaMap
         onSelectPowiat={(p) => setSelectedPowiat(p)}
         onApplySearch={(term) => setSearchQuery(term)}
-        onNavigate={onNavigate}
+        onNavigate={navigate}
       />
 
       {/* Minimal Search & Filter Bar */}
@@ -98,7 +93,7 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery("")}
+              onClick={() => setSearchQuery('')}
               className="absolute right-3 p-1 text-stone-400 hover:text-stone-700"
             >
               <X className="w-4 h-4" />
@@ -110,22 +105,22 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
       {/* Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
         <button
-          onClick={() => setActiveFilter("all")}
+          onClick={() => setActiveFilter('all')}
           className={`whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === "all"
-              ? "bg-stone-900 text-white"
-              : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80"
+            activeFilter === 'all'
+              ? 'bg-stone-900 text-white'
+              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
           }`}
         >
           Wszystkie zasoby ({resources.length})
         </button>
 
         <button
-          onClick={() => setActiveFilter("challenge")}
+          onClick={() => setActiveFilter('challenge')}
           className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === "challenge"
-              ? "bg-stone-900 text-white"
-              : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80"
+            activeFilter === 'challenge'
+              ? 'bg-stone-900 text-white'
+              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
           }`}
         >
           <MapPin className="w-3.5 h-3.5" />
@@ -133,11 +128,11 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
         </button>
 
         <button
-          onClick={() => setActiveFilter("innovation")}
+          onClick={() => setActiveFilter('innovation')}
           className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === "innovation"
-              ? "bg-stone-900 text-white"
-              : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80"
+            activeFilter === 'innovation'
+              ? 'bg-stone-900 text-white'
+              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
           }`}
         >
           <Film className="w-3.5 h-3.5" />
@@ -145,11 +140,11 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
         </button>
 
         <button
-          onClick={() => setActiveFilter("education")}
+          onClick={() => setActiveFilter('education')}
           className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === "education"
-              ? "bg-stone-900 text-white"
-              : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80"
+            activeFilter === 'education'
+              ? 'bg-stone-900 text-white'
+              : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
@@ -165,8 +160,8 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
           </p>
           <button
             onClick={() => {
-              setSearchQuery("");
-              setActiveFilter("all");
+              setSearchQuery('');
+              setActiveFilter('all');
             }}
             className="mt-3 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-medium"
           >
@@ -200,9 +195,7 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
                     )}
                   </div>
 
-                  <h3
-                    className={`text-xl font-bold leading-snug tracking-tight mt-1 ${styles.text}`}
-                  >
+                  <h3 className={`text-xl font-bold leading-snug tracking-tight mt-1 ${styles.text}`}>
                     {item.title}
                   </h3>
 
@@ -211,7 +204,7 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
                   </p>
                 </div>
 
-                {/* Center: Key Metric (for Challenges), Video Thumbnail (for Innovations), or Geometric Art (for Education) */}
+                {/* Center: Key Metric, Video Thumbnail, or Geometric Art */}
                 <div className="my-auto py-3">
                   {item.keyMetric ? (
                     <div className="p-3 bg-white/60 backdrop-blur-2xs rounded-2xl border border-black/4 text-center space-y-0.5">
@@ -257,9 +250,7 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
 
                 {/* Summary / Expandable Content */}
                 <div className="space-y-2 pt-2 border-t border-black/6">
-                  <p
-                    className={`text-xs font-medium leading-relaxed ${styles.subtext}`}
-                  >
+                  <p className={`text-xs font-medium leading-relaxed ${styles.subtext}`}>
                     {item.summary}
                   </p>
 
@@ -290,7 +281,7 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
                       onClick={() => toggleExpand(item.id)}
                       className="flex items-center gap-1 font-semibold text-stone-800 hover:text-stone-950 cursor-pointer"
                     >
-                      <span>{isExpanded ? "Zwiń" : "Czytaj szczegóły"}</span>
+                      <span>{isExpanded ? 'Zwiń' : 'Czytaj szczegóły'}</span>
                       {isExpanded ? (
                         <ChevronUp className="w-3.5 h-3.5" />
                       ) : (
@@ -305,7 +296,7 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
         </div>
       )}
 
-      {/* Video Modal Player (Ciekawa forma prezentacji wideo) */}
+      {/* Video Modal Player */}
       {activeVideoModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-stone-200 space-y-4 animate-in fade-in">
@@ -326,15 +317,13 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
               </button>
             </div>
 
-            {/* Video player frame / simulation */}
             <div className="relative aspect-video bg-stone-900 rounded-2xl overflow-hidden flex flex-col items-center justify-center text-white p-6 text-center">
               <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center mb-3">
                 <Play className="w-7 h-7 fill-white ml-1" />
               </div>
               <p className="text-sm font-semibold">{activeVideoModal.title}</p>
               <p className="text-xs text-stone-400 mt-1">
-                Wideoteka Innowacji Społecznych ROPS Kraków (
-                {activeVideoModal.videoDuration})
+                Wideoteka Innowacji Społecznych ROPS Kraków ({activeVideoModal.videoDuration})
               </p>
               <span className="mt-4 px-3 py-1 bg-white/10 rounded-full text-[11px] font-mono">
                 Źródło: Kanał Wideo ROPS Kraków
@@ -358,4 +347,4 @@ export const KnowledgeHubScreen: React.FC<KnowledgeHubScreenProps> = ({
       )}
     </div>
   );
-};
+}
