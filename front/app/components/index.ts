@@ -13,3 +13,4 @@ export * from "./knowledge/MalopolskaMap";
 export * from "./knowledge/RagChatSection";
 export * from "./knowledge/ResearchAIChat";
 export * from "./propose/IdeaMockupVisualizer";
+export * from "./voice";
