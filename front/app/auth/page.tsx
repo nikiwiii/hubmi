@@ -1,42 +1,55 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { User } from '../lib/types';
-import { computeSha256, getUsers, saveUsers, setCurrentUser } from '../lib/auth';
-import { loginUser, loginAdmin, registerUser } from '../lib/api';
-import { Lock, Mail, User as UserIcon, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import React, { useState } from "react";
+import { User } from "../lib/types";
+import {
+  computeSha256,
+  getUsers,
+  saveUsers,
+  setCurrentUser,
+} from "../lib/auth";
+import { loginUser, loginAdmin, registerUser } from "../lib/api";
+import {
+  Lock,
+  Mail,
+  User as UserIcon,
+  ArrowRight,
+  CheckCircle2,
+} from "lucide-react";
+import { useApp } from "../context/AppContext";
 
 export default function AuthPage() {
   const { setCurrentUser: onUserChange, navigate } = useApp();
 
   const [isRegister, setIsRegister] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [shaHashPreview, setShaHashPreview] = useState<string>('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [shaHashPreview, setShaHashPreview] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handlePasswordChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const val = e.target.value;
     setPassword(val);
     if (val) {
       const hash = await computeSha256(val);
       setShaHashPreview(hash);
     } else {
-      setShaHashPreview('');
+      setShaHashPreview("");
     }
   };
 
   const handleLoginOrRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg('');
-    setSuccessMsg('');
+    setErrorMsg("");
+    setSuccessMsg("");
 
     if (!email || !password) {
-      setErrorMsg('Wprowadź e-mail oraz hasło.');
+      setErrorMsg("Wprowadź e-mail oraz hasło.");
       return;
     }
 
@@ -46,26 +59,38 @@ export default function AuthPage() {
 
     if (isRegister) {
       if (!name) {
-        setErrorMsg('Wprowadź swoje imię.');
+        setErrorMsg("Wprowadź swoje imię.");
         setIsSubmitting(false);
         return;
       }
 
       // Try Backend Registration
       try {
-        const isAdminEmail = email.toLowerCase().includes('admin');
-        const user = await registerUser(email, password, name, isAdminEmail ? 'admin' : 'user');
+        const isAdminEmail = email.toLowerCase().includes("admin");
+        const user = await registerUser(
+          email,
+          password,
+          name,
+          isAdminEmail ? "admin" : "user",
+        );
         setCurrentUser(user);
         onUserChange(user);
         setSuccessMsg(`Konto utworzone w bazie i zalogowano (${user.name})!`);
-        setTimeout(() => navigate('discover'), 800);
+        setTimeout(() => navigate("discover"), 800);
         return;
       } catch (backendErr: any) {
-        console.warn('Backend register error, trying local fallback:', backendErr);
+        console.warn(
+          "Backend register error, trying local fallback:",
+          backendErr,
+        );
         // Local fallback
-        const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+        const existing = users.find(
+          (u) => u.email.toLowerCase() === email.toLowerCase(),
+        );
         if (existing) {
-          setErrorMsg(backendErr?.message || 'Konto z tym adresem już istnieje.');
+          setErrorMsg(
+            backendErr?.message || "Konto z tym adresem już istnieje.",
+          );
           setIsSubmitting(false);
           return;
         }
@@ -74,23 +99,23 @@ export default function AuthPage() {
           id: `user-${Date.now()}`,
           email: email.trim(),
           name: name.trim(),
-          role: email.toLowerCase().includes('admin') ? 'admin' : 'creator',
-          avatarBg: '#D2D8EE',
-          createdAt: new Date().toISOString().split('T')[0],
-          status: 'active',
-          bio: 'Nowy użytkownik.'
+          role: email.toLowerCase().includes("admin") ? "admin" : "creator",
+          avatarBg: "#D2D8EE",
+          createdAt: new Date().toISOString().split("T")[0],
+          status: "active",
+          bio: "Nowy użytkownik.",
         };
 
         saveUsers([...users, newUser]);
         setCurrentUser(newUser);
         onUserChange(newUser);
-        setSuccessMsg('Konto utworzone.');
-        setTimeout(() => navigate('discover'), 800);
+        setSuccessMsg("Konto utworzone.");
+        setTimeout(() => navigate("discover"), 800);
       }
     } else {
       // Try Backend Login
       try {
-        const isAdmin = email.toLowerCase().includes('admin');
+        const isAdmin = email.toLowerCase().includes("admin");
         const loggedUser = isAdmin
           ? await loginAdmin(email, password)
           : await loginUser(email, password);
@@ -98,20 +123,22 @@ export default function AuthPage() {
         setCurrentUser(loggedUser);
         onUserChange(loggedUser);
         setSuccessMsg(`Zalogowano pomyślnie: ${loggedUser.name}`);
-        setTimeout(() => navigate('discover'), 600);
+        setTimeout(() => navigate("discover"), 600);
         return;
       } catch (backendErr: any) {
-        console.warn('Backend login error, trying local fallback:', backendErr);
+        console.warn("Backend login error, trying local fallback:", backendErr);
         // Fallback to local accounts
-        const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+        const user = users.find(
+          (u) => u.email.toLowerCase() === email.toLowerCase(),
+        );
         if (!user) {
-          setErrorMsg(backendErr?.message || 'Niepoprawne dane logowania.');
+          setErrorMsg(backendErr?.message || "Niepoprawne dane logowania.");
           setIsSubmitting(false);
           return;
         }
 
-        if (user.status === 'blocked') {
-          setErrorMsg('Konto zablokowane.');
+        if (user.status === "blocked") {
+          setErrorMsg("Konto zablokowane.");
           setIsSubmitting(false);
           return;
         }
@@ -119,7 +146,7 @@ export default function AuthPage() {
         setCurrentUser(user);
         onUserChange(user);
         setSuccessMsg(`Zalogowano: ${user.name}`);
-        setTimeout(() => navigate('discover'), 600);
+        setTimeout(() => navigate("discover"), 600);
       }
     }
 
@@ -127,12 +154,12 @@ export default function AuthPage() {
   };
 
   const handleQuickLogin = async (demoEmail: string) => {
-    setErrorMsg('');
-    setSuccessMsg('');
+    setErrorMsg("");
+    setSuccessMsg("");
     setIsSubmitting(true);
 
-    const isAdmin = demoEmail.toLowerCase().includes('admin');
-    const defaultPassword = isAdmin ? 'admin123' : 'user123';
+    const isAdmin = demoEmail.toLowerCase().includes("admin");
+    const defaultPassword = isAdmin ? "admin123" : "user123";
 
     try {
       const loggedUser = isAdmin
@@ -142,7 +169,10 @@ export default function AuthPage() {
       setCurrentUser(loggedUser);
       onUserChange(loggedUser);
       setSuccessMsg(`Zalogowano profil: ${loggedUser.name}`);
-      setTimeout(() => navigate(loggedUser.role === 'admin' ? 'admin' : 'discover'), 400);
+      setTimeout(
+        () => navigate(loggedUser.role === "admin" ? "admin" : "discover"),
+        400,
+      );
       return;
     } catch {
       const users = getUsers();
@@ -150,7 +180,10 @@ export default function AuthPage() {
       if (user) {
         setCurrentUser(user);
         onUserChange(user);
-        setTimeout(() => navigate(user.role === 'admin' ? 'admin' : 'discover'), 400);
+        setTimeout(
+          () => navigate(user.role === "admin" ? "admin" : "discover"),
+          400,
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -161,27 +194,37 @@ export default function AuthPage() {
     <div className="max-w-md mx-auto py-10 px-4">
       <div className="mb-6 text-center">
         <h1 className="text-3xl font-bold text-stone-900 tracking-tight">
-          {isRegister ? 'Rejestracja' : 'Logowanie'}
+          {isRegister ? "Rejestracja" : "Logowanie"}
         </h1>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs">
         {/* Toggle Login / Register */}
         <div className="flex bg-stone-100 p-1 rounded-xl mb-6">
           <button
             type="button"
-            onClick={() => { setIsRegister(false); setErrorMsg(''); }}
+            onClick={() => {
+              setIsRegister(false);
+              setErrorMsg("");
+            }}
             className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              !isRegister ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-500'
+              !isRegister
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500"
             }`}
           >
             Logowanie
           </button>
           <button
             type="button"
-            onClick={() => { setIsRegister(true); setErrorMsg(''); }}
+            onClick={() => {
+              setIsRegister(true);
+              setErrorMsg("");
+            }}
             className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              isRegister ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-500'
+              isRegister
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500"
             }`}
           >
             Nowe Konto
@@ -263,7 +306,7 @@ export default function AuthPage() {
             disabled={isSubmitting}
             className="w-full py-3 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2"
           >
-            <span>{isRegister ? 'Utwórz konto' : 'Zaloguj się'}</span>
+            <span>{isRegister ? "Utwórz konto" : "Zaloguj się"}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
@@ -275,26 +318,32 @@ export default function AuthPage() {
           </p>
           <div className="grid grid-cols-3 gap-2">
             <button
-              onClick={() => handleQuickLogin('anna.kowalska@hubmi.pl')}
+              onClick={() => handleQuickLogin("anna.kowalska@hubmi.pl")}
               className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-center transition-colors cursor-pointer"
             >
-              <span className="block text-xs font-semibold text-stone-800">Anna</span>
+              <span className="block text-xs font-semibold text-stone-800">
+                Anna
+              </span>
               <span className="text-[10px] text-stone-400">Twórca</span>
             </button>
 
             <button
-              onClick={() => handleQuickLogin('admin@hubmi.pl')}
+              onClick={() => handleQuickLogin("admin@hubmi.pl")}
               className="p-2 rounded-xl bg-[#EFE5C6]/60 hover:bg-[#EFE5C6] border border-[#DFD3AE] text-center transition-colors cursor-pointer"
             >
-              <span className="block text-xs font-semibold text-stone-800">Marek</span>
+              <span className="block text-xs font-semibold text-stone-800">
+                Marek
+              </span>
               <span className="text-[10px] text-stone-600">Admin</span>
             </button>
 
             <button
-              onClick={() => handleQuickLogin('jan.wisniewski@hubmi.pl')}
+              onClick={() => handleQuickLogin("jan.wisniewski@hubmi.pl")}
               className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-center transition-colors cursor-pointer"
             >
-              <span className="block text-xs font-semibold text-stone-800">Jan</span>
+              <span className="block text-xs font-semibold text-stone-800">
+                Jan
+              </span>
               <span className="text-[10px] text-stone-400">Tester</span>
             </button>
           </div>

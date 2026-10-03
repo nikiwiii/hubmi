@@ -1,41 +1,43 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { ChatMessage, ChatContact, BackendConversation } from '../lib/types';
+import React, { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { ChatMessage, ChatContact, BackendConversation } from "../lib/types";
 import {
   INITIAL_CONTACTS,
   getChatMessages,
-  sendChatMessage
-} from '../lib/chatStore';
+  sendChatMessage,
+} from "../lib/chatStore";
 import {
   fetchConversations,
   pollConversationMessages,
   sendConversationMessage,
-  startExpertConversation
-} from '../lib/api';
-import { Send, MessageCircle, Plus, Shield, RefreshCw } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+  startExpertConversation,
+} from "../lib/api";
+import { Send, MessageCircle, Plus, Shield, RefreshCw } from "lucide-react";
+import { useApp } from "../context/AppContext";
 
 function ChatContent() {
   const { currentUser } = useApp();
   const searchParams = useSearchParams();
-  const recipientFromUrl = searchParams?.get('recipient');
+  const recipientFromUrl = searchParams?.get("recipient");
 
-  const currentUserId = currentUser?.id || 'user-anna-2';
-  const currentUserName = currentUser?.name || 'Anna Kowalska';
-  const isExpertOrAdmin = currentUser?.role === 'admin';
+  const currentUserId = currentUser?.id || "user-anna-2";
+  const currentUserName = currentUser?.name || "Anna Kowalska";
+  const isExpertOrAdmin = currentUser?.role === "admin";
 
-  const [backendConversations, setBackendConversations] = useState<BackendConversation[]>([]);
+  const [backendConversations, setBackendConversations] = useState<
+    BackendConversation[]
+  >([]);
   const [contacts, setContacts] = useState<ChatContact[]>(INITIAL_CONTACTS);
   const [activeContactId, setActiveContactId] = useState<string>(
-    recipientFromUrl || INITIAL_CONTACTS[0].id
+    recipientFromUrl || INITIAL_CONTACTS[0].id,
   );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const [isCreatingNewThread, setIsCreatingNewThread] = useState(false);
-  const [newTopic, setNewTopic] = useState('');
-  const [newInitialMsg, setNewInitialMsg] = useState('');
+  const [newTopic, setNewTopic] = useState("");
+  const [newInitialMsg, setNewInitialMsg] = useState("");
   const [isPollingActive, setIsPollingActive] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -55,15 +57,20 @@ function ChatContent() {
           // Map backend conversations to contacts list
           const mappedContacts: ChatContact[] = convs.map((c) => ({
             id: c.id,
-            name: isExpertOrAdmin ? `${c.user_name} (${c.topic})` : (c.assigned_admin_name || 'Ekspert ROPS Kraków'),
-            role: c.topic || 'Konsultacje innowacji społecznych',
-            avatarBg: isExpertOrAdmin ? '#A4B3F6' : '#F5E85A',
-            lastMessage: c.last_message || 'Rozpoczęto rozmowę',
+            name: isExpertOrAdmin
+              ? `${c.user_name} (${c.topic})`
+              : c.assigned_admin_name || "Ekspert ROPS Kraków",
+            role: c.topic || "Konsultacje innowacji społecznych",
+            avatarBg: isExpertOrAdmin ? "#A4B3F6" : "#F5E85A",
+            lastMessage: c.last_message || "Rozpoczęto rozmowę",
             lastMessageTime: c.last_message_at
-              ? new Date(c.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : 'Teraz',
+              ? new Date(c.last_message_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "Teraz",
             unreadCount: isExpertOrAdmin ? c.unread_by_admin : c.unread_by_user,
-            isOnline: true
+            isOnline: true,
           }));
 
           setContacts(mappedContacts);
@@ -72,7 +79,7 @@ function ChatContent() {
           }
         }
       } catch (err) {
-        console.warn('Backend chat note (using local demo threads):', err);
+        console.warn("Backend chat note (using local demo threads):", err);
       }
     };
 
@@ -86,7 +93,9 @@ function ChatContent() {
     const fetchLatest = async () => {
       setIsPollingActive(true);
 
-      const isBackendConv = backendConversations.some((c) => c.id === activeContactId);
+      const isBackendConv = backendConversations.some(
+        (c) => c.id === activeContactId,
+      );
 
       if (isBackendConv) {
         try {
@@ -98,7 +107,10 @@ function ChatContent() {
               senderName: m.sender_name,
               receiverId: activeContactId,
               text: m.content,
-              timestamp: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              timestamp: new Date(m.created_at).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
             }));
             setMessages(mapped);
           }
@@ -109,8 +121,9 @@ function ChatContent() {
         const allMsgs = getChatMessages();
         const conversation = allMsgs.filter(
           (m) =>
-            (m.senderId === currentUserId && m.receiverId === activeContactId) ||
-            (m.senderId === activeContactId && m.receiverId === currentUserId)
+            (m.senderId === currentUserId &&
+              m.receiverId === activeContactId) ||
+            (m.senderId === activeContactId && m.receiverId === currentUserId),
         );
         if (isMounted) setMessages(conversation);
       }
@@ -133,22 +146,28 @@ function ChatContent() {
   }, [activeContactId, backendConversations, currentUserId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  const activeContact = contacts.find((c) => c.id === activeContactId) || contacts[0];
+  const activeContact =
+    contacts.find((c) => c.id === activeContactId) || contacts[0];
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = textToSend || inputText;
     if (!text.trim()) return;
 
-    setInputText('');
+    setInputText("");
 
-    const isBackendConv = backendConversations.some((c) => c.id === activeContactId);
+    const isBackendConv = backendConversations.some(
+      (c) => c.id === activeContactId,
+    );
 
     if (isBackendConv) {
       try {
-        const sent = await sendConversationMessage(activeContactId, text.trim());
+        const sent = await sendConversationMessage(
+          activeContactId,
+          text.trim(),
+        );
         setMessages((prev) => [
           ...prev,
           {
@@ -157,22 +176,30 @@ function ChatContent() {
             senderName: sent.sender_name,
             receiverId: activeContactId,
             text: sent.content,
-            timestamp: new Date(sent.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
+            timestamp: new Date(sent.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
         ]);
         return;
       } catch (e) {
-        console.warn('Backend send failed, using local fallback:', e);
+        console.warn("Backend send failed, using local fallback:", e);
       }
     }
 
     // Local fallback
-    sendChatMessage(currentUserId, currentUserName, activeContactId, text.trim());
+    sendChatMessage(
+      currentUserId,
+      currentUserName,
+      activeContactId,
+      text.trim(),
+    );
     const all = getChatMessages();
     const conversation = all.filter(
       (m) =>
         (m.senderId === currentUserId && m.receiverId === activeContactId) ||
-        (m.senderId === activeContactId && m.receiverId === currentUserId)
+        (m.senderId === activeContactId && m.receiverId === currentUserId),
     );
     setMessages(conversation);
   };
@@ -184,27 +211,27 @@ function ChatContent() {
     try {
       const created = await startExpertConversation({
         topic: newTopic.trim(),
-        initial_message: newInitialMsg.trim() || undefined
+        initial_message: newInitialMsg.trim() || undefined,
       });
 
       const newContact: ChatContact = {
         id: created.id,
-        name: created.assigned_admin_name || 'Ekspert ROPS Kraków',
+        name: created.assigned_admin_name || "Ekspert ROPS Kraków",
         role: created.topic,
-        avatarBg: '#F5E85A',
-        lastMessage: created.last_message || 'Otwarto nowy wątek',
-        lastMessageTime: 'Teraz',
-        isOnline: true
+        avatarBg: "#F5E85A",
+        lastMessage: created.last_message || "Otwarto nowy wątek",
+        lastMessageTime: "Teraz",
+        isOnline: true,
       };
 
       setBackendConversations((prev) => [created, ...prev]);
       setContacts((prev) => [newContact, ...prev]);
       setActiveContactId(created.id);
       setIsCreatingNewThread(false);
-      setNewTopic('');
-      setNewInitialMsg('');
+      setNewTopic("");
+      setNewInitialMsg("");
     } catch (err: any) {
-      alert(err?.message || 'Nie udało się utworzyć wątku.');
+      alert(err?.message || "Nie udało się utworzyć wątku.");
     }
   };
 
@@ -221,14 +248,17 @@ function ChatContent() {
               Platforma Aktywnej Komunikacji (ROPS Kraków)
             </h2>
             <p className="text-xs text-stone-500 font-medium">
-              Bezpośredni dialog z ekspertami i mentorami innowacji społecznych. Polling co 3 sekundy.
+              Bezpośredni dialog z ekspertami i mentorami innowacji społecznych.
+              Polling co 3 sekundy.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200 text-xs font-semibold text-stone-600">
-            <RefreshCw className={`w-3.5 h-3.5 ${isPollingActive ? 'animate-spin text-stone-900' : 'text-stone-400'}`} />
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${isPollingActive ? "animate-spin text-stone-900" : "text-stone-400"}`}
+            />
             <span className="hidden sm:inline">Polling 3s</span>
           </div>
 
@@ -298,7 +328,7 @@ function ChatContent() {
       )}
 
       {/* Clean Minimalist Messenger Container */}
-      <div className="grid grid-cols-1 md:grid-cols-12 bg-white rounded-[32px] border border-black/[0.06] shadow-sm overflow-hidden h-[620px]">
+      <div className="grid grid-cols-1 md:grid-cols-12 bg-white rounded-4xl border border-black/6 shadow-sm overflow-hidden h-155">
         {/* Left Column: Contacts List */}
         <div className="md:col-span-4 border-r border-stone-100 bg-[#FAF9F5] flex flex-col">
           <div className="p-3 border-b border-stone-100 bg-white/50 text-[11px] font-bold text-stone-400 uppercase tracking-wider">
@@ -312,7 +342,7 @@ function ChatContent() {
                   key={contact.id}
                   onClick={() => setActiveContactId(contact.id)}
                   className={`w-full p-3.5 flex items-center gap-3 text-left transition-colors cursor-pointer ${
-                    isSelected ? 'bg-stone-200/50' : 'hover:bg-stone-100/60'
+                    isSelected ? "bg-stone-200/50" : "hover:bg-stone-100/60"
                   }`}
                 >
                   <div
@@ -369,7 +399,10 @@ function ChatContent() {
               <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
                 3s Live Poll
               </span>
-              <div className="w-2 h-2 rounded-full bg-emerald-500" title="Aktywny" />
+              <div
+                className="w-2 h-2 rounded-full bg-emerald-500"
+                title="Aktywny"
+              />
             </div>
           </div>
 
@@ -378,8 +411,12 @@ function ChatContent() {
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
                 <MessageCircle className="w-8 h-8 mb-2 stroke-1 text-stone-300" />
-                <p className="text-sm font-medium text-stone-500">Napisz do eksperta ({activeContact.name})</p>
-                <p className="text-xs text-stone-400 mt-1">Odpowiedzi pojawią się automatycznie co 3 sekundy.</p>
+                <p className="text-sm font-medium text-stone-500">
+                  Napisz do eksperta ({activeContact.name})
+                </p>
+                <p className="text-xs text-stone-400 mt-1">
+                  Odpowiedzi pojawią się automatycznie co 3 sekundy.
+                </p>
               </div>
             ) : (
               messages.map((m) => {
@@ -387,13 +424,13 @@ function ChatContent() {
                 return (
                   <div
                     key={m.id}
-                    className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                    className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
                   >
                     <div
                       className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed ${
                         isMe
-                          ? 'bg-stone-900 text-white rounded-br-xs'
-                          : 'bg-stone-100 text-stone-900 rounded-bl-xs'
+                          ? "bg-stone-900 text-white rounded-br-xs"
+                          : "bg-stone-100 text-stone-900 rounded-bl-xs"
                       }`}
                     >
                       {m.text}
@@ -411,19 +448,31 @@ function ChatContent() {
           {/* Quick suggestions */}
           <div className="px-4 py-2 bg-stone-50/60 border-t border-stone-100 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
             <button
-              onClick={() => handleSendMessage('Dzień dobry! Jak mogę zgłosić pomysł do inkubatora ROPS Kraków?')}
+              onClick={() =>
+                handleSendMessage(
+                  "Dzień dobry! Jak mogę zgłosić pomysł do inkubatora ROPS Kraków?",
+                )
+              }
               className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
             >
               Jak zgłosić pomysł do inkubatora?
             </button>
             <button
-              onClick={() => handleSendMessage('Jakie formy dofinansowania są obecnie dostępne dla seniorów?')}
+              onClick={() =>
+                handleSendMessage(
+                  "Jakie formy dofinansowania są obecnie dostępne dla seniorów?",
+                )
+              }
               className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
             >
               Dostępne formy dofinansowania
             </button>
             <button
-              onClick={() => handleSendMessage('Chętnie wezmę udział w testowaniu prototypu.')}
+              onClick={() =>
+                handleSendMessage(
+                  "Chętnie wezmę udział w testowaniu prototypu.",
+                )
+              }
               className="px-2.5 py-1 rounded-full bg-white hover:bg-stone-100 border border-stone-200 text-[11px] font-medium text-stone-700 whitespace-nowrap transition-colors cursor-pointer"
             >
               Chętnie przetestuję prototyp
@@ -463,7 +512,11 @@ function ChatContent() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-stone-400">Ładowanie czatu...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-stone-400">Ładowanie czatu...</div>
+      }
+    >
       <ChatContent />
     </Suspense>
   );
