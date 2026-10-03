@@ -5,7 +5,10 @@ import argparse
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, List, Any, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 if sys.platform.startswith("win"):
     try:
@@ -19,7 +22,7 @@ logger = logging.getLogger("visualizedata")
 
 BASE_URL = "https://obserwator.rops.krakow.pl"
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "X-Requested-With": "XMLHttpRequest",
 }
 
@@ -59,7 +62,91 @@ INDICATORS_CONFIG = [
         "unit": "days",
         "description": "Average length of patient stay in a hospital ward (in days).",
     },
+    {
+        "key": "urbanization_rate",
+        "pointer_id": 4,
+        "name": "Urbanization rate",
+        "unit": "%",
+        "description": "Share of urban population in the total population.",
+    },
+    {
+        "key": "kindergarten_availability",
+        "pointer_id": 23,
+        "name": "Kindergarten availability",
+        "unit": "children/place",
+        "description": "Number of children aged 3-5 per one place in kindergarten.",
+    },
+    {
+        "key": "pharmacy_availability",
+        "pointer_id": 2,
+        "name": "Pharmacy availability",
+        "unit": "persons/pharmacy",
+        "description": "Number of residents per public pharmacy.",
+    },
+    {
+        "key": "cancer_incidence",
+        "pointer_id": 88,
+        "name": "Cancer incidence",
+        "unit": "per 1,000",
+        "description": "Number of diagnosed cancer patients aged 19+ under primary healthcare per 1,000 residents aged 19+.",
+    },
+    {
+        "key": "care_and_education_centers",
+        "pointer_id": 248,
+        "name": "Care and education centers",
+        "unit": "count",
+        "description": "Number of active institutional care and education centers for children.",
+    },
+    {
+        "key": "residents_per_social_worker",
+        "pointer_id": 27,
+        "name": "Residents per social worker",
+        "unit": "residents/worker",
+        "description": "Number of residents per social worker employed in a social assistance center.",
+    },
+    {
+        "key": "large_families_share",
+        "pointer_id": 237,
+        "name": "Share of large families",
+        "unit": "%",
+        "description": "Share of families with 3 or more dependent children up to 24 years old in all families with children (National Census).",
+        "fallback_years": ["2011"],
+    },
+    {
+        "key": "municipal_budget_expenditures",
+        "pointer_id": 94,
+        "name": "Total municipal budget expenditures",
+        "unit": "PLN/capita",
+        "description": "Total budget expenditures of municipalities and cities with powiat status per capita (in PLN).",
+    },
+    {
+        "key": "museum_availability",
+        "pointer_id": 21,
+        "name": "Museum availability",
+        "unit": "residents/museum",
+        "description": "Number of residents per museum or museum branch.",
+    },
 ]
+
+
+def create_resilient_session(pool_connections: int = 10, pool_maxsize: int = 20) -> requests.Session:
+    """Create a requests session with connection pooling and retries."""
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=0.5,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+    )
+    adapter = HTTPAdapter(
+        max_retries=retry_strategy,
+        pool_connections=pool_connections,
+        pool_maxsize=pool_maxsize,
+    )
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    session.headers.update(HEADERS)
+    return session
 
 
 def clean_numeric_value(raw_val: Optional[str]) -> Optional[float]:
@@ -67,8 +154,9 @@ def clean_numeric_value(raw_val: Optional[str]) -> Optional[float]:
     if not raw_val:
         return None
     val_str = raw_val.strip()
-    val_str = val_str.replace("%25", "").replace("%", "").replace(",", ".").strip()
-    if not val_str:
+    val_str = val_str.replace("%25", "").replace("%", "").replace("\xa0", "").strip()
+    val_str = val_str.replace(",", ".")
+    if not val_str or any(kw in val_str.lower() for kw in ["brak", "b/d", "nd", "-"]):
         return None
     try:
         val_float = float(val_str)
@@ -77,16 +165,19 @@ def clean_numeric_value(raw_val: Optional[str]) -> Optional[float]:
         return None
 
 
-def fetch_indicator_year_data(indicator_id: int, year: str) -> Dict[str, Optional[float]]:
+def fetch_indicator_year_data(
+    indicator_id: int, year: str, session: Optional[requests.Session] = None
+) -> Dict[str, Optional[float]]:
     """Fetch indicator data for a specific year from flashdata XML endpoint."""
     url = f"{BASE_URL}/portrait/flashdata/year/{year}/pointer/{indicator_id}"
+    req_lib = session if session is not None else requests
     try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
+        r = req_lib.get(url, headers=HEADERS, timeout=15)
         if r.status_code != 200 or not r.text.strip():
             return {}
         if "<regions>" not in r.text:
             return {}
-        
+
         root = ET.fromstring(r.text)
         regions_data: Dict[str, Optional[float]] = {}
         for region_el in root.findall(".//region"):
@@ -101,22 +192,44 @@ def fetch_indicator_year_data(indicator_id: int, year: str) -> Dict[str, Optiona
         return {}
 
 
-def scrape_indicator(ind_cfg: dict, target_years: List[str]) -> Dict[str, Any]:
-    """Scrape 10-year time series for a single indicator across all regions."""
+def scrape_indicator(
+    ind_cfg: dict,
+    target_years: List[str],
+    session: Optional[requests.Session] = None,
+    max_workers: int = 6,
+) -> Dict[str, Any]:
+    """Scrape time series for a single indicator across all regions using concurrent requests."""
     ind_id = ind_cfg["pointer_id"]
     name = ind_cfg["name"]
-    logger.info(f"Fetching data: {name}...")
+    logger.info(f"Fetching data: {name} (ID: {ind_id})...")
 
     data_by_year: Dict[str, Dict[str, Optional[float]]] = {}
     valid_years: List[str] = []
     all_regions_set = set()
 
-    for year in target_years:
-        year_data = fetch_indicator_year_data(ind_id, year)
-        if year_data:
-            data_by_year[year] = year_data
-            valid_years.append(year)
-            all_regions_set.update(year_data.keys())
+    years_to_query = list(target_years)
+
+    def fetch_single(y: str):
+        return y, fetch_indicator_year_data(ind_id, y, session=session)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_year = {executor.submit(fetch_single, y): y for y in years_to_query}
+        for future in as_completed(future_to_year):
+            year, year_data = future.result()
+            if year_data:
+                data_by_year[year] = year_data
+                valid_years.append(year)
+                all_regions_set.update(year_data.keys())
+
+    # Fallback for indicators with unique historical data (e.g. Census 2011 for ID 237)
+    if not valid_years and ind_cfg.get("fallback_years"):
+        fallback_years = ind_cfg["fallback_years"]
+        for y in fallback_years:
+            year_data = fetch_indicator_year_data(ind_id, y, session=session)
+            if year_data:
+                data_by_year[y] = year_data
+                valid_years.append(y)
+                all_regions_set.update(year_data.keys())
 
     sorted_years = sorted(valid_years, key=lambda y: int(y))
     sorted_regions = sorted(list(all_regions_set))
@@ -140,23 +253,34 @@ def scrape_indicator(ind_cfg: dict, target_years: List[str]) -> Dict[str, Any]:
         "dane_powiaty": series_by_region,
         "chart_data": {
             "years": sorted_years,
-            "series": chart_series
-        }
+            "series": chart_series,
+        },
     }
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Scrape 10-year historical data for 5 indicators from ROPS Obserwator.")
+    parser = argparse.ArgumentParser(
+        description="Scrape 10-year historical data for indicators from ROPS Obserwator."
+    )
     parser.add_argument("--start-year", type=int, default=2014, help="Start year (default: 2014)")
     parser.add_argument("--end-year", type=int, default=2024, help="End year (default: 2024)")
     parser.add_argument("-o", "--output", type=str, default="visualize_data.json", help="Output JSON filename")
+    parser.add_argument("--workers", type=int, default=8, help="Number of concurrent network workers (default: 8)")
     args = parser.parse_args()
 
     target_years = [str(y) for y in range(args.start_year, args.end_year + 1)]
     results: Dict[str, Any] = {}
-    for ind_cfg in INDICATORS_CONFIG:
-        section_key = ind_cfg["key"]
-        results[section_key] = scrape_indicator(ind_cfg, target_years)
+
+    session = create_resilient_session(pool_connections=args.workers, pool_maxsize=args.workers * 2)
+
+    try:
+        for ind_cfg in INDICATORS_CONFIG:
+            section_key = ind_cfg["key"]
+            results[section_key] = scrape_indicator(
+                ind_cfg, target_years, session=session, max_workers=args.workers
+            )
+    finally:
+        session.close()
 
     base_dir = Path(__file__).resolve().parent
     out_path = Path(args.output)
@@ -166,6 +290,7 @@ def main():
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     logger.info(f"Saved data to: {out_path}")
+
 
 if __name__ == "__main__":
     main()

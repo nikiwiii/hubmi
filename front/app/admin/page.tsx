@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Lock,
 } from "lucide-react";
+import { CustomSelect } from "../components/shared/CustomSelect";
 import { useApp } from "../context/AppContext";
 
 export default function AdminPage() {
@@ -365,17 +366,15 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <select
+                  <CustomSelect
                     value={idea.status}
-                    onChange={(e) =>
-                      updateIdeaStatus(idea.id, e.target.value as any)
-                    }
-                    className="text-xs font-medium px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none"
-                  >
-                    <option value="active">Aktywny</option>
-                    <option value="testing">Testy</option>
-                    <option value="archived">Archiwum</option>
-                  </select>
+                    onChange={(val) => updateIdeaStatus(idea.id, val as any)}
+                    options={[
+                      { value: "active", label: "Aktywny" },
+                      { value: "testing", label: "Testy" },
+                      { value: "archived", label: "Archiwum" },
+                    ]}
+                  />
 
                   <button
                     onClick={() => {
@@ -435,29 +434,31 @@ export default function AdminPage() {
                   <label className="block text-xs font-medium text-stone-700 mb-1">
                     Rola
                   </label>
-                  <select
+                  <CustomSelect
                     value={formRole}
-                    onChange={(e) => setFormRole(e.target.value as UserRole)}
-                    className="w-full px-2.5 py-2 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900"
-                  >
-                    <option value="creator">Twórca</option>
-                    <option value="tester">Tester</option>
-                    <option value="admin">Administrator</option>
-                  </select>
+                    onChange={(val) => setFormRole(val as UserRole)}
+                    options={[
+                      { value: "creator", label: "Twórca" },
+                      { value: "tester", label: "Tester" },
+                      { value: "admin", label: "Administrator" },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-stone-700 mb-1">
                     Status
                   </label>
-                  <select
+                  <CustomSelect
                     value={formStatus}
-                    onChange={(e) => setFormStatus(e.target.value as any)}
-                    className="w-full px-2.5 py-2 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900"
-                  >
-                    <option value="active">Aktywny</option>
-                    <option value="blocked">Zablokowany</option>
-                  </select>
+                    onChange={(val) => setFormStatus(val as any)}
+                    options={[
+                      { value: "active", label: "Aktywny" },
+                      { value: "blocked", label: "Zablokowany" },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
               </div>
 

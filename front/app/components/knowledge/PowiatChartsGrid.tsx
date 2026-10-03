@@ -26,6 +26,7 @@ import {
   Filter,
   X
 } from 'lucide-react';
+import { CustomSelect, SelectOption } from '../shared/CustomSelect';
 
 interface PowiatChartsGridProps {
   research: ResearchInfo;
@@ -34,6 +35,14 @@ interface PowiatChartsGridProps {
 }
 
 type SortOption = 'rank' | 'alpha' | 'deltaAsc' | 'deltaDesc' | 'valDesc' | 'valAsc';
+
+const SORT_OPTIONS: SelectOption<SortOption>[] = [
+  { value: 'rank', label: 'Ranking (od najwyższej)' },
+  { value: 'valAsc', label: 'Wartość (od najniższej)' },
+  { value: 'deltaDesc', label: 'Największy wzrost (↑)' },
+  { value: 'deltaAsc', label: 'Największy spadek (↓)' },
+  { value: 'alpha', label: 'Nazwa powiatu (A-Z)' },
+];
 
 export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
   research,
@@ -93,7 +102,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
   const MiniTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-stone-900 text-white px-2 py-1 rounded-lg text-[10px] font-mono shadow-md border border-white/10">
+        <div className="bg-stone-900 text-white px-2 py-1 rounded-lg text-[10px] shadow-md border border-white/10">
           <span>{label}: </span>
           <span className="font-bold text-amber-400">
             {payload[0].value} {research.unit}
@@ -105,23 +114,12 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-6">
-      {/* Nagłówek sekcji */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-stone-100 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <span
-              className="w-2.5 h-2.5 rounded-full"
-              style={{ backgroundColor: research.theme.accent }}
-            />
-            <h3 className="text-base font-bold text-stone-900">
-              Wykresy Liniowe dla Wszystkich Powiatów ({allSeries.length} jednostek)
-            </h3>
-          </div>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Indywidualna trajektoria zmian dla każdego powiatu Małopolski w latach {research.years[0]}–{research.years[research.years.length - 1]}.
-          </p>
-        </div>
+    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs p-5 sm:p-6 space-y-5">
+      {/* Pasek narzędziowy */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+        <span className="text-xs font-semibold text-stone-500">
+          Wszystkie 22 powiaty Małopolski
+        </span>
 
         {/* Wyszukiwarka i Sortowanie */}
         <div className="flex flex-wrap items-center gap-2.5">
@@ -145,17 +143,12 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <select
+            <CustomSelect<SortOption>
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="bg-stone-50 border border-stone-200 text-stone-800 text-xs font-semibold rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-stone-900 cursor-pointer"
-            >
-              <option value="rank">Ranking (od najwyższej)</option>
-              <option value="valAsc">Wartość (od najniższej)</option>
-              <option value="deltaDesc">Największy wzrost (&uarr;)</option>
-              <option value="deltaAsc">Największy spadek (&darr;)</option>
-              <option value="alpha">Nazwa powiatu (A-Z)</option>
-            </select>
+              onChange={setSortBy}
+              options={SORT_OPTIONS}
+              labelPrefix="Sortuj:"
+            />
           </div>
         </div>
       </div>
@@ -231,7 +224,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                     </div>
 
                     <span
-                      className={`text-xs font-mono font-bold px-2 py-0.5 rounded-lg shrink-0 ${
+                      className={`text-xs font-bold px-2 py-0.5 rounded-lg shrink-0 ${
                         isSelected
                           ? 'bg-white/20 text-white'
                           : 'bg-stone-100 text-stone-700'
@@ -251,7 +244,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                       >
                         Najnowszy ({research.years[research.years.length - 1]})
                       </span>
-                      <span className="text-xl font-extrabold font-mono tracking-tight">
+                      <span className="text-xl font-extrabold tracking-tight">
                         {item.endValue}{' '}
                         <span className="text-xs font-normal opacity-80">{research.unit}</span>
                       </span>
@@ -280,7 +273,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                           />
                         )}
                         <span
-                          className={`text-xs font-bold font-mono ${
+                          className={`text-xs font-bold ${
                             isSelected
                               ? isPositive
                                 ? 'text-emerald-400'

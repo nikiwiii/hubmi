@@ -6,13 +6,13 @@ import { ScreenId, User } from "../../lib/types";
 import {
   Compass,
   PlusCircle,
-  Vote,
   MessageCircle,
   Shield,
   User as UserIcon,
   LogIn,
   Type,
   BookOpen,
+  Search,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -39,9 +39,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Derive active screen from route pathname if not explicitly passed
   const detectedScreen: ScreenId = (() => {
     if (!pathname) return currentScreen || "discover";
+    if (pathname.startsWith("/matching")) return "matching";
     if (pathname.startsWith("/knowledge")) return "knowledge";
     if (pathname.startsWith("/propose")) return "propose";
-    if (pathname.startsWith("/browse")) return "browse";
     if (pathname.startsWith("/chat")) return "chat";
     if (pathname.startsWith("/dashboard")) return "dashboard";
     if (pathname.startsWith("/admin")) return "admin";
@@ -90,6 +90,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               Odkrywaj
             </button>
             <button
+              onClick={() => navigateTo("matching")}
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                activeScreen === "matching"
+                  ? "bg-white text-stone-900 shadow-2xs"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              Problemmatching
+            </button>
+            <button
               onClick={() => navigateTo("knowledge")}
               className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 activeScreen === "knowledge"
@@ -108,16 +118,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               Zaproponuj
-            </button>
-            <button
-              onClick={() => navigateTo("browse")}
-              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                activeScreen === "browse"
-                  ? "bg-white text-stone-900 shadow-2xs"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              Przeglądaj
             </button>
             <button
               onClick={() => navigateTo("chat")}
@@ -217,6 +217,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
+            onClick={() => navigateTo("matching")}
+            className={`flex flex-col items-center gap-0.5 py-1 px-1.5 transition-all cursor-pointer ${
+              activeScreen === "matching"
+                ? "text-stone-900 font-bold"
+                : "text-stone-400"
+            }`}
+          >
+            <Search className="w-5 h-5" />
+            <span className="text-[10px]">Matching</span>
+          </button>
+
+          <button
             onClick={() => navigateTo("knowledge")}
             className={`flex flex-col items-center gap-0.5 py-1 px-1.5 transition-all cursor-pointer ${
               activeScreen === "knowledge"
@@ -240,17 +252,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-[10px]">Zaproponuj</span>
           </button>
 
-          <button
-            onClick={() => navigateTo("browse")}
-            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all cursor-pointer ${
-              activeScreen === "browse"
-                ? "text-stone-900 font-bold"
-                : "text-stone-400"
-            }`}
-          >
-            <Vote className="w-5 h-5" />
-            <span className="text-[10px]">Przeglądaj</span>
-          </button>
 
           <button
             onClick={() => navigateTo("chat")}

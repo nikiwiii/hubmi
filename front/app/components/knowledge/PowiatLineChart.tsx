@@ -30,6 +30,7 @@ import {
   Award,
   Sparkles
 } from 'lucide-react';
+import { CustomSelect, SelectOption } from '../shared/CustomSelect';
 
 interface PowiatLineChartProps {
   research: ResearchInfo;
@@ -74,6 +75,25 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
     return allSeries.find((s) => s.powiatId === comparePowiatId) || null;
   }, [comparePowiatId, allSeries]);
 
+  const mainPowiatOptions: SelectOption[] = useMemo(() => {
+    return allSeries.map((s) => ({
+      value: s.powiatId,
+      label: `${s.powiatName} (${s.endValue} ${research.unit})`,
+    }));
+  }, [allSeries, research.unit]);
+
+  const comparePowiatOptions: SelectOption[] = useMemo(() => {
+    return [
+      { value: 'none', label: '+ Porównaj z innym powiatem' },
+      ...allSeries
+        .filter((s) => s.powiatId !== activeSeries?.powiatId)
+        .map((s) => ({
+          value: s.powiatId,
+          label: `Porównaj: ${s.powiatName}`,
+        })),
+    ];
+  }, [allSeries, activeSeries?.powiatId]);
+
   // Formatowanie danych do Recharts
   const chartData = useMemo(() => {
     if (!activeSeries) return [];
@@ -115,7 +135,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
     if (active && payload && payload.length) {
       return (
         <div className="bg-stone-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl border border-white/10 text-xs space-y-1.5 min-w-[200px]">
-          <div className="font-bold text-amber-400 text-sm font-mono border-b border-white/10 pb-1">
+          <div className="font-bold text-amber-400 text-sm border-b border-white/10 pb-1">
             Rok {label}
           </div>
           {payload.map((entry: any, index: number) => (
@@ -127,7 +147,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
                 />
                 <span className="truncate max-w-[130px]">{entry.name}:</span>
               </span>
-              <span className="font-bold text-stone-100 font-mono">
+              <span className="font-bold text-stone-100">
                 {entry.value} {research.unit}
               </span>
             </div>
@@ -139,57 +159,32 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-6">
+    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs p-5 sm:p-6 space-y-6">
       {/* Nagłówek i przełączniki powiatów */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5" style={{ color: research.theme.accent }} />
-            <h3 className="text-base font-bold text-stone-900">
-              Analiza Trendu Liniowego – {activeSeries.powiatName}
-            </h3>
-          </div>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Dynamika zmian w latach {research.years[0]}–{research.years[research.years.length - 1]} w porównaniu ze średnią całego województwa.
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-4">
+        <div className="flex items-center gap-2">
+          <Activity className="w-5 h-5" style={{ color: research.theme.accent }} />
+          <h3 className="text-base font-bold text-stone-900">
+            {activeSeries.powiatName}
+          </h3>
         </div>
 
         {/* Selektory powiatu */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Wybór głównego powiatu */}
-          <div className="relative">
-            <select
+          {activeSeries && (
+            <CustomSelect
               value={activeSeries.powiatId}
-              onChange={(e) => onSelectPowiat(e.target.value)}
-              className="bg-stone-50 border border-stone-200 text-stone-900 text-xs font-bold rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-stone-900 cursor-pointer shadow-2xs"
-            >
-              {allSeries.map((s) => (
-                <option key={s.powiatId} value={s.powiatId}>
-                  {s.powiatName} ({s.endValue} {research.unit})
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-4 h-4 text-stone-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+              onChange={onSelectPowiat}
+              options={mainPowiatOptions}
+              labelPrefix="Powiat:"
+            />
+          )}
 
-          {/* Opcja porównania z drugim powiatem */}
-          <div className="relative">
-            <select
-              value={comparePowiatId || ''}
-              onChange={(e) => setComparePowiatId(e.target.value || null)}
-              className="bg-white border border-stone-200 text-stone-700 text-xs font-medium rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-stone-900 cursor-pointer shadow-2xs"
-            >
-              <option value="">+ Porównaj z innym powiatem</option>
-              {allSeries
-                .filter((s) => s.powiatId !== activeSeries.powiatId)
-                .map((s) => (
-                  <option key={s.powiatId} value={s.powiatId}>
-                    Porównaj z: {s.powiatName}
-                  </option>
-                ))}
-            </select>
-            <ChevronDown className="w-4 h-4 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <CustomSelect
+            value={comparePowiatId || 'none'}
+            onChange={(val) => setComparePowiatId(val === 'none' ? null : val)}
+            options={comparePowiatOptions}
+          />
         </div>
       </div>
 
@@ -199,7 +194,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
           <span className="text-[11px] font-medium text-stone-500 block">
             Początek ({research.years[0]})
           </span>
-          <span className="text-xl font-extrabold text-stone-900 font-mono mt-0.5 block">
+          <span className="text-xl font-extrabold text-stone-900 mt-0.5 block">
             {activeSeries.startValue} {research.unit}
           </span>
         </div>
@@ -208,7 +203,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
           <span className="text-[11px] font-medium text-stone-500 block">
             Ostatni pomiar ({research.years[research.years.length - 1]})
           </span>
-          <span className="text-xl font-extrabold text-stone-900 font-mono mt-0.5 block">
+          <span className="text-xl font-extrabold text-stone-900 mt-0.5 block">
             {activeSeries.endValue} {research.unit}
           </span>
         </div>
@@ -224,7 +219,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
               <TrendingDown className="w-4 h-4 text-rose-600" />
             )}
             <span
-              className={`text-xl font-extrabold font-mono ${
+              className={`text-xl font-extrabold ${
                 isPositiveTrend ? 'text-emerald-700' : 'text-rose-700'
               }`}
             >
@@ -240,7 +235,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
           </span>
           <div className="flex items-center gap-1.5 mt-0.5">
             <Award className="w-4 h-4 text-amber-500" />
-            <span className="text-xl font-extrabold text-stone-900 font-mono">
+            <span className="text-xl font-extrabold text-stone-900">
               #{activeSeries.latestRank}{' '}
               <span className="text-xs font-normal text-stone-500">/ 22</span>
             </span>

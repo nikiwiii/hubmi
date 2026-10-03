@@ -45,6 +45,9 @@ export interface ResearchTheme {
   cardBorder: string;
   gradient: string;
   colorScale: [string, string, string]; // min, mid, max
+  pastelBg: string;
+  border: string;
+  text: string;
 }
 
 export interface ResearchInfo {
@@ -102,6 +105,7 @@ const RESEARCH_CONFIGS: Record<
   {
     titlePl: string;
     titleEn: string;
+    unitPl?: string;
     category: string;
     descriptionPl: string;
     iconName: 'users' | 'briefcase' | 'banknote' | 'heart' | 'activity';
@@ -111,91 +115,111 @@ const RESEARCH_CONFIGS: Record<
   working_age_population: {
     titlePl: 'Ludność w wieku produkcyjnym',
     titleEn: 'Working-age population',
-    category: 'Demografia & Rynek Pracy',
+    unitPl: '%',
+    category: 'Demografia',
     descriptionPl:
-      'Udział osób w wieku produkcyjnym w ogólnej populacji (kobiety 18–59 lat, mężczyźni 18–64 lata). Odzwierciedla potencjał gospodarczy i dynamikę starzenia się społeczności.',
+      'Udział osób w wieku produkcyjnym w ogólnej populacji. Odzwierciedla potencjał gospodarczy i dynamikę demograficzną regionu.',
     iconName: 'users',
     theme: {
-      accent: '#2563EB',
-      chartColor: '#2563EB',
-      chartSecondary: '#93C5FD',
-      badgeBg: 'bg-blue-50 text-blue-700 border-blue-200',
-      badgeText: 'text-blue-700',
-      cardBorder: 'border-blue-100 hover:border-blue-300',
-      gradient: 'from-blue-600 to-indigo-700',
-      colorScale: ['#EFF6FF', '#60A5FA', '#1E40AF']
+      accent: '#698B99',
+      chartColor: '#698B99',
+      chartSecondary: '#CEE0E6',
+      badgeBg: 'bg-[#CEE0E6] text-[#1A282E] border-[#B9D2DB]',
+      badgeText: 'text-[#1A282E]',
+      cardBorder: 'border-[#B9D2DB] hover:border-[#698B99]',
+      gradient: 'from-[#698B99] to-[#4D6F7C]',
+      colorScale: ['#EAF3F6', '#87A6B4', '#3E5D6B'],
+      pastelBg: '#CEE0E6',
+      border: '#B9D2DB',
+      text: '#1A282E'
     }
   },
   unemployed_longer_than_1_year: {
     titlePl: 'Bezrobotni powyżej 1 roku',
     titleEn: 'Unemployed for more than 1 year',
-    category: 'Rynek Pracy & Wykluczenie',
+    unitPl: '%',
+    category: 'Rynek Pracy',
     descriptionPl:
-      'Udział osób zarejestrowanych jako bezrobotne przez okres dłuższy niż 12 miesięcy. Kluczowy miernik bezrobocia strukturalnego i stopnia dezaktywizacji zawodowej.',
+      'Udział osób bezrobotnych powyżej 12 miesięcy. Miernik bezrobocia długotrwałego i dezaktywizacji zawodowej.',
     iconName: 'briefcase',
     theme: {
-      accent: '#D97706',
-      chartColor: '#D97706',
-      chartSecondary: '#FCD34D',
-      badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
-      badgeText: 'text-amber-700',
-      cardBorder: 'border-amber-100 hover:border-amber-300',
-      gradient: 'from-amber-600 to-orange-700',
-      colorScale: ['#FFFBEB', '#FBBF24', '#B45309']
+      accent: '#A6737E',
+      chartColor: '#A6737E',
+      chartSecondary: '#EAD4D9',
+      badgeBg: 'bg-[#EAD4D9] text-[#311E22] border-[#DFC1C8]',
+      badgeText: 'text-[#311E22]',
+      cardBorder: 'border-[#DFC1C8] hover:border-[#A6737E]',
+      gradient: 'from-[#A6737E] to-[#8A5661]',
+      colorScale: ['#F8ECEF', '#C4919C', '#6E3C47'],
+      pastelBg: '#EAD4D9',
+      border: '#DFC1C8',
+      text: '#311E22'
     }
   },
   cash_social_assistance_benefits: {
     titlePl: 'Pieniężne świadczenia z pomocy społecznej',
     titleEn: 'Cash social assistance benefits',
-    category: 'Wsparcie Społeczne & Świadczenia',
+    unitPl: '%',
+    category: 'Pomoc Społeczna',
     descriptionPl:
-      'Udział świadczeń finansowych w całości przyznanej pomocy społecznej. Wskazuje skalę ubóstwa dochodowego oraz model wsparcia rodzin w kryzysie.',
+      'Udział świadczeń finansowych w całości pomocy społecznej. Wskazuje skalę bezpośredniego wsparcia dochodowego rodzin.',
     iconName: 'banknote',
     theme: {
-      accent: '#059669',
-      chartColor: '#059669',
-      chartSecondary: '#6EE7B7',
-      badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      badgeText: 'text-emerald-700',
-      cardBorder: 'border-emerald-100 hover:border-emerald-300',
-      gradient: 'from-emerald-600 to-teal-700',
-      colorScale: ['#ECFDF5', '#34D399', '#047857']
+      accent: '#B8A663',
+      chartColor: '#B8A663',
+      chartSecondary: '#EFE5C6',
+      badgeBg: 'bg-[#EFE5C6] text-[#2A271E] border-[#DFD3AE]',
+      badgeText: 'text-[#2A271E]',
+      cardBorder: 'border-[#DFD3AE] hover:border-[#B8A663]',
+      gradient: 'from-[#B8A663] to-[#968545]',
+      colorScale: ['#FAF3D7', '#D1C083', '#7A6B32'],
+      pastelBg: '#EFE5C6',
+      border: '#DFD3AE',
+      text: '#2A271E'
     }
   },
   foster_families_count: {
     titlePl: 'Liczba rodzin zastępczych',
     titleEn: 'Number of foster families',
-    category: 'Piecza Zastępcza & Dziecko',
+    unitPl: 'rodzin',
+    category: 'Piecza Zastępcza',
     descriptionPl:
-      'Liczba aktywnych rodzin zastępczych spokrewnionych, niezawodowych i zawodowych. Pokazuje rozwój rodzicielstwa zastępczego i deinstytucjonalizacji opieki nad dziećmi.',
+      'Liczba aktywnych rodzin zastępczych. Obrazuje rozwój rodzicielstwa zastępczego i deinstytucjonalizacji opieki.',
     iconName: 'heart',
     theme: {
-      accent: '#7C3AED',
-      chartColor: '#7C3AED',
-      chartSecondary: '#C4B5FD',
-      badgeBg: 'bg-purple-50 text-purple-700 border-purple-200',
-      badgeText: 'text-purple-700',
-      cardBorder: 'border-purple-100 hover:border-purple-300',
-      gradient: 'from-purple-600 to-pink-600',
-      colorScale: ['#F5F3FF', '#A78BFA', '#5B21B6']
+      accent: '#8E77A3',
+      chartColor: '#8E77A3',
+      chartSecondary: '#DCD0E6',
+      badgeBg: 'bg-[#DCD0E6] text-[#291D33] border-[#CCBCDB]',
+      badgeText: 'text-[#291D33]',
+      cardBorder: 'border-[#CCBCDB] hover:border-[#8E77A3]',
+      gradient: 'from-[#8E77A3] to-[#705A85]',
+      colorScale: ['#F3ECF7', '#AB96BF', '#56416A'],
+      pastelBg: '#DCD0E6',
+      border: '#CCBCDB',
+      text: '#291D33'
     }
   },
   average_hospital_stay: {
     titlePl: 'Średni czas pobytu w szpitalu',
     titleEn: 'Average hospital stay duration',
-    category: 'Ochrona Zdrowia & Lecznictwo',
+    unitPl: 'dni',
+    category: 'Zdrowie',
     descriptionPl:
-      'Przeciętna długość pobytu pacjenta na oddziale szpitalnym (w dniach). Wskaźnik efektywności szpitali, natężenia leczenia zabiegowego oraz rotacji łóżek.',
+      'Przeciętna długość pobytu pacjenta na oddziale szpitalnym (w dniach). Wskaźnik rotacji łóżek i modelu leczenia.',
     iconName: 'activity',
     theme: {
-      accent: '#E11D48',
-      chartColor: '#E11D48',
-      chartSecondary: '#FDA4AF',
-      badgeBg: 'bg-rose-50 text-rose-700 border-rose-200',
-      badgeText: 'text-rose-700',
-      cardBorder: 'border-rose-100 hover:border-rose-300',
-      gradient: 'from-rose-600 to-red-700',
-      colorScale: ['#FFF1F2', '#FB7185', '#BE123C']
+      accent: '#7C89B8',
+      chartColor: '#7C89B8',
+      chartSecondary: '#D2D8EE',
+      badgeBg: 'bg-[#D2D8EE] text-[#1D2235] border-[#C1C9E4]',
+      badgeText: 'text-[#1D2235]',
+      cardBorder: 'border-[#C1C9E4] hover:border-[#7C89B8]',
+      gradient: 'from-[#7C89B8] to-[#5E6B99]',
+      colorScale: ['#ECF0FA', '#9AA6D1', '#445182'],
+      pastelBg: '#D2D8EE',
+      border: '#C1C9E4',
+      text: '#1D2235'
     }
   }
 };
@@ -215,14 +239,17 @@ export function getAllResearches(): ResearchInfo[] {
       descriptionPl: raw.description,
       iconName: 'activity' as const,
       theme: {
-        accent: '#2563EB',
-        chartColor: '#2563EB',
-        chartSecondary: '#93C5FD',
-        badgeBg: 'bg-stone-100 text-stone-700 border-stone-200',
-        badgeText: 'text-stone-700',
-        cardBorder: 'border-stone-200 hover:border-stone-400',
-        gradient: 'from-stone-700 to-stone-900',
-        colorScale: ['#F5F5F4', '#A8A29E', '#292524']
+        accent: '#86887F',
+        chartColor: '#86887F',
+        chartSecondary: '#D7D8D1',
+        badgeBg: 'bg-[#D7D8D1] text-[#242522] border-[#C6C7BD]',
+        badgeText: 'text-[#242522]',
+        cardBorder: 'border-[#C6C7BD] hover:border-[#86887F]',
+        gradient: 'from-[#86887F] to-[#565752]',
+        colorScale: ['#EDECE6', '#9CA096', '#4F524A'] as [string, string, string],
+        pastelBg: '#D7D8D1',
+        border: '#C6C7BD',
+        text: '#242522'
       }
     };
 
@@ -264,12 +291,14 @@ export function getAllResearches(): ResearchInfo[] {
     const topCounty = endYearValues[0] || { id: '', name: '', value: 0 };
     const lowCounty = endYearValues[endYearValues.length - 1] || { id: '', name: '', value: 0 };
 
+    const polishUnit = cfg.unitPl || (raw.unit === 'count' ? 'rodzin' : raw.unit === 'days' ? 'dni' : raw.unit);
+
     return {
       id: key,
       key,
       titlePl: cfg.titlePl,
       titleEn: raw.name,
-      unit: raw.unit,
+      unit: polishUnit,
       descriptionPl: cfg.descriptionPl,
       descriptionEn: raw.description,
       category: cfg.category,

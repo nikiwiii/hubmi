@@ -1,7 +1,7 @@
-import React from 'react';
-import { Idea, ColorTheme, getCategoryThemeAndShape } from '../../lib/types';
-import { GeometricIllustration } from './GeometricIllustration';
-import { ThumbsUp, Users, Check, MessageSquare } from 'lucide-react';
+import React from "react";
+import { Idea, ColorTheme, getCategoryThemeAndShape } from "../../lib/types";
+import { GeometricIllustration } from "./GeometricIllustration";
+import { ThumbsUp, Users, Check, MessageSquare } from "lucide-react";
 
 interface IdeaCardProps {
   idea: Idea;
@@ -14,62 +14,62 @@ interface IdeaCardProps {
 
 export const getThemeStyles = (theme: ColorTheme) => {
   switch (theme) {
-    case 'yellow':
+    case "yellow":
       return {
-        bg: 'bg-[#EFE5C6]',
-        text: 'text-[#2A271E]',
-        subtext: 'text-[#5C5543]',
-        badge: 'bg-black/5 text-[#2A271E]',
-        border: 'border-[#DFD3AE]'
+        bg: "bg-[#EFE5C6]",
+        text: "text-[#2A271E]",
+        subtext: "text-[#5C5543]",
+        badge: "bg-black/5 text-[#2A271E]",
+        border: "border-[#DFD3AE]",
       };
-    case 'slate':
+    case "slate":
       return {
-        bg: 'bg-[#D7D8D1]',
-        text: 'text-[#242522]',
-        subtext: 'text-[#565752]',
-        badge: 'bg-black/5 text-[#242522]',
-        border: 'border-[#C6C7BD]'
+        bg: "bg-[#D7D8D1]",
+        text: "text-[#242522]",
+        subtext: "text-[#565752]",
+        badge: "bg-black/5 text-[#242522]",
+        border: "border-[#C6C7BD]",
       };
-    case 'lavender':
+    case "lavender":
       return {
-        bg: 'bg-[#D2D8EE]',
-        text: 'text-[#1D2235]',
-        subtext: 'text-[#4A5270]',
-        badge: 'bg-black/5 text-[#1D2235]',
-        border: 'border-[#C1C9E4]'
+        bg: "bg-[#D2D8EE]",
+        text: "text-[#1D2235]",
+        subtext: "text-[#4A5270]",
+        badge: "bg-black/5 text-[#1D2235]",
+        border: "border-[#C1C9E4]",
       };
-    case 'sage':
+    case "sage":
       return {
-        bg: 'bg-[#CAD7CE]',
-        text: 'text-[#1B271F]',
-        subtext: 'text-[#435548]',
-        badge: 'bg-black/5 text-[#1B271F]',
-        border: 'border-[#B6C7BA]'
+        bg: "bg-[#CAD7CE]",
+        text: "text-[#1B271F]",
+        subtext: "text-[#435548]",
+        badge: "bg-black/5 text-[#1B271F]",
+        border: "border-[#B6C7BA]",
       };
-    case 'lilac':
+    case "lilac":
       return {
-        bg: 'bg-[#DCD0E6]',
-        text: 'text-[#291D33]',
-        subtext: 'text-[#554563]',
-        badge: 'bg-black/5 text-[#291D33]',
-        border: 'border-[#CCBCDB]'
+        bg: "bg-[#DCD0E6]",
+        text: "text-[#291D33]",
+        subtext: "text-[#554563]",
+        badge: "bg-black/5 text-[#291D33]",
+        border: "border-[#CCBCDB]",
       };
-    case 'pink':
+    case "pink":
       return {
-        bg: 'bg-[#EAD4D9]',
-        text: 'text-[#311E22]',
-        subtext: 'text-[#64474D]',
-        badge: 'bg-black/5 text-[#311E22]',
-        border: 'border-[#DFC1C8]'
+        bg: "bg-[#EAD4D9]",
+        text: "text-[#311E22]",
+        subtext: "text-[#64474D]",
+        badge: "bg-black/5 text-[#311E22]",
+        border: "border-[#DFC1C8]",
       };
-    case 'cyan':
+    case "cyan":
     default:
       return {
-        bg: 'bg-[#CEE0E6]',
-        text: 'text-[#1A282E]',
-        subtext: 'text-[#425861]',
-        badge: 'bg-black/5 text-[#1A282E]',
-        border: 'border-[#B9D2DB]'
+        bg: "bg-[#CEE0E6]",
+        text: "text-[#1A282E]",
+        subtext: "text-[#425861]",
+        badge: "bg-black/5 text-[#1A282E]",
+        border: "border-[#B9D2DB]",
       };
   }
 };
@@ -80,7 +80,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   onVote,
   onToggleTesting,
   onChat,
-  isTester = false
+  isTester = false,
 }) => {
   // Color theme and shape strictly depend on category
   const { theme, shape } = getCategoryThemeAndShape(idea.category);
@@ -89,12 +89,14 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-[28px] p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer ${styles.bg} min-h-[280px] border border-black/[0.04] select-none`}
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer ${styles.bg} min-h-[280px] border border-black/[0.04] select-none`}
     >
       {/* Top Header */}
       <div className="z-10 flex flex-col space-y-1">
         <div className="flex items-center justify-between gap-2">
-          <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${styles.badge}`}>
+          <span
+            className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${styles.badge}`}
+          >
             {idea.category}
           </span>
           {isTester && (
@@ -104,11 +106,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             </span>
           )}
         </div>
-        
-        <h3 className={`text-xl font-bold leading-snug tracking-tight mt-1 ${styles.text}`}>
+
+        <h3
+          className={`text-xl font-bold leading-snug tracking-tight mt-1 ${styles.text}`}
+        >
           {idea.title}
         </h3>
-        
+
         <p className={`text-xs font-medium line-clamp-1 ${styles.subtext}`}>
           {idea.subtitle}
         </p>
@@ -126,22 +130,19 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
         </div>
       ) : (
         <div className="my-auto flex items-center justify-center py-2 transition-transform duration-300 group-hover:scale-103">
-          <GeometricIllustration
-            shape={shape}
-            theme={theme}
-            size={100}
-          />
+          <GeometricIllustration shape={shape} theme={theme} size={100} />
         </div>
       )}
 
       {/* Bottom Footer with Author and Stats */}
       <div className="z-10 mt-auto flex items-center justify-between pt-3 border-t border-black/[0.06]">
-        <p className={`text-xs font-bold ${styles.text}`}>
-          {idea.authorName}
-        </p>
+        <p className={`text-xs font-bold ${styles.text}`}>{idea.authorName}</p>
 
         {/* Minimal Action Counters */}
-        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center gap-1.5"
+          onClick={(e) => e.stopPropagation()}
+        >
           {onChat && (
             <button
               onClick={onChat}
@@ -158,12 +159,14 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
               onClick={onVote}
               title="Polub"
               className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                idea.userVote === 'like'
-                  ? 'bg-stone-900 text-white shadow-xs'
-                  : 'bg-white/70 hover:bg-white text-stone-800'
+                idea.userVote === "like"
+                  ? "bg-stone-900 text-white shadow-xs"
+                  : "bg-white/70 hover:bg-white text-stone-800"
               }`}
             >
-              <ThumbsUp className={`w-3.5 h-3.5 ${idea.userVote === 'like' ? 'fill-white' : ''}`} />
+              <ThumbsUp
+                className={`w-3.5 h-3.5 ${idea.userVote === "like" ? "fill-white" : ""}`}
+              />
               <span>{idea.likes}</span>
             </button>
           )}
@@ -174,8 +177,8 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
               title="Testerzy"
               className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                 isTester
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'bg-white/70 hover:bg-white text-stone-800'
+                  ? "bg-emerald-700 text-white shadow-xs"
+                  : "bg-white/70 hover:bg-white text-stone-800"
               }`}
             >
               <Users className="w-3.5 h-3.5" />

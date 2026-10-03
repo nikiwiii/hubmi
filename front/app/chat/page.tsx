@@ -357,7 +357,7 @@ function ChatContent() {
       )}
 
       {/* Clean Minimalist Messenger Container */}
-      <div className="grid grid-cols-1 md:grid-cols-12 bg-white rounded-4xl border border-black/6 shadow-sm overflow-hidden h-155">
+      <div className="grid grid-cols-1 md:grid-cols-12 bg-white rounded-2xl border border-black/6 shadow-sm overflow-hidden h-155">
         {/* Left Column: Contacts List */}
         <div className="md:col-span-4 border-r border-stone-100 bg-[#FAF9F5] flex flex-col">
           <div className="p-3 border-b border-stone-100 bg-white/50 text-[11px] font-bold text-stone-400 uppercase tracking-wider">

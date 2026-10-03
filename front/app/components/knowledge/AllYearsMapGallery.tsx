@@ -51,23 +51,14 @@ export const AllYearsMapGallery: React.FC<AllYearsMapGalleryProps> = ({
   }, [research]);
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-stone-700" />
-            <h3 className="text-base font-bold text-stone-900">
-              Galeria Map Rok po Roku (2014 – {research.years[research.years.length - 1]})
-            </h3>
-          </div>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Zestawienie kartogramów dla każdego roku badania. Kliknij dowolną mapę, aby wybrać dany rok do szczegółowej analizy.
-          </p>
-        </div>
-
-        <div className="text-xs font-semibold px-3 py-1 bg-stone-100 text-stone-700 rounded-xl self-start sm:self-auto">
-          Łącznie {research.years.length} map rocznych
-        </div>
+    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs p-5 sm:p-6 space-y-4">
+      <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-3">
+        <span className="text-xs font-semibold text-stone-500">
+          Kliknij rok, aby zaktualizować kartogram główny
+        </span>
+        <span className="text-xs font-semibold px-2.5 py-0.5 bg-stone-100 text-stone-700 rounded-full">
+          {research.years.length} lat
+        </span>
       </div>
 
       {/* Grid map rocznych */}
@@ -87,7 +78,7 @@ export const AllYearsMapGallery: React.FC<AllYearsMapGalleryProps> = ({
             >
               {/* Górny pasek karty: Rok i wskaźnik aktywnego */}
               <div className="flex items-center justify-between gap-1 mb-2">
-                <span className="font-mono text-sm font-extrabold tracking-tight">
+                <span className="text-sm font-extrabold tracking-tight">
                   {yData.year}
                 </span>
 
