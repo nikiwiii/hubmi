@@ -419,9 +419,16 @@ export async function toggleIdeaReaction(
 // ==========================================
 // 3. MATCHING & RAG CHATBOT API (/api/matching)
 // ==========================================
+export interface MatchingChatOptions {
+  category?: string;
+  powiat?: string;
+  reporterType?: string;
+}
+
 export async function sendMatchingChat(
   message: string,
   history: Array<{ role: "user" | "assistant"; content: string }> = [],
+  options?: MatchingChatOptions,
 ): Promise<MatchResponse> {
   const res = await apiFetch(`${API_BASE}/api/matching/chat`, {
     method: "POST",
@@ -429,6 +436,9 @@ export async function sendMatchingChat(
     body: JSON.stringify({
       message,
       conversation_history: history,
+      category: options?.category,
+      powiat: options?.powiat,
+      reporter_type: options?.reporterType || "Mieszkaniec",
     }),
   });
 

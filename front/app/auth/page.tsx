@@ -131,10 +131,17 @@ export default function AuthPage() {
     <div className="min-h-screen flex-1 flex flex-col items-center justify-center p-4 sm:p-6 bg-[#F4F4F0]">
       {/* App Logo */}
       <div className="flex flex-col items-center justify-center mb-8 select-none text-center">
-        <div className="w-14 h-14 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-bold text-2xl shadow-sm mb-3">
-          m
+        <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-sm mb-3">
+          <img
+            src="/logo.svg"
+            alt="minno logo"
+            className="w-full h-full object-cover"
+          />
         </div>
-        <span className="text-2xl font-bold text-stone-900 tracking-tight">
+        <span
+          className="text-2xl font-bold text-stone-900 tracking-tight font-ubuntu"
+          style={{ fontFamily: "var(--font-ubuntu), 'Ubuntu', sans-serif" }}
+        >
           minno
         </span>
         <p className="text-xs text-stone-500 font-medium mt-1">

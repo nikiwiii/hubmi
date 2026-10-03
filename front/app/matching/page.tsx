@@ -2,10 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sendMatchingChat } from '../lib/api';
-import { MatchResponse, InnovationMatchItem } from '../lib/types';
+import { MatchResponse } from '../lib/types';
 import {
   Send,
   ExternalLink,
@@ -26,7 +27,17 @@ import {
   TrendingUp,
   Compass,
   CheckCircle2,
-  Handshake
+  Handshake,
+  MapPin,
+  Tag,
+  Lightbulb,
+  MessageSquare,
+  PlusCircle,
+  ArrowRight,
+  Database,
+  Heart,
+  Activity,
+  Building2
 } from 'lucide-react';
 
 interface ChatTurn {
@@ -37,21 +48,62 @@ interface ChatTurn {
   timestamp: string;
 }
 
+const MALOPOLSKA_POWIATY = [
+  'Cała Małopolska',
+  'm. Kraków',
+  'm. Tarnów',
+  'm. Nowy Sącz',
+  'powiat bocheński',
+  'powiat brzeski',
+  'powiat chrzanowski',
+  'powiat dąbrowski',
+  'powiat gorlicki',
+  'powiat krakowski',
+  'powiat limanowski',
+  'powiat miechowski',
+  'powiat myślenicki',
+  'powiat nowosądecki',
+  'powiat nowotarski',
+  'powiat olkuski',
+  'powiat oświęcimski',
+  'powiat proszowicki',
+  'powiat suski',
+  'powiat tarnowski',
+  'powiat tatrzański',
+  'powiat wadowicki',
+  'powiat wielicki'
+];
+
+const QUICK_CATEGORIES = [
+  { label: 'Samotność i izolacja', query: 'Jak przeciwdziałać samotności seniorów i zintegrować sąsiadów?', icon: Heart },
+  { label: 'Opieka nad seniorem', query: 'Wsparcie w codziennej domowej opiece nad niesamodzielną osobą starszą', icon: Users2 },
+  { label: 'Bariery i dostępność', query: 'Likwidacja barier architektonicznych w bloku i dostęp do usług', icon: Compass },
+  { label: 'Transport i dojazd', query: 'Trudności z dojazdem seniorów do przychodni i lekarza w małych miejscowościach', icon: ArrowUpRight },
+  { label: 'Zdrowie i leki', query: 'Prawidłowe dawkowanie leków i wsparcie rehabilitacji ruchowej w domu', icon: Activity },
+  { label: 'Cyfryzacja bez lęku', query: 'Prosta nauka obsługi smartfona i załatwiania spraw online dla seniora', icon: Sparkles }
+];
+
+const REPORTER_ROLES = [
+  'Senior / Seniorka',
+  'Opiekun / Rodzina',
+  'Mieszkaniec',
+  'Pracownik socjalny / OPS'
+];
+
 export default function ProblemMatchingPage() {
+  const router = useRouter();
   const [inputMessage, setInputMessage] = useState('');
+  const [selectedPowiat, setSelectedPowiat] = useState('Cała Małopolska');
+  const [selectedRole, setSelectedRole] = useState('Senior / Seniorka');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatTurn[]>([]);
   const [expandedAlternatives, setExpandedAlternatives] = useState<Record<string, boolean>>({});
+  const [expandedAdminTrace, setExpandedAdminTrace] = useState<Record<string, boolean>>({});
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const sampleQueries = [
-    'Szukam rozwiązań związanych z domem starców i dofinansowaniem',
-    'Wsparcie dla osób starszych w codziennych czynnościach domowych',
-    'Jak przeciwdziałać samotności seniorów na wsi?',
-    'Nowoczesne narzędzia do rehabilitacji ruchowej w małych gminach',
-    'Wsparcie dzieci z trudnościami w nauce, dysleksją i ADHD'
-  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -86,7 +138,11 @@ export default function ProblemMatchingPage() {
         content: m.text
       }));
 
-      const response = await sendMatchingChat(q, historyForBackend);
+      const response = await sendMatchingChat(q, historyForBackend, {
+        category: selectedCategory || undefined,
+        powiat: selectedPowiat !== 'Cała Małopolska' ? selectedPowiat : undefined,
+        reporterType: selectedRole
+      });
 
       setMessages([
         ...newMessages,
@@ -104,8 +160,9 @@ export default function ProblemMatchingPage() {
         {
           id: `assistant-error-${Date.now()}`,
           sender: 'assistant',
-          text: `Przepraszam, wystąpił problem podczas łączenia z silnikiem matchingu: ${err?.message || 'Nieznany błąd serwera.'
-            }. Upewnij się, że backend jest uruchomiony.`,
+          text: `Przepraszamy, wystąpił problem podczas łączenia z silnikiem matchingu: ${
+            err?.message || 'Nieznany błąd serwera.'
+          }. Zapewnij, że backend jest uruchomiony i spróbuj ponownie.`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -122,27 +179,40 @@ export default function ProblemMatchingPage() {
     }));
   };
 
+  const toggleAdminTrace = (turnId: string) => {
+    setExpandedAdminTrace((prev) => ({
+      ...prev,
+      [turnId]: !prev[turnId]
+    }));
+  };
+
   const handleResetChat = () => {
     setMessages([]);
     setExpandedAlternatives({});
+    setExpandedAdminTrace({});
     setInputMessage('');
+    setSelectedCategory(null);
   };
 
   return (
     <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-200">
-      {/* Nagłówek Sekcji spójny z estetyką minno */}
+      {/* Nagłówek Sekcji */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
         <div>
           <div className="text-3xl sm:text-4xl font-bold tracking-tight leading-[0.95] select-none">
             <span className="block text-stone-900">Problemmatching</span>
-            <span className="block text-stone-300">Asystent Innowacji</span>
+            <span className="block text-stone-300">Asystent Innowacji i Potrzeb</span>
           </div>
+          <p className="text-stone-500 text-xs sm:text-sm mt-2 max-w-xl">
+            Opisz wyzwanie społeczne w swojej okolicy. System dopasuje gotowe innowacje ROPS Kraków, 
+            zainicjuje kontakt z ekspertem oraz zarejestruje problem w małopolskim Zasobniku potrzeb.
+          </p>
         </div>
 
         {messages.length > 0 && (
           <button
             onClick={handleResetChat}
-            className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-stone-50 text-stone-700 hover:text-stone-900 border border-black/5 rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+            className="self-start sm:self-auto flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-stone-50 text-stone-700 hover:text-stone-900 border border-black/5 rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5 text-stone-400" />
             <span>Nowa rozmowa</span>
@@ -150,10 +220,10 @@ export default function ProblemMatchingPage() {
         )}
       </div>
 
-      {/* Ekran Początkowy / Brak Wiadomości */}
+      {/* Ekran Początkowy / Podpowiedzi dla seniorów i mieszkańców */}
       {messages.length === 0 && (
         <div
-          className="rounded-[32px] p-8 sm:p-12 border border-black/5 shadow-2xs text-center flex flex-col gap-8 items-center w-fit mx-auto"
+          className="rounded-[32px] p-6 sm:p-10 border border-black/5 shadow-2xs flex flex-col gap-8 items-center mx-auto"
           style={{
             background:
               'radial-gradient(circle at 14% 14%, #FAF4E5 0%, #FFFFFF 48%, #FAFAF8 80%, #F5F5F0 100%)'
@@ -163,36 +233,46 @@ export default function ProblemMatchingPage() {
             <Sparkles className="w-7 h-7 text-[#EFE5C6]" />
           </div>
 
-          <div className="max-w-xl space-y-2">
+          <div className="max-w-xl text-center space-y-2">
             <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
-              Opisz problem społeczny lub wyzwanie w gminie
+              W czym możemy dzisiaj pomóc?
             </h2>
             <p className="text-stone-600 text-sm leading-relaxed">
-              Asystent minno przeszuka bazę innowacji ROPS Kraków, wskaże najbardziej dopasowane
-              rozwiązanie, wyliczy podobieństwo semantyczne oraz przygotuje rekomendację finansowania.
+              Wybierz gotowy temat lub opisz problem własnymi słowami w polu poniżej.
             </p>
           </div>
 
-          {/* Przykładowe zapytania jako karty */}
-          <div className="space-y-3 pt-2 text-left max-w-3xl">
+          {/* Szybkie kafle tematów (duże, czytelne dla seniora) */}
+          <div className="w-full max-w-4xl space-y-3 pt-1">
             <span className="text-xs font-bold text-stone-400 uppercase tracking-wider block text-center">
-              Wybierz przykładowe zapytanie lub wpisz własne poniżej:
+              Wybierz najczęstszy obszar lub wpisz własne wyzwanie:
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {sampleQueries.map((sq, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSendMessage(sq)}
-                  className="p-4 bg-white/90 hover:bg-white border border-black/5 hover:border-black/10 rounded-2xl text-left transition-all hover:shadow-2xs group cursor-pointer flex items-start gap-3"
-                >
-                  <div className="w-7 h-7 rounded-xl bg-stone-100 group-hover:bg-stone-900 group-hover:text-white text-stone-500 flex items-center justify-center shrink-0 transition-colors mt-0.5">
-                    <ArrowUpRight className="w-4 h-4" />
-                  </div>
-                  <span className="text-xs font-semibold text-stone-800 group-hover:text-stone-900 leading-snug">
-                    {sq}
-                  </span>
-                </button>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {QUICK_CATEGORIES.map((cat, idx) => {
+                const IconComponent = cat.icon;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedCategory(cat.label);
+                      setInputMessage(cat.query);
+                    }}
+                    className="p-4 bg-white/90 hover:bg-white border border-black/5 hover:border-black/15 rounded-2xl text-left transition-all hover:shadow-xs group cursor-pointer flex items-start gap-3.5"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 group-hover:bg-stone-900 group-hover:text-white text-stone-700 flex items-center justify-center shrink-0 transition-colors mt-0.5 border border-amber-200/50 group-hover:border-transparent">
+                      <IconComponent className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-stone-900 block leading-tight mb-1">
+                        {cat.label}
+                      </span>
+                      <span className="text-[11px] text-stone-500 leading-snug line-clamp-2">
+                        {cat.query}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -207,7 +287,7 @@ export default function ProblemMatchingPage() {
               {turn.sender === 'user' ? (
                 <div className="flex justify-end">
                   <div className="flex items-start gap-2.5 max-w-[85%] sm:max-w-[70%]">
-                    <div className="bg-stone-900 text-white rounded-3xl rounded-tr-md p-4 sm:p-5 shadow-xs text-sm leading-relaxed font-normal">
+                    <div className="bg-stone-900 text-white rounded-3xl rounded-tr-md p-4 sm:p-5 shadow-xs text-sm sm:text-base leading-relaxed font-normal">
                       {turn.text}
                       <span className="block text-[10px] text-stone-400 mt-2 text-right font-mono">
                         {turn.timestamp}
@@ -226,32 +306,30 @@ export default function ProblemMatchingPage() {
                   </div>
 
                   <div className="flex-1 space-y-4 overflow-hidden">
-                    {/* Status weryfikacji i metadane */}
+                    {/* Wskaźnik weryfikacji bez technicznego żargonu */}
                     {turn.matchResponse && (
-                      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-white border border-black/5 text-xs text-stone-500 shadow-2xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 rounded-2xl bg-white border border-black/5 text-xs text-stone-500 shadow-2xs">
                         <div className="flex items-center gap-2">
-                          {turn.matchResponse.guardrail_status === 'PASSED' ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                              Baza ROPS Kraków: Dopasowano
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/60">
-                              <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
-                              Status: {turn.matchResponse.guardrail_status}
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                            Zweryfikowano z bazą ROPS Kraków
+                          </span>
+                          {turn.matchResponse.saved_problem_id && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-stone-500 font-medium">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              Zapisano w Zasobniku potrzeb
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1 font-mono text-[11px] text-stone-400">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>{turn.matchResponse.total_duration_ms} ms</span>
+                        <div className="text-[11px] text-stone-400 font-medium">
+                          Baza: 115 innowacji ROPS
                         </div>
                       </div>
                     )}
 
                     {/* ======================================================== */}
-                    {/* 🏆 WYRÓŻNIONY KAFELEK Z NAJBLIŻSZYM ROZWIĄZANIEM */}
+                    {/* 🏆 WYRÓŻNIONY KAFELEK: NAJBLIŻSZE ROZWIĄZANIE (ROPS) */}
                     {/* ======================================================== */}
                     {turn.matchResponse?.top_solution && (
                       <div
@@ -265,12 +343,12 @@ export default function ProblemMatchingPage() {
                           <div className="flex items-center gap-2">
                             <span className="px-3 py-1 bg-stone-900 text-white rounded-xl text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
                               <Sparkles className="w-3 h-3 text-[#EFE5C6]" />
-                              <span>Najbliższe rozwiązanie w Małopolsce</span>
+                              <span>Gotowa Innowacja Społeczna ROPS Kraków</span>
                             </span>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-stone-400 font-medium">Podobieństwo:</span>
+                            <span className="text-xs text-stone-500 font-medium">Trafność dopasowania:</span>
                             <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-500/20 flex items-center gap-1">
                               <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
                               {turn.matchResponse.top_solution.similarity_percentage}
@@ -292,7 +370,7 @@ export default function ProblemMatchingPage() {
                               <HelpCircle className="w-3.5 h-3.5 text-stone-500" />
                               <span>Rozwiązywany problem:</span>
                             </span>
-                            <p className="line-clamp-3 text-stone-600 leading-relaxed">
+                            <p className="line-clamp-3 text-stone-600 leading-relaxed text-xs sm:text-[13px]">
                               {turn.matchResponse.top_solution.problem_statement || 'Brak danych w bazie.'}
                             </p>
                           </div>
@@ -300,10 +378,10 @@ export default function ProblemMatchingPage() {
                           <div className="bg-white/85 rounded-2xl p-4 border border-black/5 shadow-2xs space-y-1.5">
                             <span className="font-bold text-stone-900 flex items-center gap-1.5">
                               <Coins className="w-3.5 h-3.5 text-amber-600" />
-                              <span>Dofinansowanie / Dotacje:</span>
+                              <span>Dofinansowanie / Źródła wsparcia:</span>
                             </span>
-                            <p className="line-clamp-3 text-stone-600 leading-relaxed">
-                              {turn.matchResponse.top_solution.funding_info || 'Dostępne środki z funduszy regionalnych ROPS.'}
+                            <p className="line-clamp-3 text-stone-600 leading-relaxed text-xs sm:text-[13px]">
+                              {turn.matchResponse.top_solution.funding_info || 'Wsparcie w ramach programów ROPS Kraków i funduszy regionalnych.'}
                             </p>
                           </div>
 
@@ -313,18 +391,23 @@ export default function ProblemMatchingPage() {
                                 <Users2 className="w-3.5 h-3.5 text-stone-500" />
                                 <span>Grupa docelowa:</span>
                               </span>
-                              <p className="text-stone-600 leading-relaxed">
+                              <p className="text-stone-600 leading-relaxed text-xs sm:text-[13px]">
                                 {turn.matchResponse.top_solution.target_group}
                               </p>
                             </div>
                           )}
                         </div>
 
-                        {/* Przycisk przejścia do innowacji źródłowej */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-black/5">
+                        {/* Informacje źródłowe bez zmyślonych linków */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-black/5">
                           <div className="flex items-center gap-2 text-xs text-stone-500">
                             <FileText className="w-3.5 h-3.5 text-stone-400" />
-                            <span>Źródło: ROPS Kraków (Katalog Innowacji Społecznych)</span>
+                            <span>
+                              Dokumentacja źródłowa:{' '}
+                              <strong className="text-stone-700">
+                                {turn.matchResponse.top_solution.file_source || 'Katalog Innowacji Społecznych ROPS Kraków'}
+                              </strong>
+                            </span>
                           </div>
 
                           <div className="flex flex-col sm:flex-row gap-2">
@@ -342,7 +425,7 @@ export default function ProblemMatchingPage() {
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-xl transition-all shadow-2xs"
                               >
-                                <span>Zobacz projekt źródłowy</span>
+                                <span>Zobacz dokument innowacji</span>
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             )}
@@ -364,7 +447,7 @@ export default function ProblemMatchingPage() {
                         </div>
                       </div>
 
-                      <div className="text-sm text-stone-800 leading-relaxed font-normal">
+                      <div className="text-sm sm:text-base text-stone-800 leading-relaxed font-normal">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
@@ -393,14 +476,6 @@ export default function ProblemMatchingPage() {
                             blockquote: ({ ...props }) => (
                               <blockquote className="border-l-3 border-[#D4C39E] bg-[#F5EEDC]/40 pl-4 py-2 italic text-stone-700 my-3 rounded-r-xl" {...props} />
                             ),
-                            table: ({ ...props }) => (
-                              <div className="overflow-x-auto my-4 border border-black/5 rounded-2xl bg-white shadow-2xs">
-                                <table className="w-full text-xs text-left border-collapse" {...props} />
-                              </div>
-                            ),
-                            thead: ({ ...props }) => <thead className="bg-stone-50 text-stone-900 font-semibold border-b border-black/5" {...props} />,
-                            th: ({ ...props }) => <th className="px-3.5 py-2.5 border-r border-black/5 last:border-r-0" {...props} />,
-                            td: ({ ...props }) => <td className="px-3.5 py-2.5 border-b border-black/5 border-r border-black/5 last:border-r-0" {...props} />,
                             code: ({ ...props }) => <code className="bg-stone-100 text-stone-900 px-1.5 py-0.5 rounded text-xs font-mono font-medium" {...props} />,
                           }}
                         >
@@ -409,7 +484,184 @@ export default function ProblemMatchingPage() {
                       </div>
                     </div>
 
-                    {/* Alternatywne rozwiązania (w granicy do 5%) */}
+                    {/* ======================================================== */}
+                    {/* 👥 WIĘCEJ ŹRÓDEŁ 1: POMYSŁY MIESZKAŃCÓW (HUBMI) */}
+                    {/* ======================================================== */}
+                    {turn.matchResponse?.community_ideas && turn.matchResponse.community_ideas.length > 0 && (
+                      <div className="bg-white border border-black/5 rounded-[24px] p-5 sm:p-6 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between border-b border-black/5 pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <Lightbulb className="w-4 h-4 text-amber-500" />
+                            <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                              Oddolne pomysły mieszkańców na platformie Hubmi ({turn.matchResponse.community_ideas.length})
+                            </h4>
+                          </div>
+                          <span className="text-[11px] text-stone-400">Głos społeczności</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          {turn.matchResponse.community_ideas.map((idea) => (
+                            <div
+                              key={idea.id}
+                              className="p-3.5 bg-stone-50/70 hover:bg-stone-50 border border-black/5 rounded-xl space-y-1.5 transition-colors"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <h5 className="font-bold text-stone-900 text-xs line-clamp-1">{idea.title}</h5>
+                                {idea.category && (
+                                  <span className="text-[10px] font-medium px-2 py-0.5 bg-stone-200/70 text-stone-700 rounded-md shrink-0">
+                                    {idea.category}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-stone-600 line-clamp-2 leading-relaxed">
+                                {idea.description}
+                              </p>
+                              {idea.author_name && (
+                                <p className="text-[10px] text-stone-400">Autor: {idea.author_name}</p>
+                              )}
+                              <div className="pt-1">
+                                <Link
+                                  href={`/discover?idea=${idea.id}`}
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-900 hover:text-stone-700"
+                                >
+                                  <span>Zobacz pomysł w Hubie</span>
+                                  <ArrowRight className="w-3 h-3" />
+                                </Link>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ======================================================== */}
+                    {/* 📊 WIĘCEJ ŹRÓDEŁ 2: PODOBNE ZGŁOSZONE PROBLEMY W MAŁOPOLSCE */}
+                    {/* ======================================================== */}
+                    {turn.matchResponse?.similar_problems && turn.matchResponse.similar_problems.length > 0 && (
+                      <div className="bg-[#FAF9F5] border border-black/5 rounded-[24px] p-5 sm:p-6 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between border-b border-black/5 pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-stone-700" />
+                            <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                              Podobne zgłoszenia w innych powiatach Małopolski ({turn.matchResponse.similar_problems.length})
+                            </h4>
+                          </div>
+                          <span className="text-[11px] text-stone-500 font-medium">Baza Zasobnika</span>
+                        </div>
+
+                        <div className="space-y-2 pt-1">
+                          {turn.matchResponse.similar_problems.map((prob) => (
+                            <div
+                              key={prob.id}
+                              className="p-3 bg-white border border-black/5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                            >
+                              <div className="space-y-1 flex-1">
+                                <p className="text-stone-800 font-medium leading-relaxed">
+                                  {prob.problem_text}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-2 text-[10px] text-stone-500">
+                                  {prob.powiat && (
+                                    <span className="font-semibold text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded">
+                                      {prob.powiat}
+                                    </span>
+                                  )}
+                                  {prob.reporter_type && (
+                                    <span>Zgłosił: {prob.reporter_type}</span>
+                                  )}
+                                  <span>Status: {prob.status}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ======================================================== */}
+                    {/* 👩‍💼 WIĘCEJ ŹRÓDEŁ 3: DEDYKOWANY EKSPERT ROPS KRAKÓW */}
+                    {/* ======================================================== */}
+                    {turn.matchResponse?.matched_expert && (
+                      <div className="bg-gradient-to-r from-amber-50/70 to-stone-50 border border-amber-200/50 rounded-[24px] p-5 sm:p-6 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-start gap-3.5">
+                          <div className="w-11 h-11 rounded-2xl bg-stone-900 text-white flex items-center justify-center shrink-0 shadow-2xs font-bold text-sm">
+                            <Building2 className="w-5 h-5 text-[#EFE5C6]" />
+                          </div>
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider bg-amber-100/80 px-2 py-0.5 rounded-md">
+                                Dedykowany ekspert regionalny
+                              </span>
+                            </div>
+                            <h4 className="text-sm font-bold text-stone-900">
+                              {turn.matchResponse.matched_expert.name}
+                            </h4>
+                            <p className="text-xs text-stone-600">
+                              {turn.matchResponse.matched_expert.title} • {turn.matchResponse.matched_expert.department}
+                            </p>
+                            <p className="text-[11px] text-stone-500 pt-0.5">
+                              Specjalizacja: <em>{turn.matchResponse.matched_expert.specialization}</em>
+                            </p>
+                          </div>
+                        </div>
+
+                        <Link
+                          href={`/chat?topic=${encodeURIComponent(turn.matchResponse.matched_expert.chat_topic)}`}
+                          className="shrink-0 inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Napisz do eksperta</span>
+                        </Link>
+                      </div>
+                    )}
+
+                    {/* ======================================================== */}
+                    {/* 🚀 ŚCIEŻKA DALSZEGO DZIAŁANIA (NEXT ACTIONS - BRAK ŚLEPEJ ULICZKI) */}
+                    {/* ======================================================== */}
+                    {turn.matchResponse?.next_actions && turn.matchResponse.next_actions.length > 0 && (
+                      <div className="bg-white border border-black/5 rounded-[24px] p-5 sm:p-6 shadow-2xs space-y-3.5">
+                        <div className="flex items-center gap-2 border-b border-black/5 pb-2.5">
+                          <Compass className="w-4 h-4 text-stone-700" />
+                          <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                            Rekomendowane kolejne kroki
+                          </h4>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {turn.matchResponse.next_actions.map((act) => (
+                            <div
+                              key={act.action_id}
+                              className="p-4 rounded-xl border border-black/5 bg-[#FAF9F5] hover:bg-stone-50 transition-colors flex flex-col justify-between gap-3 text-xs"
+                            >
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between gap-1">
+                                  <h5 className="font-bold text-stone-900">{act.title}</h5>
+                                  {act.badge && (
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                                      {act.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-stone-600 leading-relaxed">
+                                  {act.description}
+                                </p>
+                              </div>
+
+                              <Link
+                                href={act.url}
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-lg transition-colors text-center"
+                              >
+                                <span>{act.button_label}</span>
+                                <ArrowRight className="w-3 h-3" />
+                              </Link>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ======================================================== */}
+                    {/* ALTERNATYWNE ROZWIĄZANIA (DO 5%) */}
+                    {/* ======================================================== */}
                     {turn.matchResponse?.close_solutions && turn.matchResponse.close_solutions.length > 0 && (
                       <div className="border border-black/5 rounded-2xl bg-white overflow-hidden shadow-2xs">
                         <button
@@ -419,7 +671,7 @@ export default function ProblemMatchingPage() {
                           <div className="flex items-center gap-2">
                             <Layers className="w-4 h-4 text-stone-500" />
                             <span>
-                              Zbliżone rozwiązania alternatywne ({turn.matchResponse.close_solutions.length})
+                              Inne zbliżone innowacje ROPS ({turn.matchResponse.close_solutions.length})
                             </span>
                           </div>
                           {expandedAlternatives[turn.id] ? (
@@ -458,11 +710,49 @@ export default function ProblemMatchingPage() {
                                       rel="noopener noreferrer"
                                       className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-900 underline underline-offset-2 hover:text-stone-700"
                                     >
-                                      <span>Szczegóły projektu</span>
+                                      <span>Szczegóły innowacji</span>
                                       <ExternalLink className="w-3 h-3" />
                                     </a>
                                   )}
                                 </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ======================================================== */}
+                    {/* 🔧 ŚLAD TECHNICZNY (TYLKO DLA EWALUATORA / ADMINA) */}
+                    {/* ======================================================== */}
+                    {turn.matchResponse?.trace && turn.matchResponse.trace.length > 0 && (
+                      <div className="border border-black/5 rounded-xl bg-stone-50/60 overflow-hidden text-xs">
+                        <button
+                          onClick={() => toggleAdminTrace(turn.id)}
+                          className="w-full px-4 py-2.5 flex items-center justify-between text-[11px] font-medium text-stone-500 hover:text-stone-800 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-stone-400" />
+                            <span>
+                              Szczegóły wykonania i trace ({turn.matchResponse.total_duration_ms} ms, filtr: {turn.matchResponse.guardrail_status})
+                            </span>
+                          </div>
+                          {expandedAdminTrace[turn.id] ? (
+                            <ChevronUp className="w-3.5 h-3.5 text-stone-400" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
+                          )}
+                        </button>
+
+                        {expandedAdminTrace[turn.id] && (
+                          <div className="p-3 border-t border-black/5 bg-white space-y-2 font-mono text-[11px]">
+                            {turn.matchResponse.trace.map((step) => (
+                              <div key={step.step_number} className="flex items-start justify-between gap-2 text-stone-600 border-b border-stone-100 pb-1 last:border-b-0">
+                                <div>
+                                  <span className="text-stone-400">#{step.step_number}</span>{' '}
+                                  <strong className="text-stone-800">{step.name}</strong>: {step.status}
+                                </div>
+                                <span className="text-stone-400 shrink-0">{step.duration_ms} ms</span>
                               </div>
                             ))}
                           </div>
@@ -484,7 +774,7 @@ export default function ProblemMatchingPage() {
               <div className="p-5 sm:p-6 bg-white border border-black/5 rounded-[24px] space-y-3 max-w-lg shadow-2xs">
                 <div className="flex items-center gap-2 text-xs font-bold text-stone-800">
                   <div className="w-2 h-2 rounded-full bg-stone-900 animate-ping" />
-                  <span>Przeszukuję bazę innowacji ROPS Kraków...</span>
+                  <span>Dopasowuję innowacje, ekspertów i potrzeby regionalne...</span>
                 </div>
                 <div className="space-y-2 animate-pulse pt-1">
                   <div className="h-2.5 bg-stone-200 rounded-full w-4/5"></div>
@@ -499,35 +789,82 @@ export default function ProblemMatchingPage() {
         </div>
       )}
 
-      {/* Dolny Pasek Wprowadzania Wiadomości (Sticky Input Bar) */}
-      <div className="sticky bottom-4 z-20 pt-2">
+      {/* Dolny Pasek Wprowadzania Wiadomości (Senior-Friendly Sticky Bar) */}
+      <div className="sticky bottom-4 z-20 space-y-2">
+        {/* Pasek pomocniczy: Wybór Powiatu i Roli zgłaszającego */}
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-black/6 shadow-xs p-2.5 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-stone-500" />
+              Lokalizacja:
+            </span>
+            <select
+              value={selectedPowiat}
+              onChange={(e) => setSelectedPowiat(e.target.value)}
+              className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200/70 border border-black/5 rounded-lg text-xs font-semibold text-stone-800 focus:outline-none transition-colors cursor-pointer"
+            >
+              {MALOPOLSKA_POWIATY.map((pow) => (
+                <option key={pow} value={pow}>
+                  {pow}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider flex items-center gap-1">
+              <User className="w-3 h-3 text-stone-500" />
+              Zgłaszający:
+            </span>
+            <div className="flex items-center gap-1">
+              {REPORTER_ROLES.map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setSelectedRole(role)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                    selectedRole === role
+                      ? 'bg-stone-900 text-white shadow-2xs'
+                      : 'bg-stone-100 hover:bg-stone-200/70 text-stone-700'
+                  }`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Formularz wprowadzania pytania */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSendMessage();
           }}
-          className="relative bg-white/95 backdrop-blur-xl rounded-2xl border border-black/6 shadow-lg p-1.5 focus-within:ring-2 focus-within:ring-stone-900/10 focus-within:border-stone-900/30 transition-all"
+          className="relative bg-white/95 backdrop-blur-xl rounded-2xl border border-black/6 shadow-lg p-2 focus-within:ring-2 focus-within:ring-stone-900/10 focus-within:border-stone-900/30 transition-all"
         >
           <div className="flex items-center gap-2">
+            {/* Pole tekstowe */}
             <input
               ref={inputRef}
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Opisz problem społeczny (np. opieka w domu starców, wsparcie seniorów, dofinansowanie)..."
+              placeholder="Opisz problem lub potrzebę (np. samotność seniorów na wsi, brak dojazdu do lekarza)..."
               disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-transparent text-sm font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none disabled:opacity-50"
+              className="flex-1 px-3 py-2.5 bg-transparent text-sm sm:text-base font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none disabled:opacity-50"
             />
 
+            {/* Przycisk wysłania */}
             <button
               type="submit"
               disabled={isLoading || !inputMessage.trim()}
-              className="px-5 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs"
+              className="px-5 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs"
             >
               {isLoading ? (
                 <>
-                  <RotateCcw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Szukam...</span>
+                  <RotateCcw className="w-4 h-4 animate-spin" />
+                  <span>Dopasowuję...</span>
                 </>
               ) : (
                 <>
@@ -542,3 +879,4 @@ export default function ProblemMatchingPage() {
     </div>
   );
 }
+

@@ -20,8 +20,12 @@ const ubuntu = Ubuntu({
 });
 
 export const metadata: Metadata = {
-  title: "minno – Platforma Pomysłów & Społeczność 40+",
-  description: "Minimalistyczna, profesjonalna przestrzeń do zgłaszania, opiniowania i testowania pomysłów.",
+  title: "minno – Małopolskie Innowacje",
+  description:
+    "Minimalistyczna, profesjonalna przestrzeń do zgłaszania, opiniowania i testowania pomysłów.",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 import { Providers } from "./providers";

@@ -177,11 +177,50 @@ export interface InnovationMatchItem {
   is_close_match: boolean;
 }
 
+export interface CommunityIdeaMatch {
+  id: string;
+  title: string;
+  description: string;
+  category?: string | null;
+  author_name?: string | null;
+  url: string;
+  similarity_percentage?: string | null;
+}
+
+export interface SimilarProblemMatch {
+  id: string;
+  problem_text: string;
+  powiat?: string | null;
+  category?: string | null;
+  reporter_type?: string | null;
+  status: string;
+  created_at?: string | null;
+}
+
+export interface MatchedExpert {
+  name: string;
+  title: string;
+  department: string;
+  specialization: string;
+  chat_topic: string;
+  chat_url: string;
+}
+
+export interface NextActionItem {
+  action_id: string;
+  title: string;
+  description: string;
+  button_label: string;
+  url: string;
+  icon_name: string;
+  badge?: string | null;
+}
+
 export interface ExplainabilityInfo {
   summary: string;
   matched_aspects: string[];
   source_file: string;
-  source_url: string;
+  source_url?: string | null;
 }
 
 export interface TraceStep {
@@ -199,6 +238,11 @@ export interface MatchResponse {
   top_solution?: InnovationMatchItem | null;
   close_solutions: InnovationMatchItem[];
   explainability?: ExplainabilityInfo | null;
+  community_ideas?: CommunityIdeaMatch[];
+  similar_problems?: SimilarProblemMatch[];
+  matched_expert?: MatchedExpert | null;
+  next_actions?: NextActionItem[];
+  saved_problem_id?: string | null;
   trace: TraceStep[];
   total_duration_ms: number;
 }
