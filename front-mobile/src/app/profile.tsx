@@ -176,7 +176,7 @@ export default function ProfileScreen() {
             onPress={() =>
               Alert.alert(
                 "Wyloguj",
-                "Czy na pewno chcesz się wylogować z Hubmi?",
+                "Czy na pewno chcesz się wylogować z minno?",
                 [
                   { text: "Anuluj", style: "cancel" },
                   { text: "Wyloguj", style: "destructive" },

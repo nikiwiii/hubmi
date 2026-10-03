@@ -103,10 +103,10 @@ export default function AuthPage() {
       {/* App Logo */}
       <div className="flex flex-col items-center justify-center mb-8 select-none text-center">
         <div className="w-14 h-14 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-bold text-2xl shadow-sm mb-3">
-          H
+          m
         </div>
         <span className="text-2xl font-bold text-stone-900 tracking-tight">
-          Hubmi
+          minno
         </span>
         <p className="text-xs text-stone-500 font-medium mt-1">
           Platforma Pomysłów &amp; Społeczność

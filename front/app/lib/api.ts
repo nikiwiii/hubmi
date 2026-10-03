@@ -250,8 +250,8 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
     title: b.title,
     subtitle: b.category ? `Kategoria: ${b.category}` : "Innowacja społeczna",
     authorId: b.user_id,
-    authorName: b.author_name || "Użytkownik Hubmi",
-    authorEmail: `${b.user_id}@hubmi.pl`,
+    authorName: b.author_name || "Użytkownik minno",
+    authorEmail: `${b.user_id}@minno.pl`,
     category: b.category || "Społeczność",
     summary:
       b.description.slice(0, 140) + (b.description.length > 140 ? "..." : ""),
