@@ -34,8 +34,8 @@ export function saveIdeas(ideas: Idea[]): void {
   }
 }
 
-export function voteIdea(id: string, type: 'like' | 'dislike'): Idea[] {
-  const current = getIdeas();
+export function voteIdea(id: string, type: 'like' | 'dislike', currentList?: Idea[]): Idea[] {
+  const current = currentList && currentList.length > 0 ? currentList : getIdeas();
   const updated = current.map(item => {
     if (item.id !== id) return item;
     
@@ -69,8 +69,8 @@ export function voteIdea(id: string, type: 'like' | 'dislike'): Idea[] {
   return updated;
 }
 
-export function toggleTestingParticipation(id: string, userEmail: string): { ideas: Idea[]; isTester: boolean } {
-  const current = getIdeas();
+export function toggleTestingParticipation(id: string, userEmail: string, currentList?: Idea[]): { ideas: Idea[]; isTester: boolean } {
+  const current = currentList && currentList.length > 0 ? currentList : getIdeas();
   let isTester = false;
 
   const updated = current.map(item => {
@@ -101,8 +101,8 @@ export function toggleTestingParticipation(id: string, userEmail: string): { ide
   return { ideas: updated, isTester };
 }
 
-export function addIdea(newIdea: Omit<Idea, 'id' | 'createdAt' | 'likes' | 'dislikes' | 'testersCount' | 'testersList' | 'commentsCount'>): Idea {
-  const current = getIdeas();
+export function addIdea(newIdea: Omit<Idea, 'id' | 'createdAt' | 'likes' | 'dislikes' | 'testersCount' | 'testersList' | 'commentsCount'>, currentList?: Idea[]): Idea {
+  const current = currentList && currentList.length > 0 ? currentList : getIdeas();
   const { theme, shape } = getCategoryThemeAndShape(newIdea.category);
   const idea: Idea = {
     ...newIdea,
@@ -122,16 +122,17 @@ export function addIdea(newIdea: Omit<Idea, 'id' | 'createdAt' | 'likes' | 'disl
   return idea;
 }
 
-export function updateIdea(id: string, updates: Partial<Idea>): Idea[] {
-  const current = getIdeas();
+export function updateIdea(id: string, updates: Partial<Idea>, currentList?: Idea[]): Idea[] {
+  const current = currentList && currentList.length > 0 ? currentList : getIdeas();
   const updated = current.map(item => (item.id === id ? { ...item, ...updates } : item));
   saveIdeas(updated);
   return updated;
 }
 
-export function deleteIdea(id: string): Idea[] {
-  const current = getIdeas();
+export function deleteIdea(id: string, currentList?: Idea[]): Idea[] {
+  const current = currentList && currentList.length > 0 ? currentList : getIdeas();
   const updated = current.filter(item => item.id !== id);
   saveIdeas(updated);
   return updated;
 }
+
