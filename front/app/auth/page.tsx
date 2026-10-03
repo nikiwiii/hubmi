@@ -158,7 +158,7 @@ export default function AuthPage() {
         <div className="w-11 h-11 rounded-xl overflow-hidden shadow-xs mb-2">
           <img
             src="/logo.svg"
-            alt="MiNNO logo"
+            alt="Logo platformy MiNNO Małopolskie Innowacje"
             className="w-full h-full object-cover"
           />
         </div>
@@ -168,7 +168,7 @@ export default function AuthPage() {
         >
           MiNNO
         </span>
-        <p className="text-[11px] text-stone-500 font-medium mt-0.5">
+        <p className="text-[11px] text-stone-600 font-semibold mt-0.5">
           Małopolskie Innowacje Społeczne &amp; ROPS Kraków
         </p>
       </div>
@@ -176,33 +176,41 @@ export default function AuthPage() {
       <div className="w-full max-w-[360px] bg-white rounded-2xl p-5 border border-stone-200/80 shadow-xs flex flex-col gap-3">
         <div>
           {/* Przełącznik Logowanie / Rejestracja */}
-          <div className="flex bg-stone-100 p-0.5 rounded-lg mb-2.5 shrink-0">
+          <div
+            role="tablist"
+            aria-label="Wybór trybu logowania lub rejestracji"
+            className="flex bg-stone-100 p-1 rounded-xl mb-2.5 shrink-0 gap-1"
+          >
             <button
               type="button"
+              role="tab"
+              aria-selected={!isRegister}
               onClick={() => {
                 setIsRegister(false);
                 setErrorMsg("");
                 setSuccessMsg("");
               }}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+              className={`flex-1 min-h-[36px] py-1.5 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 !isRegister
-                  ? "bg-white text-stone-900 shadow-2xs"
-                  : "text-stone-500 hover:text-stone-800"
+                  ? "bg-white text-stone-900 shadow-2xs font-bold"
+                  : "text-stone-600 hover:text-stone-900"
               }`}
             >
               Logowanie
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={isRegister}
               onClick={() => {
                 setIsRegister(true);
                 setErrorMsg("");
                 setSuccessMsg("");
               }}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+              className={`flex-1 min-h-[36px] py-1.5 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 isRegister
-                  ? "bg-white text-stone-900 shadow-2xs"
-                  : "text-stone-500 hover:text-stone-800"
+                  ? "bg-white text-stone-900 shadow-2xs font-bold"
+                  : "text-stone-600 hover:text-stone-900"
               }`}
             >
               Nowe Konto
@@ -231,69 +239,73 @@ export default function AuthPage() {
 
         <form
           onSubmit={handleLoginOrRegister}
-          className="flex flex-col gap-2.5"
+          className="flex flex-col gap-3"
         >
           {isRegister && (
             <div>
-              <label className="block text-[11px] font-medium text-stone-600 mb-1">
+              <label htmlFor="auth-name" className="block text-xs font-bold text-stone-700 mb-1">
                 Imię i nazwisko
               </label>
               <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" aria-hidden="true" />
                 <input
+                  id="auth-name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Anna Kowalska"
                   disabled={isSubmitting}
-                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="block text-[11px] font-medium text-stone-600 mb-1">
-              E-mail
+            <label htmlFor="auth-email" className="block text-xs font-bold text-stone-700 mb-1">
+              Adres e-mail
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" aria-hidden="true" />
               <input
+                id="auth-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="twoj@email.pl"
                 disabled={isSubmitting}
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-medium text-stone-600 mb-1">
+            <label htmlFor="auth-password" className="block text-xs font-bold text-stone-700 mb-1">
               Hasło
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" aria-hidden="true" />
               <input
+                id="auth-password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Hasło"
                 disabled={isSubmitting}
-                className="w-full pl-9 pr-9 py-2 rounded-lg border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
+                className="w-full pl-9 pr-10 py-2 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900 disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 disabled={isSubmitting}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 transition-colors p-1 rounded-md cursor-pointer"
-                title={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
+                aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło w postaci tekstu"}
+                aria-pressed={showPassword}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 min-h-[32px] min-w-[32px] flex items-center justify-center text-stone-500 hover:text-stone-900 transition-colors p-1 rounded-lg cursor-pointer"
               >
                 {showPassword ? (
-                  <EyeOff className="w-3.5 h-3.5" />
+                  <EyeOff className="w-4 h-4" aria-hidden="true" />
                 ) : (
-                  <Eye className="w-3.5 h-3.5" />
+                  <Eye className="w-4 h-4" aria-hidden="true" />
                 )}
               </button>
             </div>
@@ -302,17 +314,17 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 shadow-2xs"
+            className="w-full min-h-[40px] py-2.5 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 shadow-2xs"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
                 <span>Trwa weryfikacja...</span>
               </>
             ) : (
               <>
                 <span>{isRegister ? "Utwórz konto" : "Zaloguj się"}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
               </>
             )}
           </button>

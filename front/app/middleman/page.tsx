@@ -394,7 +394,7 @@ function MiddlemanContent() {
                   type="button"
                   disabled={isRefining}
                   onClick={() => handleRefine(ex)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 cursor-pointer disabled:opacity-50"
+                  className="min-h-[34px] px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-stone-900 cursor-pointer disabled:opacity-50"
                 >
                   {ex}
                 </button>

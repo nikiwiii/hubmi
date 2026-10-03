@@ -38,10 +38,32 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
 
   const { primary, secondary, accent } = getFillColors();
 
+  const getShapeLabel = (s: ShapeType) => {
+    switch (s) {
+      case 'donut':
+        return 'Geometryczna ilustracja: pierścień innowacji';
+      case 'v-shape':
+        return 'Geometryczna ilustracja: dynamiczny motyw V';
+      case 'cloud':
+        return 'Geometryczna ilustracja: chmura kreatywności';
+      case 'crescent':
+        return 'Geometryczna ilustracja: półksiężyc przemian';
+      case 'wave':
+        return 'Geometryczna ilustracja: fala rozwoju';
+      case 'diamond':
+      default:
+        return 'Geometryczna ilustracja: diament innowacji';
+    }
+  };
+
+  const shapeAriaLabel = getShapeLabel(shape);
+
   switch (shape) {
     case 'donut':
       return (
         <svg
+          role="img"
+          aria-label={shapeAriaLabel}
           width={size}
           height={size}
           viewBox="0 0 100 100"
@@ -57,6 +79,8 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
     case 'v-shape':
       return (
         <svg
+          role="img"
+          aria-label={shapeAriaLabel}
           width={size}
           height={size}
           viewBox="0 0 100 100"
@@ -76,6 +100,8 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
     case 'cloud':
       return (
         <svg
+          role="img"
+          aria-label={shapeAriaLabel}
           width={size}
           height={size}
           viewBox="0 0 100 100"
@@ -99,6 +125,8 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
     case 'crescent':
       return (
         <svg
+          role="img"
+          aria-label={shapeAriaLabel}
           width={size}
           height={size}
           viewBox="0 0 100 100"
@@ -122,6 +150,8 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
     case 'wave':
       return (
         <svg
+          role="img"
+          aria-label={shapeAriaLabel}
           width={size}
           height={size}
           viewBox="0 0 100 100"
@@ -139,6 +169,8 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
     default:
       return (
         <svg
+          role="img"
+          aria-label={shapeAriaLabel}
           width={size}
           height={size}
           viewBox="0 0 100 100"

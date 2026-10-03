@@ -291,7 +291,11 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                 </div>
 
                 {/* Wykres liniowy Recharts dla danego powiatu */}
-                <div className="w-full h-[120px] mt-3 pt-2 border-t border-dashed border-stone-200/50">
+                <div
+                  role="region"
+                  aria-label={`Mini wykres trendu wskaźnika dla powiatu ${item.powiatName} w latach 2014-2024`}
+                  className="w-full h-[120px] mt-3 pt-2 border-t border-dashed border-stone-200/50"
+                >
                   {isMounted ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart

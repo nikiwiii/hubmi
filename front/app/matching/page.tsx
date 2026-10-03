@@ -201,10 +201,12 @@ function MatchingContent() {
         {messages.length > 0 && (
           <div className="flex items-center justify-end px-5 pt-3.5 pb-1 shrink-0">
             <button
+              type="button"
               onClick={handleResetChat}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 hover:bg-white text-stone-700 hover:text-stone-900 border border-black/5 rounded-xl text-xs font-semibold shadow-2xs cursor-pointer transition-all"
+              aria-label="Rozpocznij nową rozmowę i wyczyść czat"
+              className="min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 bg-white/90 hover:bg-white text-stone-700 hover:text-stone-950 border border-black/5 rounded-xl text-xs font-semibold shadow-2xs cursor-pointer transition-all"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-stone-400" />
+              <RotateCcw className="w-3.5 h-3.5 text-stone-500" aria-hidden="true" />
               <span>Nowa rozmowa</span>
             </button>
           </div>
@@ -716,12 +718,13 @@ function MatchingContent() {
                   type="button"
                   onClick={handleToggleVoice}
                   disabled={isLoading}
-                  title={
+                  aria-label={
                     isListening
-                      ? "Zatrzymaj dyktowanie"
-                      : "Dyktuj pomysł głosem"
+                      ? "Zatrzymaj dyktowanie głosowe"
+                      : "Rozpocznij dyktowanie pomysłu głosem"
                   }
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  aria-pressed={isListening}
+                  className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isListening
                       ? "bg-rose-600 text-white shadow-xs animate-pulse"
                       : "bg-stone-100 hover:bg-stone-200/80 text-stone-700 hover:text-stone-900 border border-black/5"
@@ -729,12 +732,12 @@ function MatchingContent() {
                 >
                   {isListening ? (
                     <>
-                      <MicOff className="w-3.5 h-3.5" />
+                      <MicOff className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>Zatrzymaj</span>
                     </>
                   ) : (
                     <>
-                      <Mic className="w-3.5 h-3.5 text-stone-600" />
+                      <Mic className="w-3.5 h-3.5 text-stone-600" aria-hidden="true" />
                       <span>Dyktuj</span>
                     </>
                   )}
@@ -745,13 +748,14 @@ function MatchingContent() {
                   type="button"
                   onClick={() => handleSendMessage()}
                   disabled={isLoading || !inputIdea.trim()}
+                  aria-label="Wyślij zapytanie do inteligentnej bazy wiedzy"
                   title="Wyślij pomysł (Enter)"
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-900 hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-stone-900 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                  className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-full bg-stone-900 hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-stone-900 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
                 >
                   {isLoading ? (
-                    <RotateCcw className="w-4 h-4 animate-spin text-[#EFE5C6]" />
+                    <RotateCcw className="w-4 h-4 animate-spin text-[#EFE5C6]" aria-hidden="true" />
                   ) : (
-                    <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+                    <ArrowUp className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
                   )}
                 </button>
               </div>

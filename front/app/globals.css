@@ -40,18 +40,127 @@ body {
   background: rgba(0, 0, 0, 0.22);
 }
 
+/* WCAG 2.2 - Wyraźny wskaźnik skupienia klawiatury (Focus Indicator) */
+:focus-visible {
+  outline: 2px solid #1C1917 !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+
+/* WCAG 2.2 - Skip link do przeskakiwania nawigacji dla czytników ekranu i klawiatury */
+.skip-to-content {
+  position: absolute;
+  top: -120px;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1.25rem;
+  background-color: #1C1917;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+  transition: top 0.2s ease-in-out;
+}
+.skip-to-content:focus {
+  top: 1rem;
+}
+
+/* WCAG 2.2 Criterion 2.5.8 - Minimalny rozmiar celu dotykowego / kliknięcia (Target Size: min 24x24px) */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
+[role="tab"],
+[role="checkbox"],
+[role="radio"],
+[role="switch"] {
+  min-height: 24px;
+  min-width: 24px;
+}
+
+/* Wygodny rozmiar kliknięcia dla urządzeń dotykowych (Smartfony / Tablety) */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  [role="tab"],
+  [role="checkbox"] {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* =========================================================================
+   WCAG 2.2 AA – Kontrast Kolorów (min. 4.5:1 normalny tekst, min. 3:1 duży)
+   Podbicie czytelności jasnych odcieni stone na jasnym tle (body:not(.dark)),
+   przy jednoczesnym zachowaniu kontrastu w ciemnych kontenerach (np. bg-stone-900).
+   ========================================================================= */
+
+/* text-stone-400 na jasnym tle: podbijamy do #57534E (kontrast ~6.5:1 na #FAF9F5) */
+body:not(.dark) .text-stone-400:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #57534E;
+}
+
+/* text-stone-500 na jasnym tle: podbijamy do #44403C (kontrast ~8.8:1 na #FAF9F5) */
+body:not(.dark) .text-stone-500:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #44403C;
+}
+
+/* Duże nagłówki z text-stone-300 na jasnym tle: podbijamy do #57534E (kontrast ~6.5:1) */
+body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #57534E;
+}
+
+/* Zachowanie wysokiego kontrastu w ciemnych kontenerach (modale, ciemne banery, czarne przyciski) */
+.bg-stone-900 .text-stone-400,
+.bg-stone-950 .text-stone-400,
+.bg-black .text-stone-400,
+[class*="from-stone-900"] .text-stone-400,
+[role="dialog"] .text-stone-400 {
+  color: #D6D3CD;
+}
+
+.bg-stone-900 .text-stone-300,
+.bg-stone-950 .text-stone-300,
+.bg-black .text-stone-300,
+[class*="from-stone-900"] .text-stone-300,
+[role="dialog"] .text-stone-300 {
+  color: #E7E5E0;
+}
+
+/* WCAG 2.2 AA - Kontrast placeholderów i etykiet (min 4.5:1) */
+::placeholder {
+  color: #57534E !important;
+  opacity: 1;
+}
+
+/* Utility dla czytników ekranu */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 /* 40+ Accessibility Font scaling */
 .font-scale-large {
-  font-size: 1.125rem;
+  font-size: 1.15rem;
 }
 .font-scale-large h1 {
-  font-size: 112% !important;
+  font-size: 115% !important;
 }
 .font-scale-large h2 {
-  font-size: 112% !important;
+  font-size: 115% !important;
 }
-.font-scale-large p, .font-scale-large span, .font-scale-large button, .font-scale-large input {
-  font-size: 108% !important;
+.font-scale-large p, .font-scale-large span, .font-scale-large button, .font-scale-large input, .font-scale-large textarea {
+  font-size: 110% !important;
 }
 
 /* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */

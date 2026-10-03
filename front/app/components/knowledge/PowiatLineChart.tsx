@@ -244,7 +244,11 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
       </div>
 
       {/* Główny Wykres Liniowy Recharts */}
-      <div className="w-full h-[340px] sm:h-[400px] pt-2">
+      <div
+        role="region"
+        aria-label={`Wykres liniowy: trendy wskaźnika ${research.titlePl} dla ${activeSeries?.powiatName || 'powiatów'} w latach ${research.summary.startYear}–${research.summary.endYear}`}
+        className="w-full h-[340px] sm:h-[400px] pt-2"
+      >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />

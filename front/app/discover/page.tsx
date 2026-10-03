@@ -199,19 +199,21 @@ export default function DiscoverPage() {
         <div>
           <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
             <span className="block text-stone-900">Odkrywaj Pomysły</span>
-            <span className="block text-stone-300">Inspiruj Zmiany</span>
+            <span className="block text-stone-600">Inspiruj Zmiany</span>
           </div>
-          <p className="text-xs sm:text-sm text-stone-500 mt-2 max-w-lg">
+          <p className="text-xs sm:text-sm text-stone-600 font-medium mt-2 max-w-lg">
             Przeglądaj innowacje i oddolne projekty mieszkańców Małopolski,
             nawiązuj partnerstwa i współpracuj z ekspertami ROPS.
           </p>
         </div>
 
         <button
+          type="button"
           onClick={() => navigate("propose")}
-          className="self-start sm:self-auto flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer shadow-2xs"
+          aria-label="Zaproponuj nowy pomysł innowacji"
+          className="self-start sm:self-auto min-h-[40px] flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer shadow-2xs"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Zaproponuj pomysł</span>
         </button>
       </div>
@@ -219,20 +221,27 @@ export default function DiscoverPage() {
       {/* Minimal Search Bar */}
       <div className="bg-white rounded-2xl p-2 shadow-2xs border border-black/4">
         <div className="relative flex items-center">
-          <Search className="absolute left-3.5 w-4 h-4 text-stone-400" />
+          <label htmlFor="search-ideas-input" className="sr-only">
+            Szukaj pomysłów, autorów lub wyzwań
+          </label>
+          <Search className="absolute left-3.5 w-4 h-4 text-stone-500" aria-hidden="true" />
           <input
+            id="search-ideas-input"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Szukaj pomysłów, autorów lub wyzwań..."
-            className="w-full pl-10 pr-8 py-2 text-base font-medium text-stone-900 placeholder:text-stone-400 rounded-xl focus:outline-none"
+            aria-label="Szukaj pomysłów, autorów lub wyzwań"
+            className="w-full pl-10 pr-8 py-2 text-base font-medium text-stone-900 placeholder:text-stone-500 rounded-xl focus:outline-none"
           />
           {searchQuery && (
             <button
+              type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 p-1 text-stone-400 hover:text-stone-700"
+              aria-label="Wyczyść pole wyszukiwania"
+              className="min-h-[28px] min-w-[28px] flex items-center justify-center absolute right-3 p-1 text-stone-500 hover:text-stone-900 cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -240,17 +249,25 @@ export default function DiscoverPage() {
 
       {/* Categories & Filter Bar with Partner Switch */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <div
+          role="tablist"
+          aria-label="Kategorie innowacji"
+          className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none"
+        >
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat;
             return (
               <button
                 key={cat}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                aria-label={`Kategoria: ${cat}`}
                 onClick={() => setSelectedCategory(cat)}
-                className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? "bg-stone-900 text-white"
-                    : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80"
+                    ? "bg-stone-900 text-white font-bold"
+                    : "bg-white text-stone-700 hover:bg-stone-100 border border-stone-200/80"
                 }`}
               >
                 {cat}
@@ -260,14 +277,18 @@ export default function DiscoverPage() {
 
           {/* Filtr: Szukają partnera */}
           <button
+            type="button"
+            role="checkbox"
+            aria-checked={onlyLookingForPartner}
+            aria-label="Filtruj tylko projekty poszukujące partnerstwa"
             onClick={() => setOnlyLookingForPartner(!onlyLookingForPartner)}
-            className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+            className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
               onlyLookingForPartner
                 ? "bg-amber-200/90 text-amber-950 border border-amber-300 shadow-2xs"
                 : "bg-white text-stone-700 hover:bg-stone-50 border border-stone-200/80"
             }`}
           >
-            <Handshake className="w-3.5 h-3.5 text-amber-800" />
+            <Handshake className="w-3.5 h-3.5 text-amber-800" aria-hidden="true" />
             <span>Szukają partnera</span>
           </button>
         </div>
@@ -357,9 +378,10 @@ export default function DiscoverPage() {
               <button
                 type="button"
                 onClick={() => setPartnerModalIdea(null)}
-                className="p-1 rounded-lg text-stone-400 hover:text-stone-800 cursor-pointer"
+                aria-label="Zamknij formularz oferty partnerstwa"
+                className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
 
@@ -494,9 +516,10 @@ export default function DiscoverPage() {
               <button
                 type="button"
                 onClick={() => setAssignModalIdea(null)}
-                className="p-1 rounded-lg text-stone-400 hover:text-stone-800 cursor-pointer"
+                aria-label="Zamknij okno przypisywania mentora"
+                className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
 

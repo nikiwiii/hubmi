@@ -501,47 +501,55 @@ export default function ProposePage() {
           {/* Tytuł */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-stone-500" />
-                <span>Tytuł pomysłu *</span>
+              <label htmlFor="field-tytul" className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-stone-500" aria-hidden="true" />
+                <span>Tytuł pomysłu <span className="text-rose-600" aria-label="wymagane">*</span></span>
               </label>
-              <span className="text-[11px] text-stone-400 font-mono">
+              <span id="hint-tytul" className="text-[11px] text-stone-600 font-mono">
                 {fields.tytul.length} / 80 znaków
               </span>
             </div>
             <input
+              id="field-tytul"
               type="text"
+              required
+              aria-required="true"
+              aria-describedby="hint-tytul"
               maxLength={80}
               value={fields.tytul}
               onChange={(e) => updateField("tytul", e.target.value)}
               placeholder="np. Sąsiedzka lodówka, Ogród pokoleń, Kawiarenka naprawcza..."
-              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-base font-semibold placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-base font-semibold placeholder:text-stone-500 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
             />
           </div>
 
           {/* Opis */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-stone-500" />
-                <span>Opis pomysłu *</span>
+              <label htmlFor="field-opis" className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-stone-500" aria-hidden="true" />
+                <span>Opis pomysłu <span className="text-rose-600" aria-label="wymagane">*</span></span>
               </label>
-              <span className="text-[11px] text-stone-400 font-mono">
+              <span id="hint-opis" className="text-[11px] text-stone-600 font-mono">
                 min. 10 znaków
               </span>
             </div>
             <textarea
+              id="field-opis"
               rows={5}
+              required
+              aria-required="true"
+              aria-describedby="hint-opis"
               value={fields.opis}
               onChange={(e) => updateField("opis", e.target.value)}
               placeholder="Opisz sytuację: skąd wziął się pomysł, na czym polega problem i jak wyobrażasz sobie codzienne funkcjonowanie tego rozwiązania..."
-              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-500 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
             />
           </div>
 
           {/* Wskazówka pomocnicza */}
-          <div className="px-4 py-2 rounded-2xl bg-[#FAF9F5] border border-black/5 flex items-center gap-3 text-xs text-stone-600 leading-relaxed">
-            <div className="w-6 h-6 rounded-lg bg-stone-900 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
+          <div className="px-4 py-2.5 rounded-2xl bg-[#FAF9F5] border border-black/5 flex items-center gap-3 text-xs text-stone-700 leading-relaxed">
+            <div className="w-6 h-6 rounded-lg bg-stone-900 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]" aria-hidden="true">
               i
             </div>
             <div>
@@ -554,12 +562,14 @@ export default function ProposePage() {
           {/* Nawigacja kroku 1 */}
           <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-end gap-3 border-t border-black/5">
             <button
+              type="button"
               onClick={() => isStep1Valid && setStep(2)}
               disabled={!isStep1Valid}
-              className="px-6 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs self-end sm:self-auto"
+              aria-label="Przejdź do kroku 2: Innowacja i odbiorcy"
+              className="min-h-[44px] px-6 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs self-end sm:self-auto"
             >
               <span>Dalej: Innowacja i odbiorcy</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -574,7 +584,7 @@ export default function ProposePage() {
             <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
               Innowacyjność i odbiorcy
             </h2>
-            <p className="text-stone-500 text-xs sm:text-sm mt-1">
+            <p className="text-stone-600 text-xs sm:text-sm mt-1">
               Wyjaśnij, co wyróżnia Twój pomysł oraz dla kogo jest on
               przeznaczony.
             </p>
@@ -583,60 +593,72 @@ export default function ProposePage() {
           {/* Na czym polega innowacyjność */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-stone-500" />
-                <span>Na czym polega innowacja? *</span>
+              <label htmlFor="field-innowacyjnosc" className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-stone-500" aria-hidden="true" />
+                <span>Na czym polega innowacja? <span className="text-rose-600" aria-label="wymagane">*</span></span>
               </label>
-              <span className="text-[11px] text-stone-400 font-mono">
+              <span id="hint-innowacja" className="text-[11px] text-stone-600 font-mono">
                 minimum 4 znaki
               </span>
             </div>
             <textarea
+              id="field-innowacyjnosc"
               rows={4}
+              required
+              aria-required="true"
+              aria-describedby="hint-innowacja"
               value={fields.innowacyjnosc}
               onChange={(e) => updateField("innowacyjnosc", e.target.value)}
               placeholder="np. Łączymy młodzież z seniorami w relacji mistrz-uczeń; wykorzystujemy nieużywaną przestrzeń w remizie; upraszczamy procedury do jednego telefonu sąsiedzkiego..."
-              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-500 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
             />
           </div>
 
           {/* Dla kogo jest ten projekt */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                <Users className="w-4 h-4 text-stone-500" />
-                <span>Dla kogo jest ten projekt? (Grupa docelowa) *</span>
+              <label htmlFor="field-odbiorcy" className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                <Users className="w-4 h-4 text-stone-500" aria-hidden="true" />
+                <span>Dla kogo jest ten projekt? (Grupa docelowa) <span className="text-rose-600" aria-label="wymagane">*</span></span>
               </label>
-              <span className="text-[11px] text-stone-400 font-mono">
+              <span id="hint-odbiorcy" className="text-[11px] text-stone-600 font-mono">
                 minimum 3 znaki
               </span>
             </div>
             <textarea
+              id="field-odbiorcy"
               rows={3}
+              required
+              aria-required="true"
+              aria-describedby="hint-odbiorcy"
               value={fields.odbiorcy}
               onChange={(e) => updateField("odbiorcy", e.target.value)}
               placeholder="np. Samotni seniorzy 60+, opiekunowie osób z niepełnosprawnościami, rodziny z małymi dziećmi z sołectwa..."
-              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-500 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
             />
           </div>
 
           {/* Nawigacja kroku 2 */}
           <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-black/5">
             <button
+              type="button"
               onClick={() => setStep(1)}
-              className="px-5 py-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
+              aria-label="Wróć do kroku 1: Tytuł i opis"
+              className="min-h-[44px] px-5 py-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
               <span>Wróć do kroku 1</span>
             </button>
 
             <button
+              type="button"
               onClick={() => isStep2Valid && setStep(3)}
               disabled={!isStep2Valid}
-              className="px-6 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+              aria-label="Przejdź do kroku 3: Kategoria i etap"
+              className="min-h-[44px] px-6 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
             >
               <span>Dalej: Kategoria i etap</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -660,23 +682,37 @@ export default function ProposePage() {
           {/* Kafelki etapu */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-stone-500" />
-              <span>Etap pomysłu *</span>
+              <Layers className="w-4 h-4 text-stone-500" aria-hidden="true" />
+              <span>Etap pomysłu <span className="text-rose-600" aria-label="wymagane">*</span></span>
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div
+              role="radiogroup"
+              aria-label="Wybór etapu rozwoju pomysłu"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1"
+            >
               {STAGE_OPTIONS.map((s) => {
                 const isSelected = fields.etap === s.value;
                 return (
                   <div
                     key={s.value}
+                    role="radio"
+                    aria-checked={isSelected}
+                    tabIndex={0}
                     onClick={() => updateField("etap", s.value)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 select-none ${
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        updateField("etap", s.value);
+                      }
+                    }}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 select-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${
                       isSelected
                         ? "border-stone-900 bg-stone-900/[0.03] ring-2 ring-stone-900/10 shadow-2xs"
                         : "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/50"
                     }`}
                   >
                     <div
+                      aria-hidden="true"
                       className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 transition-all ${
                         isSelected
                           ? "border-stone-900 bg-stone-900 text-white"
@@ -691,7 +727,7 @@ export default function ProposePage() {
                       <span className="text-xs sm:text-sm font-bold text-stone-900 block leading-tight">
                         {s.label}
                       </span>
-                      <span className="text-xs text-stone-500 mt-1 block leading-snug">
+                      <span className="text-xs text-stone-600 mt-1 block leading-snug">
                         {s.hint}
                       </span>
                     </div>
@@ -704,20 +740,27 @@ export default function ProposePage() {
           {/* Wybór kategorii */}
           <div className="space-y-2 pt-2">
             <label className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-stone-500" />
+              <Sliders className="w-4 h-4 text-stone-500" aria-hidden="true" />
               <span>Kategoria projektu</span>
             </label>
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div
+              role="radiogroup"
+              aria-label="Wybór kategorii projektu"
+              className="flex flex-wrap gap-2 pt-1"
+            >
               {CATEGORIES.map((cat) => {
                 const isSelected = category === cat;
                 return (
                   <button
                     key={cat}
                     type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    aria-label={`Kategoria: ${cat}`}
                     onClick={() => setCategory(cat)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    className={`min-h-[36px] px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-stone-900 text-white shadow-2xs"
+                        ? "bg-stone-900 text-white font-bold shadow-2xs"
                         : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                     }`}
                   >
@@ -731,20 +774,24 @@ export default function ProposePage() {
           {/* Nawigacja kroku 3 */}
           <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-black/5">
             <button
+              type="button"
               onClick={() => setStep(2)}
-              className="px-5 py-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
+              aria-label="Wróć do kroku 2: Innowacja i odbiorcy"
+              className="min-h-[44px] px-5 py-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
               <span>Wróć do kroku 2</span>
             </button>
 
             <button
+              type="button"
               onClick={() => isStep3Valid && setStep(4)}
               disabled={!isStep3Valid}
-              className="px-6 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+              aria-label="Przejdź do kroku 4: Podsumowanie i opcje"
+              className="min-h-[44px] px-6 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
             >
               <span>Dalej: Podsumowanie i opcje</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>

@@ -141,14 +141,17 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={`Powiadomienia i wiadomości${unreadCount > 0 ? `, ${unreadCount} nieprzeczytanych` : ''}`}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
         title="Powiadomienia i wiadomości"
-        className={`relative p-2 rounded-xl border text-stone-700 transition-all cursor-pointer ${
+        className={`min-h-[36px] min-w-[36px] flex items-center justify-center relative p-2 rounded-xl border text-stone-700 transition-all cursor-pointer ${
           isOpen
             ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
             : 'bg-white border-stone-200 hover:bg-stone-50'
         }`}
       >
-        <Bell className="w-4 h-4" />
+        <Bell className="w-4 h-4" aria-hidden="true" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-extrabold text-white shadow-xs animate-in zoom-in">
             {unreadCount}
@@ -158,7 +161,11 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
 
       {/* Dropdown Powiadomień */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-black/10 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div
+          role="dialog"
+          aria-label="Powiadomienia"
+          className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-black/10 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+        >
           {/* Header */}
           <div className="p-3.5 border-b border-black/5 bg-[#FAF9F5] flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -174,44 +181,65 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-[11px] font-semibold text-stone-600 hover:text-stone-900 flex items-center gap-1 transition-colors cursor-pointer"
+                aria-label="Oznacz wszystkie powiadomienia jako przeczytane"
+                className="min-h-[28px] text-[11px] font-semibold text-stone-700 hover:text-stone-900 flex items-center gap-1 transition-colors cursor-pointer"
               >
-                <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <CheckCheck className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
                 <span>Przeczytane</span>
               </button>
             )}
           </div>
 
           {/* Filtry zakładek */}
-          <div className="flex items-center gap-1 p-1.5 border-b border-black/5 bg-stone-50/70 text-[11px] font-medium text-stone-600 overflow-x-auto">
+          <div
+            role="tablist"
+            aria-label="Kategorie powiadomień"
+            className="flex items-center gap-1 p-1.5 border-b border-black/5 bg-stone-50/70 text-[11px] font-medium text-stone-600 overflow-x-auto"
+          >
             <button
+              type="button"
+              role="tab"
+              aria-selected={filter === 'all'}
+              aria-label="Wszystkie powiadomienia"
               onClick={() => setFilter('all')}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                filter === 'all' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
+              className={`min-h-[28px] px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
+                filter === 'all' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900 text-stone-700'
               }`}
             >
               Wszystkie
             </button>
             <button
+              type="button"
+              role="tab"
+              aria-selected={filter === 'grant'}
+              aria-label="Nabory grantowe"
               onClick={() => setFilter('grant')}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                filter === 'grant' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
+              className={`min-h-[28px] px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
+                filter === 'grant' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900 text-stone-700'
               }`}
             >
               Nabory grantowe
             </button>
             <button
+              type="button"
+              role="tab"
+              aria-selected={filter === 'chat'}
+              aria-label="Wiadomości"
               onClick={() => setFilter('chat')}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                filter === 'chat' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
+              className={`min-h-[28px] px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
+                filter === 'chat' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900 text-stone-700'
               }`}
             >
               Wiadomości
             </button>
             <button
+              type="button"
+              role="tab"
+              aria-selected={filter === 'partnership'}
+              aria-label="Partnerstwa"
               onClick={() => setFilter('partnership')}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                filter === 'partnership' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
+              className={`min-h-[28px] px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
+                filter === 'partnership' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900 text-stone-700'
               }`}
             >
               Partnerstwa

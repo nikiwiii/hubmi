@@ -242,7 +242,7 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200/70">
         <div>
           <span className="text-xs font-bold text-stone-900 block">{label}</span>
-          <span className="text-[11px] text-stone-500">{sublabel}</span>
+          <span className="text-[11px] text-stone-600 font-medium">{sublabel}</span>
         </div>
         <div className="flex items-center gap-1.5">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -250,10 +250,12 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
               key={star}
               type="button"
               onClick={() => onChange(star)}
-              className="p-1 cursor-pointer transition-transform hover:scale-125 focus:outline-none"
+              aria-label={`${label}: ${star} z 5 gwiazdek`}
+              className="min-h-[32px] min-w-[32px] flex items-center justify-center p-1 rounded-lg cursor-pointer transition-transform hover:scale-115 focus:outline-none"
               title={`${star} na 5`}
             >
               <Star
+                aria-hidden="true"
                 className={`w-5 h-5 ${star <= value
                     ? "text-amber-500 fill-amber-400"
                     : "text-stone-300 hover:text-amber-300"
@@ -394,42 +396,55 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
       </div>
 
       {/* Tabs navigation */}
-      <div className="flex items-center gap-2 px-6 pt-5 pb-2 border-b border-stone-100 overflow-x-auto">
+      <div
+        role="tablist"
+        aria-label="Zakładki panelu testowania innowacji"
+        className="flex items-center gap-2 px-6 pt-5 pb-2 border-b border-stone-100 overflow-x-auto"
+      >
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "reviews"}
           onClick={() => setActiveTab("reviews")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "reviews"
+          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "reviews"
               ? "bg-stone-900 text-white shadow-2xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
             }`}
         >
-          <ShieldCheck className="w-4 h-4" />
+          <ShieldCheck className="w-4 h-4" aria-hidden="true" />
           <span>Opinie i Usprawnienia</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 ml-1">
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 ml-1 font-mono">
             {summary?.feedback_list.length || 0}
           </span>
         </button>
 
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "add_review"}
           onClick={() => setActiveTab("add_review")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "add_review"
+          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "add_review"
               ? "bg-amber-600 text-white shadow-2xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
             }`}
         >
-          <Star className="w-4 h-4" />
+          <Star className="w-4 h-4" aria-hidden="true" />
           <span>Wystaw Ocenę & Feedback</span>
         </button>
 
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "comments"}
           onClick={() => setActiveTab("comments")}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "comments"
+          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "comments"
               ? "bg-stone-900 text-white shadow-2xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
             }`}
         >
-          <MessageSquare className="w-4 h-4" />
+          <MessageSquare className="w-4 h-4" aria-hidden="true" />
           <span>Dyskusja Testerów</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 ml-1">
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 ml-1 font-mono">
             {summary?.comments_list.length || 0}
           </span>
         </button>
@@ -839,9 +854,10 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setIsApplyModalOpen(false)}
-                className="p-1 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 cursor-pointer"
+                aria-label="Zamknij formularz zgłoszenia"
+                className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-xl text-stone-500 hover:text-stone-900 hover:bg-stone-100 cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
 

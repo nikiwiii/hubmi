@@ -52,9 +52,9 @@ export default function KnowledgePage() {
         <div>
           <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
             <span className="block text-stone-900">Katalog Badań</span>
-            <span className="block text-stone-300">Społecznych</span>
+            <span className="block text-stone-600">Społecznych</span>
           </div>
-          <p className="mt-2.5 text-stone-500 text-xs sm:text-sm font-medium max-w-xl">
+          <p className="mt-2.5 text-stone-600 text-xs sm:text-sm font-medium max-w-xl">
             Diagnozy ROPS Kraków – interaktywne kartogramy i szeregi czasowe 2014–2024 dla 22 powiatów.
           </p>
         </div>
@@ -63,21 +63,26 @@ export default function KnowledgePage() {
       {/* Input wyszukiwania wektorowego (stylizowany spójnie z resztą aplikacji) */}
       <div className="bg-white rounded-2xl border border-black/10 px-4 focus-within:ring-2 focus-within:ring-stone-900/10 shadow-2xs">
         <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-stone-400 shrink-0" />
+          <label htmlFor="knowledge-search-input" className="sr-only">
+            Wyszukaj w raportach i diagnozach społecznych
+          </label>
+          <Search className="w-4 h-4 text-stone-500 shrink-0" aria-hidden="true" />
           <input
+            id="knowledge-search-input"
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Wyszukaj w raportach i diagnozach społecznych (np. seniorzy, rynek pracy, ubóstwo)..."
-            className="flex-1 py-3.5 bg-transparent text-base text-stone-900 placeholder:text-stone-400 focus:outline-none"
+            className="flex-1 py-3.5 bg-transparent text-base text-stone-900 placeholder:text-stone-500 focus:outline-none"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+              aria-label="Wyczyść pole wyszukiwania"
+              className="p-1 min-h-[32px] min-w-[32px] flex items-center justify-center text-stone-500 hover:text-stone-900 cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -86,7 +91,7 @@ export default function KnowledgePage() {
       {/* Tradycyjny katalog raportów i kartogramów */}
       <div className="space-y-6 animate-in fade-in duration-200">
         {filteredResearches.length === 0 ? (
-          <p className="text-sm text-stone-500 py-12 text-center bg-stone-50 rounded-2xl border border-stone-100">
+          <p className="text-sm text-stone-600 py-12 text-center bg-stone-50 rounded-2xl border border-stone-100">
             Nie znaleziono badań odpowiadających frazie &bdquo;{searchQuery}&rdquo;.
           </p>
         ) : (
@@ -98,8 +103,17 @@ export default function KnowledgePage() {
               return (
                 <div
                   key={research.id}
+                  role="article"
+                  tabIndex={0}
+                  aria-label={`Raport z badań społecznych: ${research.titlePl}`}
                   onClick={() => router.push(`/knowledge/${research.id}`)}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-black/4 select-none min-h-70"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/knowledge/${research.id}`);
+                    }
+                  }}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-black/4 select-none min-h-70 focus-visible:ring-2 focus-visible:ring-stone-900"
                   style={{
                     background: `linear-gradient(145deg, ${research.theme.pastelBg} 0%, ${research.theme.colorScale[0]} 100%)`,
                   }}

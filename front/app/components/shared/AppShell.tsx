@@ -80,6 +80,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   // Użytkownik jest zalogowany – pełny dostęp do aplikacji
   return (
     <>
+      <a href="#main-content" className="skip-to-content">
+        Przejdź do treści głównej
+      </a>
       <Navbar
         currentUser={currentUser}
         isLargeFont={isLargeFont}
@@ -88,7 +91,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         onNavigate={navigate}
       />
       <main
-        className={`flex-1 ${
+        id="main-content"
+        tabIndex={-1}
+        className={`flex-1 outline-none ${
           pathname === "/matching"
             ? "pb-2 sm:pb-3 flex flex-col min-h-0"
             : "pb-20 md:pb-8"

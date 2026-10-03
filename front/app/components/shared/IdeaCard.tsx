@@ -94,8 +94,17 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
   return (
     <div
+      role="article"
+      tabIndex={0}
       onClick={onClick}
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer ${styles.bg} min-h-[290px] border border-black/[0.04] select-none`}
+      onKeyDown={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && onClick) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      aria-label={`Innowacja: ${idea.title}, Kategoria: ${idea.category}`}
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${styles.bg} min-h-[290px] border border-black/[0.04] select-none`}
     >
       {/* Top Header */}
       <div className="z-10 flex flex-col space-y-1.5">
@@ -109,28 +118,28 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           <div className="flex flex-wrap items-center gap-1">
             {idea.status === "pending" && (
               <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full shadow-2xs">
-                <Clock className="w-3 h-3" />
+                <Clock className="w-3 h-3" aria-hidden="true" />
                 <span>Oczekuje na akceptację</span>
               </span>
             )}
 
             {idea.lookingForPartner && (
               <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-100/90 text-amber-900 border border-amber-300/60 px-2 py-0.5 rounded-full shadow-2xs">
-                <Handshake className="w-3 h-3 text-amber-700" />
+                <Handshake className="w-3 h-3 text-amber-700" aria-hidden="true" />
                 <span>Szuka partnera</span>
               </span>
             )}
 
             {idea.assignedExpertName && (
               <span className="flex items-center gap-1 text-[10px] font-bold bg-stone-900 text-white px-2 py-0.5 rounded-full shadow-2xs">
-                <GraduationCap className="w-3 h-3 text-[#EFE5C6]" />
+                <GraduationCap className="w-3 h-3 text-[#EFE5C6]" aria-hidden="true" />
                 <span>Mentor: {idea.assignedExpertName}</span>
               </span>
             )}
 
             {isTester && (
               <span className="flex items-center gap-1 text-[11px] font-bold bg-white/90 text-stone-800 px-2 py-0.5 rounded-full shadow-2xs">
-                <Check className="w-3 h-3 text-emerald-600" />
+                <Check className="w-3 h-3 text-emerald-600" aria-hidden="true" />
                 Tester
               </span>
             )}
@@ -148,7 +157,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
         </p>
 
         {idea.lookingForPartner && idea.partnerTypes && idea.partnerTypes.length > 0 && (
-          <p className="text-[10px] text-stone-600 font-semibold pt-0.5">
+          <p className="text-[10px] text-stone-700 font-semibold pt-0.5">
             Poszukiwany partner: <em>{idea.partnerTypes.join(", ")}</em>
           </p>
         )}
@@ -160,7 +169,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
           <img
             src={idea.visualMockupUrl}
-            alt={`Wizualizacja: ${idea.title}`}
+            alt={`Wizualizacja prototypu innowacji: ${idea.title}`}
             className="w-full aspect-4/3 object-cover transition-transform duration-300 group-hover:scale-103"
           />
         </div>
@@ -182,11 +191,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {/* Przycisk Zgłoś partnerstwo */}
           {idea.lookingForPartner && onPartner && (
             <button
+              type="button"
               onClick={onPartner}
+              aria-label={`Zgłoś chęć partnerstwa dla innowacji: ${idea.title}`}
               title="Zgłoś chęć partnerstwa jako NGO, samorząd lub firma"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-200/80 hover:bg-amber-300 text-amber-950 transition-all cursor-pointer border border-amber-300/60"
+              className="min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-200/80 hover:bg-amber-300 text-amber-950 transition-all cursor-pointer border border-amber-300/60"
             >
-              <Handshake className="w-3.5 h-3.5 text-amber-900" />
+              <Handshake className="w-3.5 h-3.5 text-amber-900" aria-hidden="true" />
               <span>Partneruj</span>
             </button>
           )}
@@ -194,37 +205,45 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {/* Przycisk Przypisz mentora */}
           {isAdminOrExpert && onAssignExpert && !idea.assignedExpertName && (
             <button
+              type="button"
               onClick={onAssignExpert}
+              aria-label={`Przypisz mentora ROPS do innowacji: ${idea.title}`}
               title="Przypisz mentora ROPS Kraków"
-              className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-white/80 hover:bg-white text-stone-800 transition-all cursor-pointer border border-black/5"
+              className="min-h-[28px] flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-white/80 hover:bg-white text-stone-800 transition-all cursor-pointer border border-black/5"
             >
-              <GraduationCap className="w-3.5 h-3.5 text-stone-700" />
+              <GraduationCap className="w-3.5 h-3.5 text-stone-700" aria-hidden="true" />
               <span>+ Mentor</span>
             </button>
           )}
 
           {onChat && (
             <button
+              type="button"
               onClick={onChat}
+              aria-label={`Otwórz czat z autorem innowacji: ${idea.title}`}
               title="Czat z autorem"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/70 hover:bg-white text-stone-800 transition-all cursor-pointer"
+              className="min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/70 hover:bg-white text-stone-800 transition-all cursor-pointer"
             >
-              <MessageSquare className="w-3.5 h-3.5" />
+              <MessageSquare className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Czat</span>
             </button>
           )}
 
           {onVote && (
             <button
+              type="button"
               onClick={onVote}
+              aria-label={`Polub pomysł: ${idea.title}, aktualnie polubień: ${idea.likes}`}
+              aria-pressed={idea.userVote === "like"}
               title="Polub"
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                 idea.userVote === "like"
                   ? "bg-stone-900 text-white shadow-xs"
                   : "bg-white/70 hover:bg-white text-stone-800"
               }`}
             >
               <ThumbsUp
+                aria-hidden="true"
                 className={`w-3.5 h-3.5 ${idea.userVote === "like" ? "fill-white" : ""}`}
               />
               <span>{idea.likes}</span>
@@ -233,15 +252,22 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
           {onToggleTesting && (
             <button
+              type="button"
               onClick={onToggleTesting}
+              aria-label={
+                isTester
+                  ? `Jesteś testerem innowacji: ${idea.title}. Łącznie testerów: ${idea.testersCount}. Kliknij, aby zrezygnować.`
+                  : `Dołącz jako tester do innowacji: ${idea.title}. Aktualnie testerów: ${idea.testersCount}.`
+              }
+              aria-pressed={isTester}
               title="Testerzy"
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                 isTester
                   ? "bg-emerald-700 text-white shadow-xs"
                   : "bg-white/70 hover:bg-white text-stone-800"
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
+              <Users className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{idea.testersCount}</span>
             </button>
           )}

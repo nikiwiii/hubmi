@@ -110,14 +110,14 @@ export default function TestingPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-1">
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider">
-            <FlaskConical className="w-3.5 h-3.5 text-amber-700" />
+            <FlaskConical className="w-3.5 h-3.5 text-amber-700" aria-hidden="true" />
             <span>Moduł IV Wyzwania ROPS</span>
           </div>
           <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
             <span className="block text-stone-900">Tester Innowacji</span>
-            <span className="block text-stone-300">Walidacja & Użyteczność</span>
+            <span className="block text-stone-600">Walidacja & Użyteczność</span>
           </div>
-          <p className="text-stone-500 text-xs sm:text-sm font-medium max-w-2xl pt-1">
+          <p className="text-stone-600 text-xs sm:text-sm font-medium max-w-2xl pt-1">
             Testuj prototypy w mikroskali, oceniaj dostępność dla seniorów (WCAG), przekazuj ustrukturyzowany feedback i proponuj usprawnienia przed skalowaniem rozwiązań w Małopolsce.
           </p>
         </div>
@@ -125,7 +125,7 @@ export default function TestingPage() {
         {/* Global Statistics Badges */}
         <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto shrink-0">
           <div className="p-3.5 rounded-2xl bg-white border border-stone-200/80 shadow-2xs text-center min-w-[110px]">
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+            <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider block">
               Projekty w testach
             </span>
             <span className="text-xl font-bold text-stone-900">
@@ -134,7 +134,7 @@ export default function TestingPage() {
           </div>
 
           <div className="p-3.5 rounded-2xl bg-white border border-stone-200/80 shadow-2xs text-center min-w-[110px]">
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+            <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider block">
               Zgłoszenia testerów
             </span>
             <span className="text-xl font-bold text-emerald-700">
@@ -143,7 +143,7 @@ export default function TestingPage() {
           </div>
 
           <div className="p-3.5 rounded-2xl bg-white border border-stone-200/80 shadow-2xs text-center min-w-[110px]">
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+            <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider block">
               Moje testy
             </span>
             <span className="text-xl font-bold text-amber-600">
@@ -157,35 +157,49 @@ export default function TestingPage() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2 bg-white rounded-2xl border border-stone-200 shadow-2xs">
         {/* Search input */}
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <label htmlFor="testing-search-input" className="sr-only">
+            Szukaj innowacji do przetestowania
+          </label>
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" aria-hidden="true" />
           <input
+            id="testing-search-input"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Szukaj innowacji do przetestowania (np. seniorzy, dostępność, ogród)..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs text-stone-900 placeholder:text-stone-500 focus:outline-none"
           />
         </div>
 
         {/* Filter buttons */}
-        <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+        <div
+          role="tablist"
+          aria-label="Filtry projektów do testowania"
+          className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0"
+        >
           <button
+            type="button"
+            role="tab"
+            aria-selected={selectedFilter === "all"}
             onClick={() => setSelectedFilter("all")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`min-h-[38px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               selectedFilter === "all"
                 ? "bg-stone-900 text-white shadow-2xs"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
             }`}
           >
             Wszystkie ({ideas.length})
           </button>
 
           <button
+            type="button"
+            role="tab"
+            aria-selected={selectedFilter === "testing_only"}
             onClick={() => setSelectedFilter("testing_only")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`min-h-[38px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               selectedFilter === "testing_only"
                 ? "bg-stone-900 text-white shadow-2xs"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
             }`}
           >
             Faza testowa ({ideas.filter((i) => i.status === "testing" || i.testersCount > 0).length})
@@ -193,11 +207,14 @@ export default function TestingPage() {
 
           {currentUser && (
             <button
+              type="button"
+              role="tab"
+              aria-selected={selectedFilter === "my_tests"}
               onClick={() => setSelectedFilter("my_tests")}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+              className={`min-h-[38px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 selectedFilter === "my_tests"
                   ? "bg-stone-900 text-white shadow-2xs"
-                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                  : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
               }`}
             >
               Moje testy ({myTestingCount})
