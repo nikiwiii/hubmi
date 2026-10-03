@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Idea, getCategoryThemeAndShape } from "../../lib/types";
 import { GeometricIllustration } from "../../components/shared/GeometricIllustration";
@@ -16,6 +16,11 @@ import {
   Check,
   ArrowLeft,
   RefreshCw,
+  Maximize2,
+  X,
+  ExternalLink,
+  Sparkles,
+  Eye,
 } from "lucide-react";
 
 export default function DiscoverIdeaDetailPage() {
@@ -31,6 +36,26 @@ export default function DiscoverIdeaDetailPage() {
     openChatWithAuthor,
     isLoadingIdeas,
   } = useApp();
+
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsImageModalOpen(false);
+      }
+    };
+    if (isImageModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isImageModalOpen]);
 
   if (isLoadingIdeas) {
     return (
@@ -145,13 +170,26 @@ export default function DiscoverIdeaDetailPage() {
           </div>
 
           {currentIdea.visualMockupUrl ? (
-            <div className="shrink-0 w-full md:w-80 overflow-hidden rounded-2xl border border-white/50 bg-white/40">
-              {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
-              <img
-                src={currentIdea.visualMockupUrl}
-                alt={`Wizualizacja: ${currentIdea.title}`}
-                className="w-full aspect-[4/3] object-cover"
-              />
+            <div className="space-y-2 shrink-0 w-full md:w-96">
+              <div
+                onClick={() => setIsImageModalOpen(true)}
+                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/60 bg-white/40 shadow-xs transition-all duration-300 hover:shadow-md hover:scale-[1.01]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
+                <img
+                  src={currentIdea.visualMockupUrl}
+                  alt={`Wizualizacja: ${currentIdea.title}`}
+                  className="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+
+                {/* Hover overlay with button */}
+                <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/95 text-stone-900 text-xs font-semibold shadow-md">
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>Powiększ zdjęcie</span>
+                  </span>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="shrink-0 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xs rounded-2xl border border-white/50">
@@ -167,11 +205,10 @@ export default function DiscoverIdeaDetailPage() {
             <button
               onClick={() => vote(currentIdea.id, "like")}
               title="Polub"
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                currentIdea.userVote === "like"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "like"
                   ? "bg-stone-900 text-white"
                   : "bg-stone-100 hover:bg-stone-200 text-stone-800"
-              }`}
+                }`}
             >
               <ThumbsUp
                 className={`w-4 h-4 ${currentIdea.userVote === "like" ? "fill-white" : ""}`}
@@ -182,11 +219,10 @@ export default function DiscoverIdeaDetailPage() {
             <button
               onClick={() => vote(currentIdea.id, "dislike")}
               title="Nie podoba mi się"
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                currentIdea.userVote === "dislike"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "dislike"
                   ? "bg-stone-800 text-white"
                   : "bg-stone-100 hover:bg-stone-200 text-stone-600"
-              }`}
+                }`}
             >
               <ThumbsDown
                 className={`w-4 h-4 ${currentIdea.userVote === "dislike" ? "fill-white" : ""}`}
@@ -207,11 +243,10 @@ export default function DiscoverIdeaDetailPage() {
 
             <button
               onClick={() => toggleTesting(currentIdea.id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                isTester
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${isTester
                   ? "bg-emerald-700 text-white"
                   : "bg-stone-900 hover:bg-stone-800 text-white"
-              }`}
+                }`}
             >
               {isTester ? (
                 <>
@@ -268,8 +303,124 @@ export default function DiscoverIdeaDetailPage() {
               </div>
             </div>
           )}
+
+          {/* Galeria / Zdjęcie projektu */}
+          {currentIdea.visualMockupUrl && (
+            <div className="pt-6 border-t border-stone-100 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Wizualizacja pomysłu (AI)</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsImageModalOpen(true)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-stone-700 hover:text-stone-950 cursor-pointer underline"
+                >
+                  <Maximize2 className="w-3 h-3" />
+                  <span>Otwórz w pełnym oknie</span>
+                </button>
+              </div>
+
+              <div
+                onClick={() => setIsImageModalOpen(true)}
+                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 max-w-xl shadow-2xs hover:shadow-md transition-all"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentIdea.visualMockupUrl}
+                  alt={`Wizualizacja: ${currentIdea.title}`}
+                  className="w-full max-h-[420px] object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-stone-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/95 text-stone-900 text-xs font-semibold shadow-md">
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>Kliknij, aby powiększyć zdjęcie</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Lightbox / Pełny podgląd zdjęcia */}
+      {isImageModalOpen && currentIdea.visualMockupUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsImageModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-stone-950/85 backdrop-blur-md animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-4xl w-full max-h-[90vh] bg-stone-900 rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-stone-900/90 backdrop-blur-md">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white leading-tight">
+                    {currentIdea.title}
+                  </h3>
+                  <p className="text-[11px] text-stone-400">
+                    Wizualizacja AI • {currentIdea.category}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={currentIdea.visualMockupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-stone-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors text-xs inline-flex items-center gap-1.5 font-medium"
+                  title="Otwórz oryginalny plik w nowej karcie"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span className="hidden sm:inline">Nowe okno</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setIsImageModalOpen(false)}
+                  className="p-2 text-stone-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                  title="Zamknij (Esc)"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Image Body */}
+            <div className="flex-1 overflow-auto flex items-center justify-center p-2 sm:p-6 bg-stone-950/60 min-h-[300px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={currentIdea.visualMockupUrl}
+                alt={currentIdea.title}
+                className="max-h-[72vh] w-auto max-w-full rounded-2xl object-contain shadow-lg"
+              />
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3.5 bg-stone-900 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-stone-400">
+              <span className="italic">
+                Autor pomysłu: <strong className="text-stone-200">{currentIdea.authorName}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsImageModalOpen(false)}
+                className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer self-end sm:self-auto"
+              >
+                Zamknij podgląd
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
