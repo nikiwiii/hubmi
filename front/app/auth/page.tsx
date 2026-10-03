@@ -295,12 +295,6 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {shaHashPreview && (
-            <div className="p-2.5 bg-stone-50 rounded-xl text-[10px] font-mono text-stone-500 break-all border border-stone-200">
-              SHA-256: {shaHashPreview.slice(0, 28)}...
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={isSubmitting}

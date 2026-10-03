@@ -3,12 +3,13 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaCard } from "../components/shared/IdeaCard";
-import { Lightbulb, Users, Plus, RefreshCw } from "lucide-react";
+import { Lightbulb, Users, Plus, RefreshCw, LogOut } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 export default function DashboardPage() {
   const {
     currentUser,
+    setCurrentUser,
     ideas,
     selectIdea,
     openChatWithAuthor,
@@ -21,9 +22,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!isLoadingUser && !currentUser) {
-      router.push('/auth');
+      router.push("/auth");
     }
   }, [currentUser, isLoadingUser, router]);
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    router.push("/auth");
+  };
 
   if (isLoadingUser) {
     return (
@@ -34,16 +40,11 @@ export default function DashboardPage() {
     );
   }
 
-  const user = currentUser || {
-    id: "user-anna-2",
-    name: "Anna Kowalska",
-    email: "anna.kowalska@hubmi.pl",
-    role: "creator" as const,
-    avatarBg: "#D2D8EE",
-    createdAt: "2026-02-10",
-    status: "active" as const,
-    bio: "Twórczyni projektów.",
-  };
+  if (!currentUser) {
+    return null;
+  }
+
+  const user = currentUser;
 
   const myCreatedIdeas = ideas.filter(
     (i) =>
@@ -157,6 +158,17 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Logout Action Bar */}
+      <div className="pt-6 border-t border-stone-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/70 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Wyloguj się</span>
+        </button>
       </div>
     </div>
   );

@@ -100,6 +100,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleVote = async (id: string, type: 'like' | 'dislike') => {
+    if (!currentUser) {
+      router.push('/auth');
+      return;
+    }
+
     // Optymistyczna zmiana lokalna
     const updated = voteIdea(id, type);
     setIdeas(updated);
@@ -125,7 +130,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleToggleTesting = async (id: string) => {
-    const email = currentUser?.email || 'gosc@hubmi.pl';
+    if (!currentUser) {
+      router.push('/auth');
+      return;
+    }
+
+    const email = currentUser.email;
     const { ideas: updated } = toggleTestingParticipation(id, email);
     setIdeas(updated);
 

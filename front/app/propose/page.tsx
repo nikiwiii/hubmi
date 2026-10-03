@@ -140,13 +140,9 @@ export default function ProposePage() {
 
   // Step 3: Publish idea
   const handlePublish = () => {
-    if (!generatedConcept) return;
+    if (!generatedConcept || !currentUser) return;
 
-    const author = currentUser || {
-      id: "user-anna-2",
-      name: "Anna Kowalska",
-      email: "anna.kowalska@hubmi.pl",
-    };
+    const author = currentUser;
 
     addIdea({
       title: generatedConcept.title,
