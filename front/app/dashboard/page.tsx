@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaCard } from "../components/shared/IdeaCard";
-import { Lightbulb, Users, Plus, RefreshCw, LogOut } from "lucide-react";
+import { Lightbulb, Users, Plus, RefreshCw, LogOut, Shield } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 export default function DashboardPage() {
@@ -80,7 +80,18 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {user.role === "admin" && (
+            <button
+              onClick={() => navigate("admin")}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#EFE5C6] hover:bg-[#E7DAC0] text-stone-900 border border-stone-300/80 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+              title="Przejdź do panelu administratora"
+            >
+              <Shield className="w-3.5 h-3.5 text-stone-800" />
+              <span>Panel Admina</span>
+            </button>
+          )}
+
           <button
             onClick={() => navigate("propose")}
             className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer"

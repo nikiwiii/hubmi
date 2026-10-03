@@ -7,7 +7,6 @@ import {
   Compass,
   PlusCircle,
   MessageCircle,
-  Shield,
   User as UserIcon,
   LogIn,
   Type,
@@ -150,19 +149,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Czat
             </button>
-            {isAdmin && (
-              <button
-                onClick={() => navigateTo("admin")}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  activeScreen === "admin"
-                    ? "bg-stone-900 text-white"
-                    : "bg-[#EFE5C6] text-stone-800 hover:bg-[#E7DAC0]"
-                }`}
-              >
-                <Shield className="w-3.5 h-3.5" />
-                Admin
-              </button>
-            )}
           </nav>
 
           {/* Right Controls: Notifications, Font Size Accessibility, User Profile */}
@@ -271,20 +257,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <BookOpen className="w-5 h-5" />
             <span className="text-[10px]">Raporty</span>
           </button>
-
-          {isAdmin && (
-            <button
-              onClick={() => navigateTo("admin")}
-              className={`flex flex-col items-center gap-0.5 py-1 px-1.5 transition-all cursor-pointer ${
-                activeScreen === "admin"
-                  ? "text-stone-900 font-bold"
-                  : "text-stone-400"
-              }`}
-            >
-              <Shield className="w-5 h-5" />
-              <span className="text-[10px]">Admin</span>
-            </button>
-          )}
 
           <button
             onClick={() => navigateTo("propose")}
