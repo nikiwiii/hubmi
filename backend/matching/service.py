@@ -82,21 +82,27 @@ class MatchingService:
 
         for item in all_innovations:
             emb = item.get("embedding")
+            if isinstance(emb, str):
+                import json
+                try:
+                    emb = json.loads(emb)
+                    item["embedding"] = emb
+                except Exception:
+                    emb = None
             if not emb:
-                text = f"{item.get('title', '')}. Problem: {item.get('addressed_problems', '')}. Opis: {item.get('description', '')}"
+                text = f"{item.get('title', '')}. Problem: {item.get('addressed_problems', item.get('addresed_problems', ''))}. Opis: {item.get('description', '')}"
                 emb = compute_embedding(text)
                 item["embedding"] = emb
             
             vec_sim = cosine_similarity(query_vector, emb)
-            doc_text = f"{item.get('title', '')} {item.get('addressed_problems', '')} {item.get('description', '')} {item.get('funding_info', '')} {item.get('target_group', '')}"
+            doc_text = f"{item.get('title', '')} {item.get('addressed_problems', item.get('addresed_problems', ''))} {item.get('description', '')} {item.get('funding_info', '')} {item.get('target_group', '')} {item.get('beneficiaries', item.get('beneficiares', ''))}"
             lex_score, matched_tokens = compute_lexical_overlap(query, doc_text)
 
             # Połączenie semantyki i dopasowania leksykalnego (Hybrid Search)
             if lex_score > 0:
                 final_sim = 0.5 * vec_sim + 0.5 * lex_score
             else:
-                # Jeśli brak jakichkolwiek wspólnych słów kluczowych, obniżamy score
-                final_sim = vec_sim * 0.4
+                final_sim = vec_sim * 0.5
 
             scored_innovations.append((final_sim, vec_sim, lex_score, matched_tokens, item))
 
@@ -134,8 +140,8 @@ class MatchingService:
         # ---------------------------------------------------------
         t0 = time.perf_counter()
         is_off_topic = cls._is_obviously_off_topic(query)
-        # Projekt nie istnieje w bazie, jeśli similarity < próg lub brak słów kluczowych
-        is_not_found = (top_similarity < SIMILARITY_THRESHOLD) or (len(top_matched_tokens) == 0) or not scored_innovations
+        # Projekt nie istnieje w bazie, jeśli similarity < próg
+        is_not_found = (top_similarity < SIMILARITY_THRESHOLD) or not scored_innovations
 
         if is_off_topic or is_not_found:
             guardrail_type = "BLOCKED_OFF_TOPIC" if is_off_topic else "BLOCKED_NOT_FOUND"

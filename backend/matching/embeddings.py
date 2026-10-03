@@ -2,7 +2,7 @@ import math
 import logging
 import re
 import unicodedata
-from typing import List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple, Any
 import numpy as np
 
 logger = logging.getLogger("hubmi.embeddings")
@@ -77,8 +77,20 @@ def compute_embedding(text: str) -> List[float]:
         vec = vec / norm
     return vec.tolist()
 
-def cosine_similarity(v1: List[float], v2: List[float]) -> float:
+def cosine_similarity(v1: Any, v2: Any) -> float:
     """Oblicza podobieństwo cosinusowe pomiędzy dwoma wektorami."""
+    if isinstance(v1, str):
+        try:
+            import json
+            v1 = json.loads(v1)
+        except Exception:
+            return 0.0
+    if isinstance(v2, str):
+        try:
+            import json
+            v2 = json.loads(v2)
+        except Exception:
+            return 0.0
     if not v1 or not v2 or len(v1) != len(v2):
         return 0.0
     a = np.array(v1, dtype=float)

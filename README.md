@@ -93,16 +93,42 @@ Skrypt utworzy:
 
 ---
 
-## 💻 Uruchomienie
+## 💻 Uruchomienie (Backend + Frontend)
 
+### Sposób 1: Jednym kliknięciem / skryptem
+W głównym katalogu projektu uruchom:
+```powershell
+.\start_all.ps1
+```
+lub w wierszu poleceń (cmd):
+```cmd
+start.bat
+```
+Skrypt automatycznie uruchomi backend FastAPI (port 8000) oraz frontend Next.js (port 3000) w oddzielnych oknach terminala.
+
+---
+
+### Sposób 2: Ręczne uruchomienie w dwóch terminalach
+
+#### Terminal 1 – Backend (FastAPI):
 ```powershell
 cd c:\Users\fabia\hubmi\backend
-python main.py
+python -m uvicorn main:app --reload --port 8000
 ```
-lub:
-```powershell
-uvicorn main:app --reload
-```
+- API & Swagger Docs: 👉 **`http://127.0.0.1:8000/docs`**
 
-Swagger UI i testowanie endpointów:
-👉 **`http://127.0.0.1:8000/docs`**
+#### Terminal 2 – Frontend (Next.js):
+```powershell
+cd c:\Users\fabia\hubmi\front
+npm run dev
+```
+- Interfejs użytkownika: 👉 **`http://localhost:3000`**
+
+---
+
+## 🔗 Integracja Frontend <-> Backend
+- **Plik API:** [front/app/lib/api.ts](file:///c:/Users/fabia/hubmi/front/app/lib/api.ts) – scentralizowana obsługa żądań HTTP z obsługą autoryzacji Bearer JWT i automatycznym fallbackiem.
+- **Logowanie i rejestracja:** [AuthScreen.tsx](file:///c:/Users/fabia/hubmi/front/app/components/AuthScreen.tsx) łączy się z `/api/login/user`, `/api/login/admin` i `/api/login/register`.
+- **Posty i reakcje:** [page.tsx](file:///c:/Users/fabia/hubmi/front/app/page.tsx) oraz [BrowseIdeasScreen.tsx](file:///c:/Users/fabia/hubmi/front/app/components/BrowseIdeasScreen.tsx) synchronizują reakcje (`like`, `dislike`, `volunteer`) z `/api/ideas`.
+- **Komunikator z ekspertami ROPS:** [ChatScreen.tsx](file:///c:/Users/fabia/hubmi/front/app/components/ChatScreen.tsx) obsługuje wątki, wysyłanie wiadomości oraz **polling co 3 sekundy** z `/api/chat`.
+- **Chatbot Doradca RAG:** [RagChatSection.tsx](file:///c:/Users/fabia/hubmi/front/app/components/RagChatSection.tsx) w Zasobniku Wiedzy ([KnowledgeHubScreen.tsx](file:///c:/Users/fabia/hubmi/front/app/components/KnowledgeHubScreen.tsx)) pozwala zadawać pytania, wyszukuje innowacje wektorowo, wyświetla najlepsze dopasowanie, alternatywy (do 5%), wyjaśnialność (explainability) i tracing krok po kroku.

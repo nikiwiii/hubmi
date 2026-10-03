@@ -1,0 +1,407 @@
+import {
+  User,
+  Idea,
+  MatchResponse,
+  BackendConversation,
+  BackendMessage,
+  getCategoryThemeAndShape
+} from './types';
+
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+const TOKEN_KEY = 'hubmi_jwt_token_v1';
+
+export function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setAuthToken(token: string | null): void {
+  if (typeof window === 'undefined') return;
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+}
+
+function getHeaders(includeAuth = true): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (includeAuth) {
+    const token = getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+  return headers;
+}
+
+// ==========================================
+// 1. AUTH & PROFILES API (/api/login)
+// ==========================================
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  role: string;
+  user_id: string;
+  name: string;
+  email?: string;
+}
+
+export async function loginUser(email: string, password: string): Promise<User> {
+  const res = await fetch(`${API_BASE}/api/login/user`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Błąd logowania użytkownika.');
+  }
+
+  const data: LoginResponse = await res.json();
+  setAuthToken(data.access_token);
+
+  return {
+    id: data.user_id,
+    email: data.email || email,
+    name: data.name,
+    role: (data.role === 'admin' ? 'admin' : 'creator'),
+    avatarBg: '#A4B3F6',
+    createdAt: new Date().toISOString().split('T')[0],
+    status: 'active',
+  };
+}
+
+export async function loginAdmin(email: string, password: string): Promise<User> {
+  const res = await fetch(`${API_BASE}/api/login/admin`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Błąd logowania administratora.');
+  }
+
+  const data: LoginResponse = await res.json();
+  setAuthToken(data.access_token);
+
+  return {
+    id: data.user_id,
+    email: data.email || email,
+    name: data.name,
+    role: 'admin',
+    avatarBg: '#F5E85A',
+    createdAt: new Date().toISOString().split('T')[0],
+    status: 'active',
+  };
+}
+
+export async function registerUser(email: string, password: string, name: string, role: string = 'user'): Promise<User> {
+  const res = await fetch(`${API_BASE}/api/login/register`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({ email, password, full_name: name, role }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Błąd rejestracji konta.');
+  }
+
+  // After registration, log the user in to get JWT token
+  if (role === 'admin') {
+    return loginAdmin(email, password);
+  }
+  return loginUser(email, password);
+}
+
+export async function fetchCurrentProfile(): Promise<User | null> {
+  const token = getAuthToken();
+  if (!token) return null;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/login/me`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return {
+      id: data.id,
+      email: data.email,
+      name: data.full_name,
+      role: data.role === 'admin' ? 'admin' : 'creator',
+      avatarBg: data.role === 'admin' ? '#F5E85A' : '#A4B3F6',
+      createdAt: data.created_at?.split('T')[0] || '2026-03-01',
+      status: 'active',
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ==========================================
+// 2. IDEAS & REACTIONS API (/api/ideas)
+// ==========================================
+export interface BackendIdea {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  user_id: string;
+  author_name: string;
+  created_at: string;
+  likes_count: number;
+  volunteers_count: number;
+  dislikes_count: number;
+  my_reactions: string[];
+}
+
+export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
+  const { theme, shape } = getCategoryThemeAndShape(b.category || 'Społeczność');
+  return {
+    id: b.id,
+    title: b.title,
+    subtitle: b.category ? `Kategoria: ${b.category}` : 'Innowacja społeczna',
+    authorId: b.user_id,
+    authorName: b.author_name || 'Użytkownik Hubmi',
+    authorEmail: `${b.user_id}@hubmi.pl`,
+    category: b.category || 'Społeczność',
+    summary: b.description.slice(0, 140) + (b.description.length > 140 ? '...' : ''),
+    description: b.description,
+    targetAudience: 'Mieszkańcy i społeczność lokalna',
+    keyBenefits: ['Wsparcie ekspertów ROPS', 'Możliwość dofinansowania', 'Otwarte testy prototypu'],
+    likes: b.likes_count || 0,
+    dislikes: b.dislikes_count || 0,
+    userVote: b.my_reactions?.includes('like') ? 'like' : (b.my_reactions?.includes('dislike') ? 'dislike' : null),
+    testersCount: b.volunteers_count || 0,
+    testersList: b.my_reactions?.includes('volunteer') ? ['current_user'] : [],
+    colorTheme: theme,
+    geometricShape: shape,
+    status: 'active',
+    createdAt: b.created_at ? b.created_at.split('T')[0] : '2026-03-01',
+    commentsCount: 0,
+  };
+}
+
+export async function fetchIdeasFromBackend(): Promise<Idea[]> {
+  try {
+    const res = await fetch(`${API_BASE}/api/ideas/`, {
+      method: 'GET',
+      headers: getHeaders(true),
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to load ideas from backend');
+    }
+
+    const data: BackendIdea[] = await res.json();
+    return data.map(mapBackendIdeaToFrontend);
+  } catch (err) {
+    console.warn('Backend unavailable, using local ideas fallback:', err);
+    throw err;
+  }
+}
+
+export async function createIdeaOnBackend(data: {
+  title: string;
+  description: string;
+  category?: string;
+}): Promise<Idea> {
+  const res = await fetch(`${API_BASE}/api/ideas/`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Nie udało się dodać pomysłu.');
+  }
+
+  const created: BackendIdea = await res.json();
+  return mapBackendIdeaToFrontend(created);
+}
+
+export async function deleteIdeaOnBackend(ideaId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/ideas/${ideaId}`, {
+    method: 'DELETE',
+    headers: getHeaders(true),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Nie udało się usunąć pomysłu.');
+  }
+}
+
+export async function toggleIdeaReaction(
+  ideaId: string,
+  reactionType: 'like' | 'volunteer' | 'dislike'
+): Promise<{ likes: number; volunteers: number; dislikes: number; active: boolean }> {
+  const res = await fetch(`${API_BASE}/api/ideas/${ideaId}/react`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify({ reaction_type: reactionType }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Nie udało się zareagować na pomysł.');
+  }
+
+  const data = await res.json();
+  return {
+    likes: data.likes_count,
+    volunteers: data.volunteers_count,
+    dislikes: data.dislikes_count,
+    active: data.active,
+  };
+}
+
+// ==========================================
+// 3. MATCHING & RAG CHATBOT API (/api/matching)
+// ==========================================
+export async function sendMatchingChat(
+  message: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }> = []
+): Promise<MatchResponse> {
+  const res = await fetch(`${API_BASE}/api/matching/chat`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: JSON.stringify({
+      message,
+      conversation_history: history,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Błąd zapytania do chatbota innowacji.');
+  }
+
+  return await res.json();
+}
+
+export async function fetchInnovations(): Promise<any[]> {
+  const res = await fetch(`${API_BASE}/api/matching/innovations`, {
+    method: 'GET',
+    headers: getHeaders(false),
+  });
+
+  if (!res.ok) {
+    throw new Error('Błąd pobierania innowacji.');
+  }
+
+  return await res.json();
+}
+
+// ==========================================
+// 4. ROPS KRAKÓW CHAT API (/api/chat)
+// ==========================================
+export async function startExpertConversation(data: {
+  idea_id?: string;
+  idea_title?: string;
+  topic?: string;
+  initial_message?: string;
+}): Promise<BackendConversation> {
+  const res = await fetch(`${API_BASE}/api/chat/conversations`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Nie udało się otworzyć czatu z ekspertem.');
+  }
+
+  return await res.json();
+}
+
+export async function fetchConversations(statusFilter?: string): Promise<BackendConversation[]> {
+  const url = new URL(`${API_BASE}/api/chat/conversations`);
+  if (statusFilter) url.searchParams.set('status', statusFilter);
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: getHeaders(true),
+  });
+
+  if (!res.ok) {
+    throw new Error('Błąd pobierania listy rozmów.');
+  }
+
+  return await res.json();
+}
+
+export async function pollConversationMessages(
+  conversationId: string,
+  afterId?: string,
+  since?: string
+): Promise<{
+  messages: BackendMessage[];
+  last_polled_at: string;
+  new_messages_count: number;
+  assigned_admin_name?: string;
+}> {
+  const url = new URL(`${API_BASE}/api/chat/conversations/${conversationId}/messages`);
+  if (afterId) url.searchParams.set('after_id', afterId);
+  if (since) url.searchParams.set('since', since);
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: getHeaders(true),
+  });
+
+  if (!res.ok) {
+    throw new Error('Błąd odpytywania wiadomości.');
+  }
+
+  return await res.json();
+}
+
+export async function sendConversationMessage(
+  conversationId: string,
+  content: string
+): Promise<BackendMessage> {
+  const res = await fetch(`${API_BASE}/api/chat/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    headers: getHeaders(true),
+    body: JSON.stringify({ content }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Błąd wysyłania wiadomości.');
+  }
+
+  return await res.json();
+}
+
+export async function updateConversationStatus(
+  conversationId: string,
+  status: 'open' | 'in_progress' | 'closed'
+): Promise<BackendConversation> {
+  const res = await fetch(`${API_BASE}/api/chat/conversations/${conversationId}/status`, {
+    method: 'PATCH',
+    headers: getHeaders(true),
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Błąd zmiany statusu rozmowy.');
+  }
+
+  return await res.json();
+}
+

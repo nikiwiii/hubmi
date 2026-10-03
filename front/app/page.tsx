@@ -11,6 +11,14 @@ import {
   updateIdea,
   deleteIdea
 } from './lib/ideasStore';
+import {
+  fetchIdeasFromBackend,
+  createIdeaOnBackend,
+  deleteIdeaOnBackend,
+  toggleIdeaReaction,
+  fetchCurrentProfile,
+  setAuthToken
+} from './lib/api';
 import { Navbar } from './components/Navbar';
 import { AuthScreen } from './components/AuthScreen';
 import { DiscoverScreen } from './components/DiscoverScreen';
@@ -30,10 +38,34 @@ export default function Home() {
   const [chatRecipientId, setChatRecipientId] = useState<string | null>(null);
   const [isLargeFont, setIsLargeFont] = useState(false);
 
-  // Initialize client state from storage
+  // Initialize client state from backend / storage
   useEffect(() => {
-    setCurrentUserState(getCurrentUser());
-    setIdeas(getIdeas());
+    // 1. Sprawdź profil z backendu (sesja JWT)
+    fetchCurrentProfile()
+      .then(profile => {
+        if (profile) {
+          setCurrentUserState(profile);
+          setCurrentUser(profile);
+        } else {
+          setCurrentUserState(getCurrentUser());
+        }
+      })
+      .catch(() => {
+        setCurrentUserState(getCurrentUser());
+      });
+
+    // 2. Pobierz pomysły z backendu FastAPI
+    fetchIdeasFromBackend()
+      .then(backendIdeas => {
+        if (backendIdeas && backendIdeas.length > 0) {
+          setIdeas(backendIdeas);
+        } else {
+          setIdeas(getIdeas());
+        }
+      })
+      .catch(() => {
+        setIdeas(getIdeas());
+      });
   }, []);
 
   const handleNavigate = (screen: ScreenId) => {
@@ -46,28 +78,85 @@ export default function Home() {
   const handleUserChange = (user: User | null) => {
     setCurrentUserState(user);
     setCurrentUser(user);
+    if (!user) {
+      setAuthToken(null);
+    }
   };
 
-  const handleVote = (id: string, type: 'like' | 'dislike') => {
+  const handleVote = async (id: string, type: 'like' | 'dislike') => {
+    // Szybka optymistyczna zmiana w UI
     const updated = voteIdea(id, type);
     setIdeas(updated);
+
+    // Synchronizacja z backendem
+    try {
+      const res = await toggleIdeaReaction(id, type);
+      setIdeas(prev =>
+        prev.map(item =>
+          item.id === id
+            ? {
+                ...item,
+                likes: res.likes,
+                dislikes: res.dislikes,
+                userVote: res.active ? type : null
+              }
+            : item
+        )
+      );
+    } catch (e) {
+      console.warn('Backend vote note:', e);
+    }
   };
 
-  const handleToggleTesting = (id: string) => {
+  const handleToggleTesting = async (id: string) => {
     const email = currentUser?.email || 'gosc@hubmi.pl';
     const { ideas: updated } = toggleTestingParticipation(id, email);
     setIdeas(updated);
+
+    try {
+      const res = await toggleIdeaReaction(id, 'volunteer');
+      setIdeas(prev =>
+        prev.map(item =>
+          item.id === id
+            ? {
+                ...item,
+                testersCount: res.volunteers
+              }
+            : item
+        )
+      );
+    } catch (e) {
+      console.warn('Backend volunteer note:', e);
+    }
   };
 
-  const handleAddIdea = (newIdeaData: any) => {
-    const created = addIdea(newIdeaData);
-    setIdeas(getIdeas());
-    setPreviousScreen(currentScreen);
-    setSelectedIdeaId(created.id);
-    setCurrentScreen('browse');
+  const handleAddIdea = async (newIdeaData: any) => {
+    try {
+      const created = await createIdeaOnBackend({
+        title: newIdeaData.title,
+        description: newIdeaData.description || newIdeaData.summary,
+        category: newIdeaData.category
+      });
+      setIdeas(prev => [created, ...prev]);
+      setPreviousScreen(currentScreen);
+      setSelectedIdeaId(created.id);
+      setCurrentScreen('browse');
+    } catch (e) {
+      console.warn('Backend create fallback to local:', e);
+      const created = addIdea(newIdeaData);
+      setIdeas(getIdeas());
+      setPreviousScreen(currentScreen);
+      setSelectedIdeaId(created.id);
+      setCurrentScreen('browse');
+    }
   };
 
-  const handleDeleteIdea = (id: string) => {
+  const handleDeleteIdea = async (id: string) => {
+    try {
+      await deleteIdeaOnBackend(id);
+    } catch (e) {
+      console.warn('Backend delete note:', e);
+    }
     const updated = deleteIdea(id);
     setIdeas(updated);
     if (selectedIdeaId === id) {
