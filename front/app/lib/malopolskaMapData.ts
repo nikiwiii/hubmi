@@ -16,6 +16,99 @@ export interface PowiatItem {
   paths: number[];
 }
 
+export type PopulationMetricKey =
+  | 'age60Plus'
+  | 'age75Plus'
+  | 'age40to59'
+  | 'agingIndex'
+  | 'singleSenior';
+
+export interface DemographicData {
+  totalPopulation: number;
+  age60PlusRatio: number;
+  age75PlusRatio: number;
+  age40to59Ratio: number;
+  agingIndex: number;
+  singleSeniorRatio: number;
+  careUrgency: 'standard' | 'podwyższona' | 'wysoka' | 'bardzo wysoka';
+}
+
+export interface PopulationMetricOption {
+  key: PopulationMetricKey;
+  label: string;
+  badgeLabel: string;
+  description: string;
+  unit: string;
+  avgRegional: string;
+  topCounty: string;
+  topCountyValue: string;
+  lowCounty: string;
+  lowCountyValue: string;
+}
+
+export const POPULATION_METRICS_OPTIONS: PopulationMetricOption[] = [
+  {
+    key: 'age60Plus',
+    label: 'Seniorzy 60+ (Ogółem)',
+    badgeLabel: 'Wskaźnik 60+',
+    description: 'Odsetek mieszkańców w wieku 60 lat i więcej. Główny wskaźnik starzenia populacji Małopolski.',
+    unit: '%',
+    avgRegional: '24,6%',
+    topCounty: 'Powiat chrzanowski',
+    topCountyValue: '28,2%',
+    lowCounty: 'Powiat limanowski',
+    lowCountyValue: '20,8%'
+  },
+  {
+    key: 'age75Plus',
+    label: 'Seniorzy 75+ (Potrzeby opiekuńcze)',
+    badgeLabel: 'Osoby 75+',
+    description: 'Mieszkańcy w wieku sędziwym wymagający wsparcia asystenckiego, teleopieki i opieki wytchnieniowej.',
+    unit: '%',
+    avgRegional: '8,9%',
+    topCounty: 'Kraków (miasto)',
+    topCountyValue: '10,4%',
+    lowCounty: 'Powiat nowosądecki',
+    lowCountyValue: '6,7%'
+  },
+  {
+    key: 'age40to59',
+    label: 'Grupa 40–59 lat (Opiekunowie & Filar)',
+    badgeLabel: 'Wiek 40–59',
+    description: 'Osoby w wieku dojrzałym stanowiące trzon rynku pracy i głównych opiekunów nieformalnych osób starszych.',
+    unit: '%',
+    avgRegional: '27,8%',
+    topCounty: 'Powiat tatrzański',
+    topCountyValue: '29,4%',
+    lowCounty: 'Kraków (miasto)',
+    lowCountyValue: '25,8%'
+  },
+  {
+    key: 'agingIndex',
+    label: 'Indeks Starości (na 100 dzieci)',
+    badgeLabel: 'Indeks starości',
+    description: 'Liczba osób 60+ przypadająca na 100 dzieci w wieku 0–14 lat. Wartości powyżej 100 oznaczają ubytek demograficzny.',
+    unit: 'os./100 dzieci',
+    avgRegional: '138',
+    topCounty: 'Powiat chrzanowski',
+    topCountyValue: '164',
+    lowCounty: 'Powiat limanowski',
+    lowCountyValue: '96'
+  },
+  {
+    key: 'singleSenior',
+    label: 'Gospodarstwa 1-osobowe 60+ (Izolacja)',
+    badgeLabel: 'Samotni seniorzy',
+    description: 'Odsetek seniorów prowadzących gospodarstwa jednoosobowe, szczególnie narażonych na samotność.',
+    unit: '%',
+    avgRegional: '31,4%',
+    topCounty: 'Powiat miechowski',
+    topCountyValue: '36,5%',
+    lowCounty: 'Powiat wielicki',
+    lowCountyValue: '23,2%'
+  }
+];
+
 export interface SubregionInfo {
   key: string;
   label: string;
@@ -593,3 +686,217 @@ export const SUBREGION_PALETTE: Record<string, { fill: string; stroke: string; h
     active: '#F43F5E'
   }
 };
+
+export const DEMOGRAPHICS_DATA: Record<string, DemographicData> = {
+  krakow: {
+    totalPopulation: 804200,
+    age60PlusRatio: 26.8,
+    age75PlusRatio: 10.4,
+    age40to59Ratio: 25.8,
+    agingIndex: 152,
+    singleSeniorRatio: 34.8,
+    careUrgency: 'bardzo wysoka'
+  },
+  tarnow: {
+    totalPopulation: 104100,
+    age60PlusRatio: 27.4,
+    age75PlusRatio: 10.1,
+    age40to59Ratio: 26.2,
+    agingIndex: 158,
+    singleSeniorRatio: 35.1,
+    careUrgency: 'bardzo wysoka'
+  },
+  'nowy-sacz': {
+    totalPopulation: 81200,
+    age60PlusRatio: 24.8,
+    age75PlusRatio: 8.8,
+    age40to59Ratio: 27.1,
+    agingIndex: 132,
+    singleSeniorRatio: 30.2,
+    careUrgency: 'podwyższona'
+  },
+  chrzanowski: {
+    totalPopulation: 121400,
+    age60PlusRatio: 28.2,
+    age75PlusRatio: 9.9,
+    age40to59Ratio: 26.9,
+    agingIndex: 164,
+    singleSeniorRatio: 34.2,
+    careUrgency: 'bardzo wysoka'
+  },
+  miechowski: {
+    totalPopulation: 48500,
+    age60PlusRatio: 27.9,
+    age75PlusRatio: 9.7,
+    age40to59Ratio: 26.5,
+    agingIndex: 162,
+    singleSeniorRatio: 36.5,
+    careUrgency: 'bardzo wysoka'
+  },
+  olkuski: {
+    totalPopulation: 108300,
+    age60PlusRatio: 26.5,
+    age75PlusRatio: 9.1,
+    age40to59Ratio: 27.2,
+    agingIndex: 148,
+    singleSeniorRatio: 31.8,
+    careUrgency: 'wysoka'
+  },
+  oswiecimski: {
+    totalPopulation: 151200,
+    age60PlusRatio: 26.1,
+    age75PlusRatio: 8.9,
+    age40to59Ratio: 27.4,
+    agingIndex: 145,
+    singleSeniorRatio: 30.6,
+    careUrgency: 'wysoka'
+  },
+  proszowicki: {
+    totalPopulation: 42800,
+    age60PlusRatio: 25.3,
+    age75PlusRatio: 9.2,
+    age40to59Ratio: 26.8,
+    agingIndex: 139,
+    singleSeniorRatio: 34.5,
+    careUrgency: 'wysoka'
+  },
+  dabrowski: {
+    totalPopulation: 58200,
+    age60PlusRatio: 24.1,
+    age75PlusRatio: 8.6,
+    age40to59Ratio: 27.5,
+    agingIndex: 131,
+    singleSeniorRatio: 35.8,
+    careUrgency: 'podwyższona'
+  },
+  gorlicki: {
+    totalPopulation: 106400,
+    age60PlusRatio: 25.6,
+    age75PlusRatio: 9.0,
+    age40to59Ratio: 27.6,
+    agingIndex: 142,
+    singleSeniorRatio: 33.2,
+    careUrgency: 'wysoka'
+  },
+  tatrzanski: {
+    totalPopulation: 67100,
+    age60PlusRatio: 24.9,
+    age75PlusRatio: 8.5,
+    age40to59Ratio: 29.4,
+    agingIndex: 136,
+    singleSeniorRatio: 29.8,
+    careUrgency: 'podwyższona'
+  },
+  brzeski: {
+    totalPopulation: 93400,
+    age60PlusRatio: 22.5,
+    age75PlusRatio: 7.8,
+    age40to59Ratio: 28.2,
+    agingIndex: 114,
+    singleSeniorRatio: 28.4,
+    careUrgency: 'standard'
+  },
+  tarnowski: {
+    totalPopulation: 201300,
+    age60PlusRatio: 22.8,
+    age75PlusRatio: 7.9,
+    age40to59Ratio: 28.1,
+    agingIndex: 118,
+    singleSeniorRatio: 29.2,
+    careUrgency: 'standard'
+  },
+  krakowski: {
+    totalPopulation: 290100,
+    age60PlusRatio: 22.1,
+    age75PlusRatio: 7.4,
+    age40to59Ratio: 28.9,
+    agingIndex: 108,
+    singleSeniorRatio: 24.5,
+    careUrgency: 'standard'
+  },
+  wadowicki: {
+    totalPopulation: 160200,
+    age60PlusRatio: 23.4,
+    age75PlusRatio: 8.1,
+    age40to59Ratio: 28.0,
+    agingIndex: 124,
+    singleSeniorRatio: 27.8,
+    careUrgency: 'standard'
+  },
+  myslenicki: {
+    totalPopulation: 129800,
+    age60PlusRatio: 21.9,
+    age75PlusRatio: 7.3,
+    age40to59Ratio: 28.5,
+    agingIndex: 106,
+    singleSeniorRatio: 25.1,
+    careUrgency: 'standard'
+  },
+  suski: {
+    totalPopulation: 83200,
+    age60PlusRatio: 23.8,
+    age75PlusRatio: 8.3,
+    age40to59Ratio: 28.4,
+    agingIndex: 126,
+    singleSeniorRatio: 28.9,
+    careUrgency: 'podwyższona'
+  },
+  nowotarski: {
+    totalPopulation: 192500,
+    age60PlusRatio: 21.6,
+    age75PlusRatio: 7.2,
+    age40to59Ratio: 29.1,
+    agingIndex: 102,
+    singleSeniorRatio: 26.4,
+    careUrgency: 'standard'
+  },
+  nowosadecki: {
+    totalPopulation: 217400,
+    age60PlusRatio: 21.2,
+    age75PlusRatio: 6.7,
+    age40to59Ratio: 28.8,
+    agingIndex: 98,
+    singleSeniorRatio: 25.8,
+    careUrgency: 'standard'
+  },
+  limanowski: {
+    totalPopulation: 133100,
+    age60PlusRatio: 20.8,
+    age75PlusRatio: 6.4,
+    age40to59Ratio: 28.7,
+    agingIndex: 96,
+    singleSeniorRatio: 24.2,
+    careUrgency: 'standard'
+  },
+  bochenski: {
+    totalPopulation: 107200,
+    age60PlusRatio: 22.3,
+    age75PlusRatio: 7.6,
+    age40to59Ratio: 28.3,
+    agingIndex: 112,
+    singleSeniorRatio: 26.9,
+    careUrgency: 'standard'
+  },
+  wielicki: {
+    totalPopulation: 135400,
+    age60PlusRatio: 21.7,
+    age75PlusRatio: 7.1,
+    age40to59Ratio: 29.0,
+    agingIndex: 104,
+    singleSeniorRatio: 23.2,
+    careUrgency: 'standard'
+  }
+};
+
+export function getPowiatDemographics(powiatId: string): DemographicData {
+  return DEMOGRAPHICS_DATA[powiatId] || {
+    totalPopulation: 100000,
+    age60PlusRatio: 24.6,
+    age75PlusRatio: 8.9,
+    age40to59Ratio: 27.8,
+    agingIndex: 138,
+    singleSeniorRatio: 31.4,
+    careUrgency: 'standard'
+  };
+}
+

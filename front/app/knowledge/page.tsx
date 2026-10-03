@@ -27,15 +27,15 @@ export default function KnowledgePage() {
   const { navigate } = useApp();
 
   const [resources] = useState<KnowledgeResource[]>(getKnowledgeResources());
-  const [activeFilter, setActiveFilter] = useState<'all' | 'rag' | KnowledgeType>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | KnowledgeType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [activeVideoModal, setActiveVideoModal] = useState<KnowledgeResource | null>(null);
   const [selectedPowiat, setSelectedPowiat] = useState<PowiatItem | null>(null);
+  const [isAiAdvisorOpen, setIsAiAdvisorOpen] = useState(false);
 
   const filteredResources = useMemo(() => {
     return resources.filter((item) => {
-      if (activeFilter === 'rag') return false;
       const matchesType = activeFilter === 'all' || item.type === activeFilter;
       const q = searchQuery.toLowerCase();
       const matchesQuery =
@@ -66,15 +66,31 @@ export default function KnowledgePage() {
           </p>
         </div>
 
-        {/* Quick action to propose innovation inspired by knowledge */}
+        {/* Toggle Doradca AI button (replaces "Odpowiedz pomysłem z AI") */}
         <button
-          onClick={() => navigate('propose')}
-          className="self-start sm:self-auto flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer"
+          onClick={() => setIsAiAdvisorOpen((prev) => !prev)}
+          className={`self-start sm:self-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            isAiAdvisorOpen
+              ? 'bg-[#EFE5C6] text-stone-900 border border-[#DDD0A6] shadow-2xs'
+              : 'bg-stone-900 text-white hover:bg-stone-800 shadow-2xs'
+          }`}
         >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Odpowiedz pomysłem z AI</span>
+          <Bot className="w-4 h-4 text-amber-500" />
+          <span>{isAiAdvisorOpen ? 'Ukryj Doradcę AI' : 'Doradca AI (Groq RAG)'}</span>
+          {isAiAdvisorOpen ? (
+            <ChevronUp className="w-3.5 h-3.5 text-stone-700" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
+          )}
         </button>
       </div>
+
+      {/* Sekcja Doradcy AI - domyślnie ukryta na górze strony, rozwijana przyciskiem */}
+      {isAiAdvisorOpen && (
+        <div className="animate-in fade-in slide-in-from-top-3 duration-300">
+          <RagChatSection />
+        </div>
+      )}
 
       {/* Interaktywna Mapa Powiatów Małopolski */}
       <MalopolskaMap
@@ -119,18 +135,6 @@ export default function KnowledgePage() {
         </button>
 
         <button
-          onClick={() => setActiveFilter('rag')}
-          className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-            activeFilter === 'rag'
-              ? 'bg-stone-900 text-white'
-              : 'bg-[#EFE5C6] text-stone-900 hover:bg-[#E5D9B4] border border-[#DDD0A6]'
-          }`}
-        >
-          <Bot className="w-3.5 h-3.5" />
-          <span>🤖 Doradca RAG (Groq AI)</span>
-        </button>
-
-        <button
           onClick={() => setActiveFilter('challenge')}
           className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
             activeFilter === 'challenge'
@@ -168,9 +172,7 @@ export default function KnowledgePage() {
       </div>
 
       {/* Main Content Area */}
-      {activeFilter === 'rag' ? (
-        <RagChatSection />
-      ) : filteredResources.length === 0 ? (
+      {filteredResources.length === 0 ? (
         <div className="bg-white rounded-2xl p-10 text-center border border-stone-200">
           <p className="text-base font-semibold text-stone-800">
             Brak materiałów dla wybranych kryteriów
