@@ -296,7 +296,7 @@ function ChatContent() {
             className="flex items-center gap-1.5 px-3.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Napisz do eksperta</span>
+            <span>Napisz wiadomość</span>
           </button>
         </div>
       </div>
@@ -426,14 +426,15 @@ function ChatContent() {
                 Brak aktywnego dialogu
               </h3>
               <p className="text-xs text-stone-500 max-w-sm mb-5 leading-relaxed">
-                Nie masz jeszcze otwartych rozmów. Rozpocznij bezpośredni dialog z ekspertami ROPS Kraków, aby omówić pomysł lub zadać pytanie.
+                Nie masz jeszcze otwartych rozmów. Rozpocznij bezpośredni dialog
+                z ekspertami ROPS Kraków, aby omówić pomysł lub zadać pytanie.
               </p>
               <button
                 onClick={() => setIsCreatingNewThread(true)}
                 className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Napisz do eksperta</span>
+                <span>Napisz wiadomość</span>
               </button>
             </div>
           ) : (
@@ -443,7 +444,9 @@ function ChatContent() {
                 <div className="flex items-center gap-2.5">
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-xs text-stone-800"
-                    style={{ backgroundColor: activeContact.avatarBg || "#F5E85A" }}
+                    style={{
+                      backgroundColor: activeContact.avatarBg || "#F5E85A",
+                    }}
                   >
                     {activeContact.name?.charAt(0) || "?"}
                   </div>
