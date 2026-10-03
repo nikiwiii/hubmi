@@ -1,335 +1,421 @@
 'use client';
 
-import React, { useState } from 'react';
-import {
-  generateInitialQuestions,
-  generateFinalConcept,
-  LLMDialogueMessage,
-  GeneratedConcept
-} from '../lib/llmSimulator';
-import { IdeaMockupVisualizer } from '../components/propose/IdeaMockupVisualizer';
-import { ArrowRight, RotateCcw, Check, Send } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Sparkles, Check, X, SkipForward, Send, Square, RotateCcw, Loader2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import {
+  AssistantQuestion,
+  EMPTY_FIELDS,
+  FIELD_LABELS,
+  HistoryEntry,
+  IdeaCreatorError,
+  IdeaField,
+  IdeaFields,
+  RefineResult,
+  STAGE_OPTIONS,
+  Stage,
+  fetchNextQuestion,
+  mapProjectToIdea,
+  publishProject,
+  refineField,
+  stageLabel,
+} from '../lib/ideaCreatorApi';
+
+type Phase = 'edit' | 'loadingQuestion' | 'answering' | 'loadingRefine' | 'reviewing';
+
+const MAX_ROUNDS = 10;
+
+const CATEGORIES = [
+  'Społeczność & Życie',
+  'Dom i Ogród',
+  'Zdrowie i Bezpieczeństwo',
+  'Podróże i Pasje',
+  'Rzemiosło i Pasje',
+  'Praca i Finanse',
+];
+
+const TEXT_FIELDS: { key: Exclude<IdeaField, 'etap'>; placeholder: string; rows: number }[] = [
+  { key: 'tytul', placeholder: 'np. Sąsiedzka lodówka', rows: 1 },
+  { key: 'opis', placeholder: 'Jaki problem rozwiązuje projekt i jak działa?', rows: 4 },
+  { key: 'innowacyjnosc', placeholder: 'Czym różni się od istniejących rozwiązań?', rows: 3 },
+  { key: 'odbiorcy', placeholder: 'Kto skorzysta z projektu?', rows: 2 },
+];
+
+function fieldValueLabel(field: IdeaField, fields: IdeaFields): string {
+  return field === 'etap' ? stageLabel(fields.etap) : fields[field] || '(puste)';
+}
 
 export default function ProposePage() {
-  const { currentUser, addIdea, navigate } = useApp();
+  const { currentUser, addPublishedIdea, selectIdea, navigate } = useApp();
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [rawIdea, setRawIdea] = useState('');
-  const [dialogueHistory, setDialogueHistory] = useState<LLMDialogueMessage[]>([]);
-  const [currentReplyText, setCurrentReplyText] = useState('');
-  const [isLlmThinking, setIsLlmThinking] = useState(false);
-  const [generatedConcept, setGeneratedConcept] = useState<GeneratedConcept | null>(null);
-  const [isPublished, setIsPublished] = useState(false);
+  const [fields, setFields] = useState<IdeaFields>(EMPTY_FIELDS);
+  const [category, setCategory] = useState('');
+  const [phase, setPhase] = useState<Phase>('edit');
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [question, setQuestion] = useState<AssistantQuestion | null>(null);
+  const [answer, setAnswer] = useState('');
+  const [refined, setRefined] = useState<RefineResult | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; retry: () => void } | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
-  // Step 1: Start LLM Dialogue
-  const handleStartDialogue = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!rawIdea.trim()) return;
+  const assistantPanelRef = useRef<HTMLDivElement>(null);
 
-    setIsLlmThinking(true);
-    setStep(2);
+  useEffect(() => {
+    if (phase === 'answering' || phase === 'reviewing') {
+      assistantPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [phase, question]);
 
-    setTimeout(() => {
-      const q = generateInitialQuestions(rawIdea);
-      const userInitialMsg: LLMDialogueMessage = {
-        id: 'msg-user-init',
-        sender: 'user',
-        text: rawIdea,
-        timestamp: 'Teraz'
-      };
-      const assistantMsg: LLMDialogueMessage = {
-        id: 'msg-ai-1',
-        sender: 'assistant',
-        text: q.reply,
-        suggestions: q.suggestions,
-        timestamp: 'Teraz'
-      };
+  const loopActive = phase !== 'edit';
+  const isLoading = phase === 'loadingQuestion' || phase === 'loadingRefine';
+  const canPublish =
+    !!fields.tytul.trim() && !!fields.opis.trim() && !!fields.innowacyjnosc.trim() && !!fields.odbiorcy.trim() && !!fields.etap;
 
-      setDialogueHistory([userInitialMsg, assistantMsg]);
-      setIsLlmThinking(false);
-    }, 700);
+  const updateField = (key: keyof IdeaFields, value: string) => {
+    setFields((prev) => ({ ...prev, [key]: key === 'etap' ? ((value || null) as Stage | null) : value }));
   };
 
-  // Step 2: User responds
-  const handleSendDialogueReply = (replyText: string) => {
-    if (!replyText.trim()) return;
+  // ---------- loop ----------
 
-    const userMsg: LLMDialogueMessage = {
-      id: `msg-user-${Date.now()}`,
-      sender: 'user',
-      text: replyText,
-      timestamp: 'Teraz'
-    };
-
-    const newHistory = [...dialogueHistory, userMsg];
-    setDialogueHistory(newHistory);
-    setCurrentReplyText('');
-    setIsLlmThinking(true);
-
-    setTimeout(() => {
-      const userRepliesCount = newHistory.filter(m => m.sender === 'user').length;
-      if (userRepliesCount >= 2) {
-        const concept = generateFinalConcept(rawIdea, newHistory);
-        setGeneratedConcept(concept);
-        setStep(3);
-        setIsLlmThinking(false);
-      } else {
-        const nextAiMsg: LLMDialogueMessage = {
-          id: `msg-ai-${Date.now()}`,
-          sender: 'assistant',
-          text: 'Dziękuję. Jak chciałbyś zarządzać chętnymi do testów? Czy wystarczy prosta lista w aplikacji?',
-          suggestions: [
-            'Prosta lista chętnych w aplikacji',
-            'Bezpośredni kontakt przez czat Hubmi'
-          ],
-          timestamp: 'Teraz'
-        };
-        setDialogueHistory([...newHistory, nextAiMsg]);
-        setIsLlmThinking(false);
+  const askNext = async (current: IdeaFields, currentHistory: HistoryEntry[]) => {
+    setError(null);
+    setRefined(null);
+    setAnswer('');
+    setPhase('loadingQuestion');
+    try {
+      const res = await fetchNextQuestion(current, currentHistory);
+      if (res.done || !res.question) {
+        setQuestion(null);
+        setPhase('edit');
+        setNotice(
+          currentHistory.length >= MAX_ROUNDS
+            ? `Wykorzystano wszystkie ${MAX_ROUNDS} pytań. Możesz jeszcze ręcznie poprawić pola i opublikować projekt.`
+            : 'Asystent nie ma więcej pytań – opis wygląda na kompletny.'
+        );
+        return;
       }
-    }, 800);
+      setQuestion(res.question);
+      setPhase('answering');
+    } catch (e) {
+      // Stay in the loop with the form locked, so the retry uses the same fields.
+      setQuestion(null);
+      setPhase('answering');
+      setError({
+        message: e instanceof IdeaCreatorError ? e.message : 'Coś poszło nie tak.',
+        retry: () => askNext(current, currentHistory),
+      });
+    }
   };
 
-  // Step 3: Publish idea
-  const handlePublish = () => {
-    if (!generatedConcept) return;
-
-    const author = currentUser || {
-      id: 'user-anna-2',
-      name: 'Anna Kowalska',
-      email: 'anna.kowalska@hubmi.pl'
-    };
-
-    addIdea({
-      title: generatedConcept.title,
-      subtitle: generatedConcept.subtitle,
-      authorId: author.id,
-      authorName: author.name,
-      authorEmail: author.email,
-      category: generatedConcept.category,
-      summary: generatedConcept.summary,
-      description: generatedConcept.description,
-      targetAudience: generatedConcept.targetAudience,
-      keyBenefits: generatedConcept.keyBenefits,
-      colorTheme: generatedConcept.colorTheme,
-      geometricShape: generatedConcept.geometricShape,
-      status: 'active'
-    });
-
-    setIsPublished(true);
-    setTimeout(() => {
-      navigate('discover');
-    }, 900);
+  const startLoop = () => {
+    setNotice(null);
+    setHistory([]);
+    askNext(fields, []);
   };
+
+  const finishRound = (entry: HistoryEntry, nextFields: IdeaFields, roundNotice: string | null = null) => {
+    const nextHistory = [...history, entry];
+    setHistory(nextHistory);
+    setNotice(roundNotice);
+    askNext(nextFields, nextHistory);
+  };
+
+  const submitAnswer = async () => {
+    if (!question || !answer.trim()) return;
+    setError(null);
+    setNotice(null);
+    setPhase('loadingRefine');
+    try {
+      const res = await refineField(fields, question, answer.trim());
+      if (res.changes.length === 0) {
+        finishRound(
+          { field: question.field, question: question.text, answer: answer.trim(), accepted: null },
+          fields,
+          'Odpowiedź nie wymagała zmian w treści. Kolejne pytanie:'
+        );
+        return;
+      }
+      setRefined(res);
+      setPhase('reviewing');
+    } catch (e) {
+      setPhase('answering');
+      setError({
+        message: e instanceof IdeaCreatorError ? e.message : 'Coś poszło nie tak.',
+        retry: submitAnswer,
+      });
+    }
+  };
+
+  const skipQuestion = () => {
+    if (!question) return;
+    finishRound({ field: question.field, question: question.text, answer: '', accepted: null }, fields);
+  };
+
+  const decide = (accepted: boolean) => {
+    if (!question || !refined) return;
+    const nextFields = accepted ? refined.proposal : fields;
+    if (accepted) setFields(nextFields);
+    finishRound({ field: question.field, question: question.text, answer: answer.trim(), accepted }, nextFields);
+  };
+
+  const stopLoop = () => {
+    setPhase('edit');
+    setQuestion(null);
+    setRefined(null);
+    setError(null);
+    setNotice('Zakończono pracę z asystentem. Możesz poprawić pola ręcznie i opublikować projekt.');
+  };
+
+  // ---------- publish ----------
+
+  const handlePublish = async () => {
+    if (!canPublish) return;
+    setPublishError(null);
+    setIsPublishing(true);
+    try {
+      const project = await publishProject(fields, category);
+      const idea = mapProjectToIdea(project);
+      addPublishedIdea(idea);
+      selectIdea(idea);
+    } catch (e) {
+      if (e instanceof IdeaCreatorError && e.status === 401) {
+        setPublishError('Sesja wygasła lub nie jesteś zalogowany. Zaloguj się ponownie.');
+      } else {
+        setPublishError(e instanceof IdeaCreatorError ? e.message : 'Nie udało się opublikować projektu.');
+      }
+      setIsPublishing(false);
+    }
+  };
+
+  // ---------- render ----------
+
+  const highlighted = question?.field;
+  const roundNumber = Math.min(history.length + 1, MAX_ROUNDS);
 
   return (
     <div className="py-6 px-4 sm:px-6 max-w-3xl mx-auto space-y-6">
-      {/* Subtle Step Tracker */}
       <div className="flex items-center justify-between pb-2 border-b border-black/[0.05]">
-        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
-          Zaproponuj Pomysł
-        </h1>
-
-        <div className="flex items-center gap-1.5 text-xs font-medium text-stone-400">
-          <span className={step >= 1 ? 'text-stone-900 font-bold' : ''}>1. Opis</span>
-          <span>•</span>
-          <span className={step >= 2 ? 'text-stone-900 font-bold' : ''}>2. Dialog</span>
-          <span>•</span>
-          <span className={step === 3 ? 'text-stone-900 font-bold' : ''}>3. Wizualizacja</span>
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">Zaproponuj Pomysł</h1>
       </div>
 
-      {/* STEP 1: INITIAL IDEA FORM */}
-      {step === 1 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-5">
-          <div>
-            <label className="block text-base font-semibold text-stone-900 mb-1">
-              Opisz krótko swój pomysł:
-            </label>
-            <p className="text-stone-500 text-xs">
-              Nasz asystent pomoże dobrać ułatwienia i przygotuje prostą wizualizację.
-            </p>
-          </div>
-
-          <form onSubmit={handleStartDialogue} className="space-y-4">
+      {/* FORM */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-4">
+        {TEXT_FIELDS.map(({ key, placeholder, rows }) => (
+          <div key={key}>
+            <label className="block text-sm font-semibold text-stone-900 mb-1">{FIELD_LABELS[key]}</label>
             <textarea
-              rows={3}
-              value={rawIdea}
-              onChange={(e) => setRawIdea(e.target.value)}
-              placeholder="np. Aplikacja do wymiany narzędzi i sadzonek w sąsiedztwie..."
-              className="w-full p-4 rounded-2xl border border-stone-200 focus:border-stone-900 focus:outline-none text-base text-stone-900 transition-colors"
+              rows={rows}
+              value={fields[key]}
+              disabled={loopActive}
+              onChange={(e) => updateField(key, e.target.value)}
+              placeholder={placeholder}
+              className={`w-full p-3 rounded-2xl border text-sm text-stone-900 focus:outline-none focus:border-stone-900 transition-colors disabled:bg-stone-50 disabled:text-stone-600 ${
+                highlighted === key ? 'border-stone-900 ring-2 ring-stone-900/10' : 'border-stone-200'
+              }`}
             />
+          </div>
+        ))}
 
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              <button
-                type="button"
-                onClick={() => setRawIdea('Sąsiedzka wypożyczalnia maszyn do drewna i mebli vintage.')}
-                className="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs text-stone-700 transition-colors"
-              >
-                Wypożyczalnia maszyn
-              </button>
-              <button
-                type="button"
-                onClick={() => setRawIdea('Prosty asystent leków z powiadomieniem głosowym.')}
-                className="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs text-stone-700 transition-colors"
-              >
-                Asystent leków
-              </button>
-              <button
-                type="button"
-                onClick={() => setRawIdea('Klub wycieczek rowerowych i spacerów 40+.')}
-                className="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs text-stone-700 transition-colors"
-              >
-                Wycieczki 40+
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={!rawIdea.trim()}
-              className="w-full sm:w-auto px-6 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-stone-900 mb-1">{FIELD_LABELS.etap}</label>
+            <select
+              value={fields.etap ?? ''}
+              disabled={loopActive}
+              onChange={(e) => updateField('etap', e.target.value)}
+              className={`w-full p-3 rounded-2xl border bg-white text-sm text-stone-900 focus:outline-none focus:border-stone-900 disabled:bg-stone-50 ${
+                highlighted === 'etap' ? 'border-stone-900 ring-2 ring-stone-900/10' : 'border-stone-200'
+              }`}
             >
-              <span>Dalej</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
+              <option value="">Wybierz etap...</option>
+              {STAGE_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label} – {s.hint}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-stone-900 mb-1">Kategoria (opcjonalnie)</label>
+            <select
+              value={category}
+              disabled={loopActive}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full p-3 rounded-2xl border border-stone-200 bg-white text-sm text-stone-900 focus:outline-none focus:border-stone-900 disabled:bg-stone-50"
+            >
+              <option value="">Ogólna</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-      )}
 
-      {/* STEP 2: DIALOGUE */}
-      {step === 2 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-            <span className="text-xs font-semibold text-stone-500">Doprecyzowanie pomysłu</span>
+        {phase === 'edit' && (
+          <div className="pt-2 flex flex-col sm:flex-row gap-2">
             <button
-              onClick={() => setStep(1)}
-              className="text-xs text-stone-500 hover:text-stone-900 flex items-center gap-1"
+              onClick={startLoop}
+              className="px-5 py-3 bg-stone-100 hover:bg-stone-200 text-stone-900 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <RotateCcw className="w-3 h-3" />
-              <span>Zmień opis</span>
+              <Sparkles className="w-4 h-4" />
+              <span>{history.length > 0 ? 'Zacznij od nowa z asystentem AI' : 'Popraw z asystentem AI'}</span>
+            </button>
+            <button
+              onClick={handlePublish}
+              disabled={!canPublish || isPublishing || !currentUser}
+              className="px-5 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              <span>{isPublishing ? 'Publikuję...' : 'Opublikuj projekt'}</span>
             </button>
           </div>
+        )}
 
-          <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
-            {dialogueHistory.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-2.5 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+        {phase === 'edit' && !currentUser && (
+          <p className="text-xs text-stone-500">
+            Aby opublikować projekt,{' '}
+            <button onClick={() => navigate('auth')} className="underline font-semibold text-stone-900">
+              zaloguj się
+            </button>
+            . Z asystenta możesz korzystać bez logowania.
+          </p>
+        )}
+        {phase === 'edit' && currentUser && !canPublish && (
+          <p className="text-xs text-stone-500">Aby opublikować, wypełnij wszystkie pola i wybierz etap.</p>
+        )}
+        {publishError && <p className="text-xs text-red-600 font-medium">{publishError}</p>}
+      </div>
+
+      {/* ASSISTANT */}
+      {(loopActive || notice || error) && (
+        <div
+          ref={assistantPanelRef}
+          className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-4 scroll-mt-24"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+            <span className="text-xs font-semibold text-stone-500 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              {loopActive ? `Asystent AI · pytanie ${roundNumber} z ${MAX_ROUNDS}` : 'Asystent AI'}
+            </span>
+            {loopActive && (
+              <button
+                onClick={stopLoop}
+                disabled={isLoading}
+                className="text-xs text-stone-500 hover:text-stone-900 disabled:opacity-40 flex items-center gap-1"
               >
-                <div
-                  className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed ${
-                    msg.sender === 'user'
-                      ? 'bg-stone-900 text-white rounded-br-xs'
-                      : 'bg-stone-100 text-stone-900 rounded-bl-xs'
-                  }`}
-                >
-                  <p className="whitespace-pre-line font-medium">{msg.text}</p>
-
-                  {msg.suggestions && msg.suggestions.length > 0 && (
-                    <div className="mt-3 pt-2.5 border-t border-stone-200/60 space-y-1.5">
-                      {msg.suggestions.map((sug, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleSendDialogueReply(sug)}
-                          className="w-full text-left p-2 rounded-lg bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 text-xs font-medium transition-all"
-                        >
-                          {sug}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {isLlmThinking && (
-              <div className="text-xs text-stone-400 italic py-1">
-                Przygotowuję odpowiedź...
-              </div>
+                <Square className="w-3 h-3" />
+                <span>Zakończ</span>
+              </button>
             )}
           </div>
 
-          <div className="pt-2 flex gap-2">
-            <input
-              type="text"
-              value={currentReplyText}
-              onChange={(e) => setCurrentReplyText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSendDialogueReply(currentReplyText);
-              }}
-              placeholder="Wpisz odpowiedź..."
-              className="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900"
-            />
-            <button
-              onClick={() => handleSendDialogueReply(currentReplyText)}
-              disabled={!currentReplyText.trim() || isLlmThinking}
-              className="px-4 py-2.5 bg-stone-900 disabled:opacity-40 text-white rounded-xl text-sm font-semibold transition-all cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+          {notice && <p className="text-sm text-stone-600">{notice}</p>}
 
-      {/* STEP 3: VISUAL MOCKUP & PUBLISH */}
-      {step === 3 && generatedConcept && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-            <div className="md:col-span-7 space-y-4">
-              <div>
-                <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-700">
-                  {generatedConcept.category}
+          {error && (
+            <div className="p-3 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-between gap-3">
+              <p className="text-sm text-red-700">{error.message}</p>
+              <button
+                onClick={error.retry}
+                className="shrink-0 px-3 py-1.5 bg-white border border-red-200 rounded-lg text-xs font-semibold text-red-700 flex items-center gap-1"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Spróbuj ponownie</span>
+              </button>
+            </div>
+          )}
+
+          {phase === 'loadingQuestion' && (
+            <p className="text-sm text-stone-400 italic flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Asystent analizuje Twój pomysł...
+            </p>
+          )}
+
+          {(phase === 'answering' || phase === 'loadingRefine') && question && (
+            <div className="space-y-3">
+              <div className="rounded-2xl p-4 bg-stone-100 text-stone-900">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-500">
+                  {FIELD_LABELS[question.field]}
                 </span>
-                <h3 className="text-2xl font-bold text-stone-900 mt-2">
-                  {generatedConcept.title}
-                </h3>
-                <p className="text-sm text-stone-600 mt-0.5">
-                  {generatedConcept.subtitle}
-                </p>
+                <p className="text-sm font-medium mt-1">{question.text}</p>
               </div>
-
-              <p className="text-xs text-stone-500 leading-relaxed">
-                {generatedConcept.summary}
-              </p>
-
-              <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                <button
-                  onClick={handlePublish}
-                  disabled={isPublished}
-                  className="px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  {isPublished ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      <span>Opublikowano!</span>
-                    </>
-                  ) : (
-                    <span>Opublikuj pomysł</span>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => setStep(2)}
-                  className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-medium"
-                >
-                  Wstecz
-                </button>
-              </div>
-            </div>
-
-            <div className="md:col-span-5 flex justify-center">
-              <IdeaMockupVisualizer
-                title={generatedConcept.title}
-                subtitle={generatedConcept.subtitle}
-                theme={generatedConcept.colorTheme}
-                shape={generatedConcept.geometricShape}
-                category={generatedConcept.category}
-                keyBenefits={generatedConcept.keyBenefits}
-                targetAudience={generatedConcept.targetAudience}
+              <textarea
+                rows={3}
+                value={answer}
+                disabled={phase === 'loadingRefine'}
+                onChange={(e) => setAnswer(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitAnswer();
+                }}
+                placeholder="Twoja odpowiedź..."
+                className="w-full p-3 rounded-2xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900"
               />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={submitAnswer}
+                  disabled={!answer.trim() || phase === 'loadingRefine'}
+                  className="px-5 py-2.5 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {phase === 'loadingRefine' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  <span>{phase === 'loadingRefine' ? 'Przygotowuję propozycję...' : 'Odpowiedz'}</span>
+                </button>
+                <button
+                  onClick={skipQuestion}
+                  disabled={phase === 'loadingRefine'}
+                  className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 disabled:opacity-40 text-stone-700 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5"
+                >
+                  <SkipForward className="w-4 h-4" />
+                  <span>Pomiń</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {phase === 'reviewing' && refined && (
+            <div className="space-y-3">
+              {refined.changes.map((change) => (
+                <div key={change.field} className="space-y-2">
+                  <p className="text-sm font-semibold text-stone-900">
+                    Proponowana zmiana: {FIELD_LABELS[change.field]}
+                  </p>
+                  <p className="text-xs text-stone-500">{change.summary}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="rounded-2xl p-3 bg-stone-50 border border-stone-200">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">Obecnie</span>
+                      <p className="text-sm text-stone-500 whitespace-pre-line mt-1">
+                        {fieldValueLabel(change.field, fields)}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl p-3 bg-emerald-50 border border-emerald-200">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Propozycja</span>
+                      <p className="text-sm text-stone-900 whitespace-pre-line mt-1">
+                        {fieldValueLabel(change.field, refined.proposal)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                <button
+                  onClick={() => decide(true)}
+                  className="px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Akceptuj</span>
+                </button>
+                <button
+                  onClick={() => decide(false)}
+                  className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Odrzuć</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

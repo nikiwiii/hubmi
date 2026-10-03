@@ -30,6 +30,7 @@ interface AppContextType {
   vote: (id: string, type: 'like' | 'dislike') => Promise<void>;
   toggleTesting: (id: string) => Promise<void>;
   addIdea: (ideaData: any) => Promise<Idea>;
+  addPublishedIdea: (idea: Idea) => void;
   deleteIdea: (id: string) => Promise<void>;
   updateIdeaStatus: (id: string, status: 'active' | 'testing' | 'archived') => void;
   navigate: (screen: ScreenId | string) => void;
@@ -148,6 +149,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // For ideas already saved by another service (e.g. Idea Creator), so they are not POSTed twice.
+  const handleAddPublishedIdea = (idea: Idea) => {
+    setIdeas((prev) => [idea, ...prev.filter((i) => i.id !== idea.id)]);
+  };
+
   const handleDeleteIdea = async (id: string) => {
     try {
       await deleteIdeaOnBackend(id);
@@ -191,6 +197,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         vote: handleVote,
         toggleTesting: handleToggleTesting,
         addIdea: handleAddIdea,
+        addPublishedIdea: handleAddPublishedIdea,
         deleteIdea: handleDeleteIdea,
         updateIdeaStatus: handleUpdateIdeaStatus,
         navigate: handleNavigate,
