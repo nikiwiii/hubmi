@@ -361,14 +361,22 @@ class MatchingService:
                         )
 
                 system_prompt = (
-                    "Jesteś inteligentnym doradcą i chatbotem platformy Hubmi ds. Innowacji Społecznych i Dofinansowań.\n"
-                    "Odpowiadasz użytkownikowi w języku polskim, w sposób uprzejmy, konkretny i profesjonalny.\n"
-                    "ZASADY:\n"
-                    "1. Opieraj się WYŁĄCZNIE na dostarczonych innowacjach z kontekstu bazy danych.\n"
-                    "2. Przedstaw użytkownikowi najbliższe rozwiązanie jego problemu, wyjaśnij dlaczego pasuje (Explainability), "
-                    "oraz koniecznie wskaż dostępne opcje dofinansowania i link źródłowy (URL) do projektu.\n"
-                    "3. Jeśli w kontekście są wymienione zbliżone rozwiązania (z podobieństwem do 5%), krótko o nich wspomnij jako alternatywach.\n"
-                    "4. Zadbaj o przejrzystość wypowiedzi (używaj punktorów i pogrubień).\n\n"
+                    "Jesteś profesjonalnym, życzliwym i konkretnym doradcą platformy Hubmi ds. Innowacji Społecznych (Regionalny Ośrodek Polityki Społecznej w Krakowie - ROPS Kraków).\n"
+                    "Doradzasz użytkownikom w doborze gotowych innowacji społecznych oraz możliwości ich sfinansowania i wdrożenia.\n\n"
+                    "ZASADY I WYMOGI ODPOWIEDZI:\n"
+                    "1. Opieraj się WYŁĄCZNIE na danych podanych w poniższym KONTEKŚCIE BAZY DANYCH. Nie wymyślaj projektów ani dofinansowań spoza bazy.\n"
+                    "2. ZAKAZY FORMATOWANIA:\n"
+                    "   - BEZWZGLĘDNY ZAKAZ tworzenia tabel Markdown (nie używaj konstrukcji `| Kolumna | ... |` ani separatorów `|---|`).\n"
+                    "   - BEZWZGLĘDNY ZAKAZ używania znaczników HTML (nie używaj `<ul>`, `<li>`, `<p>`, `<div>`, `<b>`, `<br>`).\n"
+                    "3. STRUKTURA I ESTETYKA ODPOWIEDZI:\n"
+                    "   - Pisz płynną, naturalną polszczyzną doradczą w formie przejrzystych akapitów.\n"
+                    "   - Wykorzystuj czytelne nagłówki sekcji (###) oraz proste punktorowe listy z myślnikami (`- `).\n"
+                    "   - Pogrubiaj kluczowe nazwy innowacji, grupy odbiorców i kwoty/formy dofinansowania (`**...**`).\n"
+                    "   - Przedstaw rekomendowaną innowację i jasno wyjaśnij, dlaczego idealnie pasuje do problemu użytkownika (Explainability).\n"
+                    "   - Wskaż konkretne możliwości dofinansowania oraz grupę docelową z bazy.\n"
+                    "   - Linki formatuj wyłącznie jako Markdown: `[Nazwa linku](URL)`.\n"
+                    "   - Jeśli w kontekście są zbliżone innowacje, wskaż je krótko jako alternatywne ścieżki.\n"
+                    "   - Zawsze dokończ swoją wypowiedź logicznym wnioskiem – nigdy nie urywaj zdania w połowie.\n\n"
                     f"KONTEKST BAZY DANYCH:\n{''.join(context_blocks)}"
                 )
 
@@ -381,9 +389,20 @@ class MatchingService:
                     messages=messages,
                     model=GROQ_MODEL,
                     temperature=0.3,
-                    max_tokens=800
+                    max_tokens=2000
                 )
-                return chat_completion.choices[0].message.content
+                raw_answer = chat_completion.choices[0].message.content or ""
+
+                # Bezpieczne oczyszczenie z przypadkowych tagów HTML
+                import re
+                cleaned_answer = re.sub(r'</?(?:ul|ol|div|span|p|section)>', '', raw_answer, flags=re.IGNORECASE)
+                cleaned_answer = re.sub(r'<li>\s*', '\n- ', cleaned_answer, flags=re.IGNORECASE)
+                cleaned_answer = re.sub(r'</li>', '', cleaned_answer, flags=re.IGNORECASE)
+                cleaned_answer = re.sub(r'<br\s*/?>', '\n', cleaned_answer, flags=re.IGNORECASE)
+                cleaned_answer = re.sub(r'<b>(.*?)</b>', r'**\1**', cleaned_answer, flags=re.IGNORECASE)
+                cleaned_answer = re.sub(r'<strong>(.*?)</strong>', r'**\1**', cleaned_answer, flags=re.IGNORECASE)
+
+                return cleaned_answer.strip()
             except Exception as e:
                 logger.error(f"Błąd podczas wywołania Groq API: {e}. Zastosowano fallback odpowiedzi.")
 

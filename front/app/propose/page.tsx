@@ -1,26 +1,71 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   generateInitialQuestions,
   generateFinalConcept,
   LLMDialogueMessage,
-  GeneratedConcept
-} from '../lib/llmSimulator';
-import { IdeaMockupVisualizer } from '../components/propose/IdeaMockupVisualizer';
-import { ArrowRight, RotateCcw, Check, Send } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+  GeneratedConcept,
+} from "../lib/llmSimulator";
+import { IdeaMockupVisualizer } from "../components/propose/IdeaMockupVisualizer";
+import {
+  ArrowRight,
+  RotateCcw,
+  Check,
+  Send,
+  Lock,
+  RefreshCw,
+} from "lucide-react";
+import { useApp } from "../context/AppContext";
 
 export default function ProposePage() {
-  const { currentUser, addIdea, navigate } = useApp();
+  const { currentUser, addIdea, navigate, isLoadingUser } = useApp();
+  const router = useRouter();
+
+  // Auth guard
+  useEffect(() => {
+    if (!isLoadingUser && !currentUser) {
+      router.push("/auth");
+    }
+  }, [currentUser, isLoadingUser, router]);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [rawIdea, setRawIdea] = useState('');
-  const [dialogueHistory, setDialogueHistory] = useState<LLMDialogueMessage[]>([]);
-  const [currentReplyText, setCurrentReplyText] = useState('');
+  const [rawIdea, setRawIdea] = useState("");
+  const [dialogueHistory, setDialogueHistory] = useState<LLMDialogueMessage[]>(
+    [],
+  );
+  const [currentReplyText, setCurrentReplyText] = useState("");
   const [isLlmThinking, setIsLlmThinking] = useState(false);
-  const [generatedConcept, setGeneratedConcept] = useState<GeneratedConcept | null>(null);
+  const [generatedConcept, setGeneratedConcept] =
+    useState<GeneratedConcept | null>(null);
   const [isPublished, setIsPublished] = useState(false);
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center h-96 text-stone-400">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+        <span className="text-sm font-medium">Sprawdzanie sesji...</span>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4 text-stone-500">
+        <Lock className="w-8 h-8 text-stone-300" />
+        <p className="text-sm font-medium">
+          Zaloguj się, aby zaproponować pomysł.
+        </p>
+        <button
+          onClick={() => router.push("/auth")}
+          className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors"
+        >
+          Przejdź do logowania
+        </button>
+      </div>
+    );
+  }
 
   // Step 1: Start LLM Dialogue
   const handleStartDialogue = (e: React.FormEvent) => {
@@ -33,17 +78,17 @@ export default function ProposePage() {
     setTimeout(() => {
       const q = generateInitialQuestions(rawIdea);
       const userInitialMsg: LLMDialogueMessage = {
-        id: 'msg-user-init',
-        sender: 'user',
+        id: "msg-user-init",
+        sender: "user",
         text: rawIdea,
-        timestamp: 'Teraz'
+        timestamp: "Teraz",
       };
       const assistantMsg: LLMDialogueMessage = {
-        id: 'msg-ai-1',
-        sender: 'assistant',
+        id: "msg-ai-1",
+        sender: "assistant",
         text: q.reply,
         suggestions: q.suggestions,
-        timestamp: 'Teraz'
+        timestamp: "Teraz",
       };
 
       setDialogueHistory([userInitialMsg, assistantMsg]);
@@ -57,18 +102,20 @@ export default function ProposePage() {
 
     const userMsg: LLMDialogueMessage = {
       id: `msg-user-${Date.now()}`,
-      sender: 'user',
+      sender: "user",
       text: replyText,
-      timestamp: 'Teraz'
+      timestamp: "Teraz",
     };
 
     const newHistory = [...dialogueHistory, userMsg];
     setDialogueHistory(newHistory);
-    setCurrentReplyText('');
+    setCurrentReplyText("");
     setIsLlmThinking(true);
 
     setTimeout(() => {
-      const userRepliesCount = newHistory.filter(m => m.sender === 'user').length;
+      const userRepliesCount = newHistory.filter(
+        (m) => m.sender === "user",
+      ).length;
       if (userRepliesCount >= 2) {
         const concept = generateFinalConcept(rawIdea, newHistory);
         setGeneratedConcept(concept);
@@ -77,13 +124,13 @@ export default function ProposePage() {
       } else {
         const nextAiMsg: LLMDialogueMessage = {
           id: `msg-ai-${Date.now()}`,
-          sender: 'assistant',
-          text: 'Dziękuję. Jak chciałbyś zarządzać chętnymi do testów? Czy wystarczy prosta lista w aplikacji?',
+          sender: "assistant",
+          text: "Dziękuję. Jak chciałbyś zarządzać chętnymi do testów? Czy wystarczy prosta lista w aplikacji?",
           suggestions: [
-            'Prosta lista chętnych w aplikacji',
-            'Bezpośredni kontakt przez czat Hubmi'
+            "Prosta lista chętnych w aplikacji",
+            "Bezpośredni kontakt przez czat Hubmi",
           ],
-          timestamp: 'Teraz'
+          timestamp: "Teraz",
         };
         setDialogueHistory([...newHistory, nextAiMsg]);
         setIsLlmThinking(false);
@@ -96,9 +143,9 @@ export default function ProposePage() {
     if (!generatedConcept) return;
 
     const author = currentUser || {
-      id: 'user-anna-2',
-      name: 'Anna Kowalska',
-      email: 'anna.kowalska@hubmi.pl'
+      id: "user-anna-2",
+      name: "Anna Kowalska",
+      email: "anna.kowalska@hubmi.pl",
     };
 
     addIdea({
@@ -114,41 +161,48 @@ export default function ProposePage() {
       keyBenefits: generatedConcept.keyBenefits,
       colorTheme: generatedConcept.colorTheme,
       geometricShape: generatedConcept.geometricShape,
-      status: 'active'
+      status: "active",
     });
 
     setIsPublished(true);
     setTimeout(() => {
-      navigate('discover');
+      navigate("discover");
     }, 900);
   };
 
   return (
     <div className="py-6 px-4 sm:px-6 max-w-3xl mx-auto space-y-6">
       {/* Subtle Step Tracker */}
-      <div className="flex items-center justify-between pb-2 border-b border-black/[0.05]">
+      <div className="flex items-center justify-between pb-2 border-b border-black/5">
         <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
           Zaproponuj Pomysł
         </h1>
 
         <div className="flex items-center gap-1.5 text-xs font-medium text-stone-400">
-          <span className={step >= 1 ? 'text-stone-900 font-bold' : ''}>1. Opis</span>
+          <span className={step >= 1 ? "text-stone-900 font-bold" : ""}>
+            1. Opis
+          </span>
           <span>•</span>
-          <span className={step >= 2 ? 'text-stone-900 font-bold' : ''}>2. Dialog</span>
+          <span className={step >= 2 ? "text-stone-900 font-bold" : ""}>
+            2. Dialog
+          </span>
           <span>•</span>
-          <span className={step === 3 ? 'text-stone-900 font-bold' : ''}>3. Wizualizacja</span>
+          <span className={step === 3 ? "text-stone-900 font-bold" : ""}>
+            3. Wizualizacja
+          </span>
         </div>
       </div>
 
       {/* STEP 1: INITIAL IDEA FORM */}
       {step === 1 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-5">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs space-y-5">
           <div>
             <label className="block text-base font-semibold text-stone-900 mb-1">
               Opisz krótko swój pomysł:
             </label>
             <p className="text-stone-500 text-xs">
-              Nasz asystent pomoże dobrać ułatwienia i przygotuje prostą wizualizację.
+              Nasz asystent pomoże dobrać ułatwienia i przygotuje prostą
+              wizualizację.
             </p>
           </div>
 
@@ -164,21 +218,29 @@ export default function ProposePage() {
             <div className="flex flex-wrap gap-1.5 pt-1">
               <button
                 type="button"
-                onClick={() => setRawIdea('Sąsiedzka wypożyczalnia maszyn do drewna i mebli vintage.')}
+                onClick={() =>
+                  setRawIdea(
+                    "Sąsiedzka wypożyczalnia maszyn do drewna i mebli vintage.",
+                  )
+                }
                 className="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs text-stone-700 transition-colors"
               >
                 Wypożyczalnia maszyn
               </button>
               <button
                 type="button"
-                onClick={() => setRawIdea('Prosty asystent leków z powiadomieniem głosowym.')}
+                onClick={() =>
+                  setRawIdea("Prosty asystent leków z powiadomieniem głosowym.")
+                }
                 className="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs text-stone-700 transition-colors"
               >
                 Asystent leków
               </button>
               <button
                 type="button"
-                onClick={() => setRawIdea('Klub wycieczek rowerowych i spacerów 40+.')}
+                onClick={() =>
+                  setRawIdea("Klub wycieczek rowerowych i spacerów 40+.")
+                }
                 className="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs text-stone-700 transition-colors"
               >
                 Wycieczki 40+
@@ -199,9 +261,11 @@ export default function ProposePage() {
 
       {/* STEP 2: DIALOGUE */}
       {step === 2 && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-4">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-            <span className="text-xs font-semibold text-stone-500">Doprecyzowanie pomysłu</span>
+            <span className="text-xs font-semibold text-stone-500">
+              Doprecyzowanie pomysłu
+            </span>
             <button
               onClick={() => setStep(1)}
               className="text-xs text-stone-500 hover:text-stone-900 flex items-center gap-1"
@@ -211,17 +275,17 @@ export default function ProposePage() {
             </button>
           </div>
 
-          <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-95 overflow-y-auto pr-1">
             {dialogueHistory.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2.5 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-2.5 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed ${
-                    msg.sender === 'user'
-                      ? 'bg-stone-900 text-white rounded-br-xs'
-                      : 'bg-stone-100 text-stone-900 rounded-bl-xs'
+                    msg.sender === "user"
+                      ? "bg-stone-900 text-white rounded-br-xs"
+                      : "bg-stone-100 text-stone-900 rounded-bl-xs"
                   }`}
                 >
                   <p className="whitespace-pre-line font-medium">{msg.text}</p>
@@ -256,7 +320,8 @@ export default function ProposePage() {
               value={currentReplyText}
               onChange={(e) => setCurrentReplyText(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSendDialogueReply(currentReplyText);
+                if (e.key === "Enter")
+                  handleSendDialogueReply(currentReplyText);
               }}
               placeholder="Wpisz odpowiedź..."
               className="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900"
@@ -274,7 +339,7 @@ export default function ProposePage() {
 
       {/* STEP 3: VISUAL MOCKUP & PUBLISH */}
       {step === 3 && generatedConcept && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/[0.05] shadow-2xs space-y-6">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
             <div className="md:col-span-7 space-y-4">
               <div>
