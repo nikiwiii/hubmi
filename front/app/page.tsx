@@ -19,7 +19,6 @@ import { BrowseIdeasScreen } from './components/BrowseIdeasScreen';
 import { ChatScreen } from './components/ChatScreen';
 import { AdminCrudScreen } from './components/AdminCrudScreen';
 import { UserDashboardScreen } from './components/UserDashboardScreen';
-import { PhoneFrameContainer } from './components/PhoneFrameContainer';
 
 export default function Home() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('discover');
@@ -28,7 +27,6 @@ export default function Home() {
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
   const [chatRecipientId, setChatRecipientId] = useState<string | null>(null);
   const [isLargeFont, setIsLargeFont] = useState(false);
-  const [isPhoneFrameView, setIsPhoneFrameView] = useState(false);
 
   // Initialize client state from storage
   useEffect(() => {
@@ -165,7 +163,7 @@ export default function Home() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-[#F4F4F0] ${isLargeFont ? 'font-scale-large' : ''}`}>
+    <div className={`min-h-screen flex flex-col bg-[#F7F6F1] ${isLargeFont ? 'font-scale-large' : ''}`}>
       {/* Top Navbar */}
       <Navbar
         currentScreen={currentScreen}
@@ -173,20 +171,12 @@ export default function Home() {
         currentUser={currentUser}
         isLargeFont={isLargeFont}
         onToggleFontSize={() => setIsLargeFont(!isLargeFont)}
-        isPhoneFrameView={isPhoneFrameView}
-        onTogglePhoneFrame={() => setIsPhoneFrameView(!isPhoneFrameView)}
         ideasCount={ideas.length}
       />
 
-      {/* Main Screen Content (Responsive desktop or Phone Frame) */}
-      <main className="flex-1 pb-24 lg:pb-12">
-        {isPhoneFrameView ? (
-          <PhoneFrameContainer onCloseFrame={() => setIsPhoneFrameView(false)}>
-            {renderScreenContent()}
-          </PhoneFrameContainer>
-        ) : (
-          renderScreenContent()
-        )}
+      {/* Main Screen Content */}
+      <main className="flex-1 pb-20 md:pb-8">
+        {renderScreenContent()}
       </main>
     </div>
   );

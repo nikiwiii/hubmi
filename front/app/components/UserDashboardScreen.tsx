@@ -5,13 +5,8 @@ import {
   Users,
   ThumbsUp,
   MessageSquare,
-  Sparkles,
-  ArrowRight,
-  PlusCircle,
-  CheckCircle2,
-  Settings,
-  Shield,
-  ExternalLink
+  Plus,
+  Type
 } from 'lucide-react';
 
 interface UserDashboardScreenProps {
@@ -41,164 +36,111 @@ export const UserDashboardScreen: React.FC<UserDashboardScreenProps> = ({
     avatarBg: '#A4B3F6',
     createdAt: '2026-02-10',
     status: 'active' as const,
-    bio: 'Entuzjastka ogrodnictwa i prostych rozwiązań technologicznych. 48 lat.'
+    bio: 'Twórczyni projektów.'
   };
 
-  // Ideas created by this user
   const myCreatedIdeas = ideas.filter(
     i => i.authorEmail.toLowerCase() === user.email.toLowerCase() || i.authorId === user.id
   );
 
-  // Ideas where this user is signed up as a tester
   const myTestingIdeas = ideas.filter(
     i => i.testersList.includes(user.email)
   );
 
   return (
-    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-8">
+    <div className="py-6 px-4 sm:px-6 max-w-4xl mx-auto space-y-6">
       {/* Profile Header */}
-      <div className="bg-white rounded-[36px] p-6 sm:p-10 border border-stone-200 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
+      <div className="bg-white rounded-3xl p-6 border border-black/[0.05] shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
           <div
-            className="w-20 h-20 rounded-3xl flex items-center justify-center text-3xl font-black text-stone-900 shadow-sm shrink-0"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-stone-800 shrink-0"
             style={{ backgroundColor: user.avatarBg }}
           >
             {user.name.charAt(0)}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-stone-100 text-stone-800 text-xs font-bold rounded-full uppercase tracking-wider">
-                Rola: {user.role.toUpperCase()}
+              <span className="text-lg font-bold text-stone-900 leading-tight">
+                {user.name}
               </span>
-              <span className="text-xs text-stone-400 font-medium">
-                Członek od: {user.createdAt}
+              <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                {user.role}
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight mt-1">
-              {user.name}
-            </h1>
-            <p className="text-stone-500 text-sm font-medium mt-0.5">
-              {user.email}
-            </p>
+            <p className="text-xs text-stone-400 mt-0.5">{user.email}</p>
           </div>
         </div>
 
-        {/* Quick action buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => onNavigate('propose')}
-            className="px-6 py-3.5 bg-stone-900 hover:bg-stone-800 text-white rounded-2xl text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4 text-[#F5E85A]" />
-            <span>Nowy Pomysł z AI</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>Nowy pomysł</span>
           </button>
-
-          {user.role === 'admin' && (
-            <button
-              onClick={() => onNavigate('admin')}
-              className="px-5 py-3.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-900 border border-yellow-300 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Shield className="w-4 h-4" />
-              <span>Panel Zarządcy (CRUD)</span>
-            </button>
-          )}
         </div>
       </div>
 
-      {/* 40+ Accessibility & Usability Preferences Card */}
-      <div className="bg-stone-50 rounded-3xl p-6 border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
-            <Settings className="w-4 h-4 text-stone-700" />
-            <span>Ułatwienia Dostępności dla Osób 40+</span>
-          </h3>
-          <p className="text-xs text-stone-500 font-medium mt-0.5">
-            Dostosuj wielkość liter na całej stronie do swoich preferencji wzrokowych.
-          </p>
-        </div>
-
+      {/* Accessibility Font Toggle Bar */}
+      <div className="bg-stone-50 rounded-2xl px-5 py-3 border border-stone-200/60 flex items-center justify-between text-xs">
+        <span className="font-medium text-stone-700">Wielkość czcionki w aplikacji:</span>
         <button
           onClick={onToggleFontSize}
-          className="px-5 py-2.5 bg-white border border-stone-300 rounded-xl text-sm font-bold text-stone-800 shadow-sm hover:bg-stone-100 transition-colors flex items-center gap-2"
+          className="px-3 py-1 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-800 hover:bg-stone-100"
         >
-          <span>Wielkość liter:</span>
-          <span className="px-2 py-0.5 bg-stone-900 text-white rounded-md text-xs font-mono">
-            {isLargeFont ? 'Powiększone (A+)' : 'Standardowe (A)'}
-          </span>
+          {isLargeFont ? 'Powiększona (A+)' : 'Standardowa (A)'}
         </button>
       </div>
 
       {/* SECTION 1: MY CREATED IDEAS */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Lightbulb className="w-6 h-6 text-amber-500" />
-            <h2 className="text-2xl font-black text-stone-900">
-              Moje Zgłoszone Pomysły ({myCreatedIdeas.length})
-            </h2>
-          </div>
+          <h2 className="text-base font-bold text-stone-900 flex items-center gap-1.5">
+            <Lightbulb className="w-4 h-4 text-stone-600" />
+            <span>Moje Pomysły ({myCreatedIdeas.length})</span>
+          </h2>
           <button
             onClick={() => onNavigate('propose')}
-            className="text-xs font-bold text-stone-600 hover:text-stone-900 flex items-center gap-1"
+            className="text-xs font-semibold text-stone-500 hover:text-stone-900"
           >
-            <span>Dodaj kolejny</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            Dodaj kolejny
           </button>
         </div>
 
         {myCreatedIdeas.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 border border-stone-200 text-center space-y-3">
-            <p className="text-stone-700 font-bold text-base">Nie zgłosiłeś jeszcze żadnego własnego pomysłu.</p>
-            <p className="text-stone-500 text-sm">Opisz swoją myśl w kilku słowach, a nasz asystent AI pomoże Ci przygotować projekt!</p>
-            <button
-              onClick={() => onNavigate('propose')}
-              className="mt-2 px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-bold inline-flex items-center gap-2"
-            >
-              <Sparkles className="w-4 h-4 text-[#F5E85A]" />
-              <span>Stwórz pierwszy pomysł</span>
-            </button>
+          <div className="bg-white rounded-2xl p-6 border border-stone-200 text-center text-xs text-stone-500">
+            Brak zgłoszonych pomysłów.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {myCreatedIdeas.map((idea) => (
               <div
                 key={idea.id}
                 onClick={() => onSelectIdea(idea)}
-                className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-3"
+                className="bg-white p-4 rounded-2xl border border-stone-200 hover:border-stone-300 transition-colors cursor-pointer space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-800">
+                  <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
                     {idea.category}
                   </span>
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-                    {idea.status === 'testing' ? 'Faza testów' : 'Aktywny w społeczności'}
+                  <span className="text-xs text-stone-400">
+                    {idea.createdAt}
                   </span>
                 </div>
 
-                <div>
-                  <h3 className="text-xl font-bold text-stone-900 leading-tight">
-                    {idea.title}
-                  </h3>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2">
-                    {idea.subtitle}
-                  </p>
-                </div>
+                <h3 className="text-sm font-bold text-stone-900 truncate">
+                  {idea.title}
+                </h3>
 
-                <div className="flex items-center justify-between pt-3 border-t border-stone-100 text-xs font-bold text-stone-600">
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1">
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                      {idea.likes} polubień
-                    </span>
-                    <span className="flex items-center gap-1 text-emerald-700">
-                      <Users className="w-3.5 h-3.5" />
-                      {idea.testersCount} chętnych testerów
-                    </span>
-                  </div>
-
-                  <span className="text-stone-900 underline flex items-center gap-1">
-                    Szczegóły
-                    <ExternalLink className="w-3 h-3" />
+                <div className="flex items-center justify-between text-xs text-stone-500 pt-1 border-t border-stone-100">
+                  <span className="flex items-center gap-1">
+                    <ThumbsUp className="w-3 h-3" />
+                    {idea.likes}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    {idea.testersCount} testerów
                   </span>
                 </div>
               </div>
@@ -208,71 +150,48 @@ export const UserDashboardScreen: React.FC<UserDashboardScreenProps> = ({
       </div>
 
       {/* SECTION 2: MY TESTING PARTICIPATIONS */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="w-6 h-6 text-emerald-600" />
-            <h2 className="text-2xl font-black text-stone-900">
-              Projekty, w których biorę udział jako Tester ({myTestingIdeas.length})
-            </h2>
-          </div>
-          <button
-            onClick={() => onNavigate('discover')}
-            className="text-xs font-bold text-stone-600 hover:text-stone-900 flex items-center gap-1"
-          >
-            <span>Przeglądaj więcej</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+      <div className="space-y-3">
+        <h2 className="text-base font-bold text-stone-900 flex items-center gap-1.5">
+          <Users className="w-4 h-4 text-stone-600" />
+          <span>Moje Testy ({myTestingIdeas.length})</span>
+        </h2>
 
         {myTestingIdeas.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 border border-stone-200 text-center space-y-3">
-            <p className="text-stone-700 font-bold text-base">Nie jesteś jeszcze zapisany na żadne testy.</p>
-            <p className="text-stone-500 text-sm">Przejdź do zakładki &quot;Odkrywaj&quot; i zaznacz &quot;Chcę brać udział w testach&quot; przy projektach, które Cię interesują.</p>
-            <button
-              onClick={() => onNavigate('discover')}
-              className="mt-2 px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-bold"
-            >
-              Przeglądaj pomysły do testowania
-            </button>
+          <div className="bg-white rounded-2xl p-6 border border-stone-200 text-center text-xs text-stone-500">
+            Nie bierzesz udziału w żadnych testach.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {myTestingIdeas.map((idea) => (
               <div
                 key={idea.id}
-                className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm space-y-3"
+                className="bg-white p-4 rounded-2xl border border-stone-200 space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900">
-                    Jesteś Testerem
+                  <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    Tester
                   </span>
-                  <span className="text-xs text-stone-400">Autor: {idea.authorName}</span>
+                  <span className="text-xs text-stone-400">{idea.authorName}</span>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-bold text-stone-900">
-                    {idea.title}
-                  </h3>
-                  <p className="text-xs text-stone-600 mt-1 line-clamp-2">
-                    {idea.summary}
-                  </p>
-                </div>
+                <h3 className="text-sm font-bold text-stone-900 truncate">
+                  {idea.title}
+                </h3>
 
-                <div className="flex items-center justify-between pt-3 border-t border-stone-100">
+                <div className="flex items-center justify-between pt-1 border-t border-stone-100">
                   <button
                     onClick={() => onOpenChatWithAuthor(idea.authorId)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold transition-colors cursor-pointer"
+                    className="flex items-center gap-1 text-xs text-stone-700 hover:text-stone-900 font-medium cursor-pointer"
                   >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Czat z autorem</span>
+                    <MessageSquare className="w-3 h-3" />
+                    <span>Czat</span>
                   </button>
 
                   <button
                     onClick={() => onSelectIdea(idea)}
-                    className="text-xs font-bold text-stone-900 underline"
+                    className="text-xs font-semibold text-stone-900 underline"
                   >
-                    Karta projektu
+                    Karta
                   </button>
                 </div>
               </div>

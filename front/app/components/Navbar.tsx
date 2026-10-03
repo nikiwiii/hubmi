@@ -8,9 +8,7 @@ import {
   Shield,
   User as UserIcon,
   LogIn,
-  Type,
-  Smartphone,
-  Monitor
+  Type
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -19,8 +17,6 @@ interface NavbarProps {
   currentUser: User | null;
   isLargeFont: boolean;
   onToggleFontSize: () => void;
-  isPhoneFrameView: boolean;
-  onTogglePhoneFrame: () => void;
   unreadCount?: number;
   ideasCount: number;
 }
@@ -30,150 +26,118 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   currentUser,
   isLargeFont,
-  onToggleFontSize,
-  isPhoneFrameView,
-  onTogglePhoneFrame,
-  unreadCount = 0,
-  ideasCount
+  onToggleFontSize
 }) => {
   const isAdmin = currentUser?.role === 'admin';
 
   return (
     <>
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-[#F4F4F0]/90 backdrop-blur-md border-b border-stone-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[#F7F6F1]/90 backdrop-blur-md border-b border-black/[0.05]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between">
           {/* Brand Logo */}
           <div
             onClick={() => onNavigate('discover')}
-            className="flex items-center gap-3 cursor-pointer select-none"
+            className="flex items-center gap-2.5 cursor-pointer select-none"
           >
-            <div className="w-10 h-10 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-black text-xl shadow-md">
+            <div className="w-8 h-8 rounded-xl bg-stone-900 flex items-center justify-center text-white font-bold text-base">
               H
             </div>
-            <div>
-              <span className="text-2xl font-black text-stone-900 tracking-tight">Hubmi</span>
-              <span className="hidden sm:inline-block ml-2 text-xs font-bold text-stone-500 uppercase tracking-widest">
-                Platforma Pomysłów 40+
-              </span>
-            </div>
+            <span className="text-xl font-bold text-stone-900 tracking-tight">Hubmi</span>
           </div>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1 bg-stone-200/60 p-1.5 rounded-2xl">
+          {/* Desktop Navigation Links (Clean & Minimal) */}
+          <nav className="hidden md:flex items-center gap-1 bg-stone-200/50 p-1 rounded-2xl">
             <button
               onClick={() => onNavigate('discover')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 currentScreen === 'discover'
-                  ? 'bg-white text-stone-900 shadow-sm'
-                  : 'text-stone-700 hover:text-stone-900'
+                  ? 'bg-white text-stone-900 shadow-2xs'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               Odkrywaj
             </button>
             <button
               onClick={() => onNavigate('propose')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 currentScreen === 'propose'
-                  ? 'bg-white text-stone-900 shadow-sm'
-                  : 'text-stone-700 hover:text-stone-900'
+                  ? 'bg-white text-stone-900 shadow-2xs'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-[#F5E85A]" />
-              Zaproponuj z AI
+              Zaproponuj
             </button>
             <button
               onClick={() => onNavigate('browse')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 currentScreen === 'browse'
-                  ? 'bg-white text-stone-900 shadow-sm'
-                  : 'text-stone-700 hover:text-stone-900'
+                  ? 'bg-white text-stone-900 shadow-2xs'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              Ocena & Testy
+              Przeglądaj
             </button>
             <button
               onClick={() => onNavigate('chat')}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 currentScreen === 'chat'
-                  ? 'bg-white text-stone-900 shadow-sm'
-                  : 'text-stone-700 hover:text-stone-900'
+                  ? 'bg-white text-stone-900 shadow-2xs'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Czat (co 1s)
+              Czat
             </button>
             <button
               onClick={() => onNavigate('dashboard')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 currentScreen === 'dashboard'
-                  ? 'bg-white text-stone-900 shadow-sm'
-                  : 'text-stone-700 hover:text-stone-900'
+                  ? 'bg-white text-stone-900 shadow-2xs'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              Mój Pulpit
+              Pulpit
             </button>
             {isAdmin && (
               <button
                 onClick={() => onNavigate('admin')}
-                className={`flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   currentScreen === 'admin'
-                    ? 'bg-stone-900 text-white shadow-sm'
-                    : 'bg-yellow-200/80 text-yellow-900 hover:bg-yellow-300'
+                    ? 'bg-stone-900 text-white'
+                    : 'bg-[#EFE5C6] text-stone-800 hover:bg-[#E7DAC0]'
                 }`}
               >
                 <Shield className="w-3.5 h-3.5" />
-                Admin (CRUD)
+                Admin
               </button>
             )}
           </nav>
 
-          {/* Right Controls: Font Size Accessibility, Mockup View Toggle, User Profile */}
+          {/* Right Controls: Font Size Accessibility, User Profile */}
           <div className="flex items-center gap-2">
-            {/* Font Size Toggle for 40+ audience */}
             <button
               onClick={onToggleFontSize}
-              title={isLargeFont ? 'Zmień na czcionkę standardową' : 'Powiększ czcionkę (Ułatwienie 40+)'}
-              className={`flex items-center gap-1 px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+              title={isLargeFont ? 'Zmień na czcionkę standardową' : 'Powiększ czcionkę (A+)'}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
                 isLargeFont
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-800 border-stone-200 hover:bg-stone-100'
+                  : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-50'
               }`}
             >
               <Type className="w-3.5 h-3.5" />
-              <span>{isLargeFont ? 'A+ Duże' : 'A Normalne'}</span>
+              <span>{isLargeFont ? 'A+' : 'A'}</span>
             </button>
 
-            {/* Frame view toggle matching reference mockup */}
-            <button
-              onClick={onTogglePhoneFrame}
-              title="Przełącz widok makiety telefonu (ze zdjęcia) / pełny ekran"
-              className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-xl bg-white border border-stone-200 text-xs font-bold text-stone-800 hover:bg-stone-100 transition-colors cursor-pointer"
-            >
-              {isPhoneFrameView ? (
-                <>
-                  <Monitor className="w-3.5 h-3.5 text-stone-600" />
-                  <span>Pełny ekran</span>
-                </>
-              ) : (
-                <>
-                  <Smartphone className="w-3.5 h-3.5 text-stone-600" />
-                  <span>Kadr telefonu</span>
-                </>
-              )}
-            </button>
-
-            {/* User status avatar / Auth */}
             {currentUser ? (
               <div
                 onClick={() => onNavigate('dashboard')}
-                className="flex items-center gap-2 p-1.5 pl-3 rounded-2xl bg-white border border-stone-200 hover:border-stone-400 cursor-pointer transition-colors shadow-sm"
+                className="flex items-center gap-2 p-1 pl-2.5 rounded-xl bg-white border border-stone-200 hover:border-stone-300 cursor-pointer transition-colors"
               >
-                <span className="hidden md:inline-block text-xs font-bold text-stone-800 truncate max-w-[110px]">
+                <span className="hidden sm:inline-block text-xs font-semibold text-stone-800 truncate max-w-[100px]">
                   {currentUser.name}
                 </span>
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold text-stone-900"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-stone-800"
                   style={{ backgroundColor: currentUser.avatarBg }}
                 >
                   {currentUser.name.charAt(0)}
@@ -182,7 +146,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             ) : (
               <button
                 onClick={() => onNavigate('auth')}
-                className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-bold shadow-sm hover:bg-stone-800 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Zaloguj</span>
@@ -192,68 +156,57 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </header>
 
-      {/* Mobile / Photo-styled Bottom Navigation Dock */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#F4F4F0]/95 backdrop-blur-xl border-t border-stone-300 p-2 px-4 shadow-2xl">
+      {/* Mobile Bottom Dock (clean & minimal) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#F7F6F1]/95 backdrop-blur-md border-t border-stone-200 py-1.5 px-3">
         <div className="max-w-md mx-auto flex items-center justify-around">
           <button
             onClick={() => onNavigate('discover')}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
-              currentScreen === 'discover'
-                ? 'text-stone-950 font-black scale-105'
-                : 'text-stone-400 font-semibold'
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all cursor-pointer ${
+              currentScreen === 'discover' ? 'text-stone-900 font-bold' : 'text-stone-400'
             }`}
           >
             <Compass className="w-5 h-5" />
-            <span className="text-[10px] tracking-tight">Odkrywaj</span>
+            <span className="text-[10px]">Odkrywaj</span>
           </button>
 
           <button
             onClick={() => onNavigate('propose')}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
-              currentScreen === 'propose'
-                ? 'text-stone-950 font-black scale-105'
-                : 'text-stone-400 font-semibold'
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all cursor-pointer ${
+              currentScreen === 'propose' ? 'text-stone-900 font-bold' : 'text-stone-400'
             }`}
           >
-            <PlusCircle className="w-5 h-5 text-amber-500" />
-            <span className="text-[10px] tracking-tight">Kreator AI</span>
+            <PlusCircle className="w-5 h-5" />
+            <span className="text-[10px]">Zaproponuj</span>
           </button>
 
           <button
             onClick={() => onNavigate('browse')}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
-              currentScreen === 'browse'
-                ? 'text-stone-950 font-black scale-105'
-                : 'text-stone-400 font-semibold'
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all cursor-pointer ${
+              currentScreen === 'browse' ? 'text-stone-900 font-bold' : 'text-stone-400'
             }`}
           >
             <Vote className="w-5 h-5" />
-            <span className="text-[10px] tracking-tight">Ocena</span>
+            <span className="text-[10px]">Przeglądaj</span>
           </button>
 
           <button
             onClick={() => onNavigate('chat')}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-2xl transition-all relative cursor-pointer ${
-              currentScreen === 'chat'
-                ? 'text-stone-950 font-black scale-105'
-                : 'text-stone-400 font-semibold'
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all cursor-pointer ${
+              currentScreen === 'chat' ? 'text-stone-900 font-bold' : 'text-stone-400'
             }`}
           >
             <MessageCircle className="w-5 h-5" />
-            <span className="w-2 h-2 rounded-full bg-emerald-500 absolute top-1 right-3" />
-            <span className="text-[10px] tracking-tight">Czat</span>
+            <span className="text-[10px]">Czat</span>
           </button>
 
           <button
             onClick={() => onNavigate(currentUser ? 'dashboard' : 'auth')}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-2xl transition-all cursor-pointer ${
-              currentScreen === 'dashboard' || currentScreen === 'auth'
-                ? 'text-stone-950 font-black scale-105'
-                : 'text-stone-400 font-semibold'
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all cursor-pointer ${
+              currentScreen === 'dashboard' || currentScreen === 'auth' ? 'text-stone-900 font-bold' : 'text-stone-400'
             }`}
           >
             <UserIcon className="w-5 h-5" />
-            <span className="text-[10px] tracking-tight">{currentUser ? 'Pulpit' : 'Konto'}</span>
+            <span className="text-[10px]">{currentUser ? 'Pulpit' : 'Konto'}</span>
           </button>
         </div>
       </div>

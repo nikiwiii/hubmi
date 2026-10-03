@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Idea, ScreenId, User } from '../lib/types';
 import { IdeaCard } from './IdeaCard';
-import { Search, SlidersHorizontal, PlusCircle, Sparkles, Filter, X } from 'lucide-react';
+import { Search, Plus, X } from 'lucide-react';
 
 interface DiscoverScreenProps {
   ideas: Idea[];
@@ -15,11 +15,11 @@ interface DiscoverScreenProps {
 const CATEGORIES = [
   'Wszystkie',
   'Dom i Ogród',
-  'Zdrowie & Bezpieczeństwo',
-  'Społeczność & Rozwój',
-  'Podróże & Pasje',
-  'Rzemiosło & Pasje',
-  'Praca & Biznes'
+  'Zdrowie',
+  'Społeczność',
+  'Podróże',
+  'Rzemiosło',
+  'Praca'
 ];
 
 export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
@@ -44,7 +44,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
           idea.authorName.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesCategory =
-          selectedCategory === 'Wszystkie' || idea.category.toLowerCase().includes(selectedCategory.toLowerCase().slice(0, 5));
+          selectedCategory === 'Wszystkie' || idea.category.toLowerCase().includes(selectedCategory.toLowerCase().slice(0, 4));
 
         return matchesQuery && matchesCategory;
       })
@@ -55,75 +55,61 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
       });
   }, [ideas, searchQuery, selectedCategory, sortBy]);
 
-  const totalLikes = ideas.reduce((acc, i) => acc + i.likes, 0);
-  const totalTesters = ideas.reduce((acc, i) => acc + i.testersCount, 0);
-
   return (
-    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-8">
-      {/* Top Hero Section matching photo aesthetics */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-4">
+    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6">
+      {/* Top Hero Section matching photo aesthetics (Subtle & Restrained) */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
         <div>
-          {/* Editorial Swiss Typography from photo */}
-          <div className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.92] select-none">
-            <span className="block text-stone-900">Odkrywaj</span>
-            <span className="block text-stone-900">Pomysły</span>
-            <span className="block text-stone-300">Inspiruj</span>
-            <span className="block text-stone-300">Zmiany</span>
+          <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
+            <span className="block text-stone-900">Odkrywaj Pomysły</span>
+            <span className="block text-stone-300">Inspiruj Zmiany</span>
           </div>
-
-          <p className="mt-4 text-stone-600 text-lg sm:text-xl font-medium max-w-lg leading-relaxed">
-            Społeczność dojrzałych twórców. Przeglądaj, opiniuj i decyduj, które inicjatywy wejdą w życie.
-          </p>
         </div>
 
-        {/* Quick action button to propose new idea */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <button
-            onClick={() => onNavigate('propose')}
-            className="flex items-center justify-center gap-2.5 px-6 py-4 bg-stone-900 text-white rounded-2xl text-base font-bold shadow-lg hover:bg-stone-800 transition-all hover:scale-102 cursor-pointer"
-          >
-            <PlusCircle className="w-5 h-5 text-[#F5E85A]" />
-            <span>Zaproponuj Pomysł z AI</span>
-          </button>
-        </div>
+        <button
+          onClick={() => onNavigate('propose')}
+          className="self-start sm:self-auto flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Zaproponuj pomysł</span>
+        </button>
       </div>
 
-      {/* Prominent Search Bar (Optimized for 40+ usability) */}
-      <div className="bg-white rounded-3xl p-3 sm:p-4 shadow-sm border border-stone-200">
+      {/* Minimal Search Bar */}
+      <div className="bg-white rounded-2xl p-2 shadow-2xs border border-black/[0.04]">
         <div className="relative flex items-center">
-          <Search className="absolute left-4 w-6 h-6 text-stone-400" />
+          <Search className="absolute left-3.5 w-4 h-4 text-stone-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Szukaj pomysłów... (np. ogród, leki, podróże, majsterkowanie)"
-            className="w-full pl-13 pr-10 py-3.5 text-lg sm:text-xl font-medium text-stone-900 placeholder:text-stone-400 rounded-2xl focus:outline-none"
+            placeholder="Szukaj pomysłów..."
+            className="w-full pl-10 pr-8 py-2 text-base font-medium text-stone-900 placeholder:text-stone-400 rounded-xl focus:outline-none"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-4 p-1.5 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700"
+              className="absolute right-3 p-1 text-stone-400 hover:text-stone-700"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
 
       {/* Categories & Filter Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Horizontal Category Scroll */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat;
             return (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`whitespace-nowrap px-4 py-2.5 rounded-2xl text-sm font-bold transition-all cursor-pointer ${
+                className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-stone-900 text-white shadow-md'
-                    : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
+                    ? 'bg-stone-900 text-white'
+                    : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200/80'
                 }`}
               >
                 {cat}
@@ -133,14 +119,11 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
         </div>
 
         {/* Sort Options */}
-        <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
-          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-            Sortuj:
-          </span>
+        <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-sm font-bold text-stone-800 focus:outline-none cursor-pointer"
+            className="px-2.5 py-1.5 bg-white border border-stone-200/80 rounded-xl text-xs font-medium text-stone-700 focus:outline-none cursor-pointer"
           >
             <option value="popular">Najpopularniejsze</option>
             <option value="testers">Najwięcej testerów</option>
@@ -149,40 +132,19 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
         </div>
       </div>
 
-      {/* Counter bar (reminiscent of the superscripts 993, 712 in photo) */}
-      <div className="flex items-center justify-between border-b border-stone-200 pb-3 text-sm text-stone-500 font-medium">
-        <div className="flex items-center gap-4">
-          <span className="font-bold text-stone-900">
-            Wyniki: <span className="text-stone-500 font-normal">{filteredIdeas.length} pomysłów</span>
-          </span>
-          <span className="hidden sm:inline-block text-stone-300">•</span>
-          <span className="hidden sm:inline-block">
-            Łącznie głosów: <strong className="text-stone-800">{totalLikes}</strong>
-          </span>
-          <span className="hidden sm:inline-block text-stone-300">•</span>
-          <span className="hidden sm:inline-block">
-            Zgłoszonych testerów: <strong className="text-stone-800">{totalTesters}</strong>
-          </span>
-        </div>
-        <span className="text-xs text-stone-400">
-          Kliknij kafelek, aby poznać szczegóły
-        </span>
-      </div>
-
-      {/* Grid of Idea Cards (Photo-inspired aesthetic) */}
+      {/* Grid of Idea Cards */}
       {filteredIdeas.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-stone-200">
-          <p className="text-xl font-bold text-stone-800">Nie znaleziono pomysłów spełniających kryteria.</p>
-          <p className="text-stone-500 mt-2">Spróbuj wpisać inne słowo kluczowe lub wybierz kategorię &quot;Wszystkie&quot;.</p>
+        <div className="bg-white rounded-2xl p-10 text-center border border-stone-200">
+          <p className="text-base font-semibold text-stone-800">Brak wyników</p>
           <button
             onClick={() => { setSearchQuery(''); setSelectedCategory('Wszystkie'); }}
-            className="mt-4 px-5 py-2.5 bg-stone-900 text-white rounded-xl text-sm font-bold"
+            className="mt-3 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-medium"
           >
-            Zresetuj filtry
+            Wyczyść filtry
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredIdeas.map((idea) => {
             const isUserTester = currentUser ? idea.testersList.includes(currentUser.email) : false;
             return (
