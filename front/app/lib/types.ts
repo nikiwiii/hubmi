@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'creator' | 'tester';
+export type UserRole = "admin" | "creator" | "tester";
 
 export interface User {
   id: string;
@@ -7,13 +7,27 @@ export interface User {
   role: UserRole;
   avatarBg: string;
   createdAt: string;
-  status: 'active' | 'blocked';
+  status: "active" | "blocked";
   bio?: string;
 }
 
-export type ColorTheme = 'yellow' | 'slate' | 'lavender' | 'sage' | 'lilac' | 'pink' | 'cyan';
+export type ColorTheme =
+  | "yellow"
+  | "slate"
+  | "lavender"
+  | "sage"
+  | "lilac"
+  | "pink"
+  | "cyan";
 
-export type ShapeType = 'donut' | 'v-shape' | 'cloud' | 'crescent' | 'wave' | 'diamond' | 'sun';
+export type ShapeType =
+  | "donut"
+  | "v-shape"
+  | "cloud"
+  | "crescent"
+  | "wave"
+  | "diamond"
+  | "sun";
 
 export interface Idea {
   id: string;
@@ -29,13 +43,13 @@ export interface Idea {
   keyBenefits: string[];
   likes: number;
   dislikes: number;
-  userVote?: 'like' | 'dislike' | null;
+  userVote?: "like" | "dislike" | null;
   testersCount: number;
   testersList: string[]; // user emails
   colorTheme: ColorTheme;
   geometricShape: ShapeType;
   visualMockupUrl?: string;
-  status: 'active' | 'draft' | 'testing' | 'archived';
+  status: "active" | "draft" | "testing" | "archived";
   createdAt: string;
   commentsCount: number;
 }
@@ -60,17 +74,17 @@ export interface ChatContact {
   isOnline: boolean;
 }
 
-export type ScreenId = 
-  | 'auth'
-  | 'discover'
-  | 'propose'
-  | 'browse'
-  | 'chat'
-  | 'admin'
-  | 'dashboard'
-  | 'knowledge';
+export type ScreenId =
+  | "auth"
+  | "discover"
+  | "propose"
+  | "browse"
+  | "chat"
+  | "admin"
+  | "dashboard"
+  | "knowledge";
 
-export type KnowledgeType = 'challenge' | 'innovation' | 'education';
+export type KnowledgeType = "challenge" | "innovation" | "education";
 
 export interface KnowledgeResource {
   id: string;
@@ -98,26 +112,43 @@ export function getCategoryThemeAndShape(category: string): {
   theme: ColorTheme;
   shape: ShapeType;
 } {
-  const cat = (category || '').toLowerCase();
-  if (cat.includes('ogród') || cat.includes('dom')) {
-    return { theme: 'sage', shape: 'v-shape' }; // Nature/garden green
+  const cat = (category || "").toLowerCase();
+  if (cat.includes("ogród") || cat.includes("dom")) {
+    return { theme: "sage", shape: "v-shape" }; // Nature/garden green
   }
-  if (cat.includes('zdrowie') || cat.includes('lek') || cat.includes('bezpieczeństwo')) {
-    return { theme: 'lavender', shape: 'cloud' }; // Peaceful misty periwinkle
+  if (
+    cat.includes("zdrowie") ||
+    cat.includes("lek") ||
+    cat.includes("bezpieczeństwo")
+  ) {
+    return { theme: "lavender", shape: "cloud" }; // Peaceful misty periwinkle
   }
-  if (cat.includes('społecz') || cat.includes('rozwój') || cat.includes('mądrość')) {
-    return { theme: 'yellow', shape: 'donut' }; // Warm pale sun yellow
+  if (
+    cat.includes("społecz") ||
+    cat.includes("rozwój") ||
+    cat.includes("mądrość")
+  ) {
+    return { theme: "yellow", shape: "donut" }; // Warm pale sun yellow
   }
-  if (cat.includes('podróż') || cat.includes('kamper')) {
-    return { theme: 'cyan', shape: 'wave' }; // Sea glass cyan
+  if (cat.includes("podróż") || cat.includes("kamper")) {
+    return { theme: "cyan", shape: "wave" }; // Sea glass cyan
   }
-  if (cat.includes('rzemiosł') || cat.includes('mebl') || cat.includes('pasj')) {
-    return { theme: 'lilac', shape: 'crescent' }; // Heather lilac
+  if (
+    cat.includes("rzemiosł") ||
+    cat.includes("mebl") ||
+    cat.includes("pasj")
+  ) {
+    return { theme: "lilac", shape: "crescent" }; // Heather lilac
   }
-  if (cat.includes('prac') || cat.includes('biznes') || cat.includes('finanse') || cat.includes('księg')) {
-    return { theme: 'pink', shape: 'diamond' }; // Soft rose
+  if (
+    cat.includes("prac") ||
+    cat.includes("biznes") ||
+    cat.includes("finanse") ||
+    cat.includes("księg")
+  ) {
+    return { theme: "pink", shape: "diamond" }; // Soft rose
   }
-  return { theme: 'slate', shape: 'v-shape' }; // Neutral stone slate
+  return { theme: "slate", shape: "v-shape" }; // Neutral stone slate
 }
 
 export interface InnovationMatchItem {
@@ -152,7 +183,7 @@ export interface TraceStep {
 
 export interface MatchResponse {
   answer: string;
-  guardrail_status: 'PASSED' | 'BLOCKED_NOT_FOUND' | 'BLOCKED_OFF_TOPIC';
+  guardrail_status: "PASSED" | "BLOCKED_NOT_FOUND" | "BLOCKED_OFF_TOPIC";
   guardrail_message?: string | null;
   top_solution?: InnovationMatchItem | null;
   close_solutions: InnovationMatchItem[];
@@ -169,7 +200,7 @@ export interface BackendConversation {
   idea_id?: string | null;
   idea_title?: string | null;
   topic: string;
-  status: 'open' | 'in_progress' | 'closed';
+  status: "open" | "in_progress" | "closed";
   assigned_admin_id?: string | null;
   assigned_admin_name?: string | null;
   unread_by_admin: number;
@@ -184,7 +215,7 @@ export interface BackendMessage {
   conversation_id: string;
   sender_id: string;
   sender_name: string;
-  sender_role: 'user' | 'admin' | 'expert';
+  sender_role: "user" | "admin" | "expert";
   content: string;
   created_at: string;
 }

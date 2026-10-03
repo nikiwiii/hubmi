@@ -38,20 +38,54 @@ function getHeaders(includeAuth = true): Record<string, string> {
   return headers;
 }
 
+/**
+ * Centralny wrapper fetch z automatyczną obsługą błędu 401 (wygaśnięcie tokenu).
+ * Przy statusie 401 czyści token i przekierowuje do /auth (z pominięciem endpointów logowania).
+ */
+async function apiFetch(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const res = await fetch(url, options);
+
+  const isAuthEndpoint =
+    url.includes('/api/login/user') ||
+    url.includes('/api/login/admin') ||
+    url.includes('/api/login/register');
+
+  if (res.status === 401 && !isAuthEndpoint) {
+    // Token wygasł lub jest nieprawidłowy w zapytaniach wymagających autoryzacji
+    setAuthToken(null);
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+      window.location.href = '/auth';
+    }
+  }
+
+  return res;
+}
+
 // ==========================================
 // 1. AUTH & PROFILES API (/api/login)
 // ==========================================
 export interface LoginResponse {
   access_token: string;
   token_type: string;
-  role: string;
-  user_id: string;
-  name: string;
+  user?: {
+    id: string;
+    email: string;
+    full_name: string;
+    role: string;
+    created_at?: string;
+  };
+  role?: string;
+  user_id?: string;
+  name?: string;
+  full_name?: string;
   email?: string;
 }
 
 export async function loginUser(email: string, password: string): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/login/user`, {
+  const res = await apiFetch(`${API_BASE}/api/login/user`, {
     method: 'POST',
     headers: getHeaders(false),
     body: JSON.stringify({ email, password }),
@@ -65,19 +99,25 @@ export async function loginUser(email: string, password: string): Promise<User> 
   const data: LoginResponse = await res.json();
   setAuthToken(data.access_token);
 
+  const userId = data.user?.id || data.user_id || `user-${Date.now()}`;
+  const userEmail = data.user?.email || data.email || email;
+  const userName = data.user?.full_name || data.name || data.full_name || userEmail.split('@')[0];
+  const userRole = data.user?.role || data.role;
+  const isAdmin = userRole === 'admin' || userEmail.toLowerCase().includes('admin');
+
   return {
-    id: data.user_id,
-    email: data.email || email,
-    name: data.name,
-    role: (data.role === 'admin' ? 'admin' : 'creator'),
-    avatarBg: '#A4B3F6',
-    createdAt: new Date().toISOString().split('T')[0],
+    id: userId,
+    email: userEmail,
+    name: userName,
+    role: isAdmin ? 'admin' : 'creator',
+    avatarBg: isAdmin ? '#F5E85A' : '#A4B3F6',
+    createdAt: data.user?.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
     status: 'active',
   };
 }
 
 export async function loginAdmin(email: string, password: string): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/login/admin`, {
+  const res = await apiFetch(`${API_BASE}/api/login/admin`, {
     method: 'POST',
     headers: getHeaders(false),
     body: JSON.stringify({ email, password }),
@@ -91,19 +131,23 @@ export async function loginAdmin(email: string, password: string): Promise<User>
   const data: LoginResponse = await res.json();
   setAuthToken(data.access_token);
 
+  const userId = data.user?.id || data.user_id || `admin-${Date.now()}`;
+  const userEmail = data.user?.email || data.email || email;
+  const userName = data.user?.full_name || data.name || data.full_name || 'Główny Administrator';
+
   return {
-    id: data.user_id,
-    email: data.email || email,
-    name: data.name,
+    id: userId,
+    email: userEmail,
+    name: userName,
     role: 'admin',
     avatarBg: '#F5E85A',
-    createdAt: new Date().toISOString().split('T')[0],
+    createdAt: data.user?.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
     status: 'active',
   };
 }
 
 export async function registerUser(email: string, password: string, name: string, role: string = 'user'): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/login/register`, {
+  const res = await apiFetch(`${API_BASE}/api/login/register`, {
     method: 'POST',
     headers: getHeaders(false),
     body: JSON.stringify({ email, password, full_name: name, role }),
@@ -126,7 +170,7 @@ export async function fetchCurrentProfile(): Promise<User | null> {
   if (!token) return null;
 
   try {
-    const res = await fetch(`${API_BASE}/api/login/me`, {
+    const res = await apiFetch(`${API_BASE}/api/login/me`, {
       method: 'GET',
       headers: getHeaders(true),
     });
@@ -134,12 +178,14 @@ export async function fetchCurrentProfile(): Promise<User | null> {
     if (!res.ok) return null;
 
     const data = await res.json();
+    const userRole = data.role === 'admin' ? 'admin' : 'creator';
+    const userName = data.full_name || data.name || data.email?.split('@')[0] || 'Użytkownik';
     return {
       id: data.id,
       email: data.email,
-      name: data.full_name,
-      role: data.role === 'admin' ? 'admin' : 'creator',
-      avatarBg: data.role === 'admin' ? '#F5E85A' : '#A4B3F6',
+      name: userName,
+      role: userRole,
+      avatarBg: userRole === 'admin' ? '#F5E85A' : '#A4B3F6',
       createdAt: data.created_at?.split('T')[0] || '2026-03-01',
       status: 'active',
     };
@@ -193,22 +239,17 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
 }
 
 export async function fetchIdeasFromBackend(): Promise<Idea[]> {
-  try {
-    const res = await fetch(`${API_BASE}/api/ideas/`, {
-      method: 'GET',
-      headers: getHeaders(true),
-    });
+  const res = await apiFetch(`${API_BASE}/api/ideas/`, {
+    method: 'GET',
+    headers: getHeaders(true),
+  });
 
-    if (!res.ok) {
-      throw new Error('Failed to load ideas from backend');
-    }
-
-    const data: BackendIdea[] = await res.json();
-    return data.map(mapBackendIdeaToFrontend);
-  } catch (err) {
-    console.warn('Backend unavailable, using local ideas fallback:', err);
-    throw err;
+  if (!res.ok) {
+    throw new Error('Failed to load ideas from backend');
   }
+
+  const data: BackendIdea[] = await res.json();
+  return data.map(mapBackendIdeaToFrontend);
 }
 
 export async function createIdeaOnBackend(data: {
@@ -216,7 +257,7 @@ export async function createIdeaOnBackend(data: {
   description: string;
   category?: string;
 }): Promise<Idea> {
-  const res = await fetch(`${API_BASE}/api/ideas/`, {
+  const res = await apiFetch(`${API_BASE}/api/ideas/`, {
     method: 'POST',
     headers: getHeaders(true),
     body: JSON.stringify(data),
@@ -232,7 +273,7 @@ export async function createIdeaOnBackend(data: {
 }
 
 export async function deleteIdeaOnBackend(ideaId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/ideas/${ideaId}`, {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}`, {
     method: 'DELETE',
     headers: getHeaders(true),
   });
@@ -247,7 +288,7 @@ export async function toggleIdeaReaction(
   ideaId: string,
   reactionType: 'like' | 'volunteer' | 'dislike'
 ): Promise<{ likes: number; volunteers: number; dislikes: number; active: boolean }> {
-  const res = await fetch(`${API_BASE}/api/ideas/${ideaId}/react`, {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/react`, {
     method: 'POST',
     headers: getHeaders(true),
     body: JSON.stringify({ reaction_type: reactionType }),
@@ -274,7 +315,7 @@ export async function sendMatchingChat(
   message: string,
   history: Array<{ role: 'user' | 'assistant'; content: string }> = []
 ): Promise<MatchResponse> {
-  const res = await fetch(`${API_BASE}/api/matching/chat`, {
+  const res = await apiFetch(`${API_BASE}/api/matching/chat`, {
     method: 'POST',
     headers: getHeaders(false),
     body: JSON.stringify({
@@ -292,7 +333,7 @@ export async function sendMatchingChat(
 }
 
 export async function fetchInnovations(): Promise<any[]> {
-  const res = await fetch(`${API_BASE}/api/matching/innovations`, {
+  const res = await apiFetch(`${API_BASE}/api/matching/innovations`, {
     method: 'GET',
     headers: getHeaders(false),
   });
@@ -313,7 +354,7 @@ export async function startExpertConversation(data: {
   topic?: string;
   initial_message?: string;
 }): Promise<BackendConversation> {
-  const res = await fetch(`${API_BASE}/api/chat/conversations`, {
+  const res = await apiFetch(`${API_BASE}/api/chat/conversations`, {
     method: 'POST',
     headers: getHeaders(true),
     body: JSON.stringify(data),
@@ -331,13 +372,26 @@ export async function fetchConversations(statusFilter?: string): Promise<Backend
   const url = new URL(`${API_BASE}/api/chat/conversations`);
   if (statusFilter) url.searchParams.set('status', statusFilter);
 
-  const res = await fetch(url.toString(), {
+  const res = await apiFetch(url.toString(), {
     method: 'GET',
     headers: getHeaders(true),
   });
 
   if (!res.ok) {
     throw new Error('Błąd pobierania listy rozmów.');
+  }
+
+  return await res.json();
+}
+
+export async function fetchConversationDetails(conversationId: string): Promise<BackendConversation> {
+  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}`, {
+    method: 'GET',
+    headers: getHeaders(true),
+  });
+
+  if (!res.ok) {
+    throw new Error('Błąd pobierania szczegółów rozmowy.');
   }
 
   return await res.json();
@@ -357,7 +411,7 @@ export async function pollConversationMessages(
   if (afterId) url.searchParams.set('after_id', afterId);
   if (since) url.searchParams.set('since', since);
 
-  const res = await fetch(url.toString(), {
+  const res = await apiFetch(url.toString(), {
     method: 'GET',
     headers: getHeaders(true),
   });
@@ -373,7 +427,7 @@ export async function sendConversationMessage(
   conversationId: string,
   content: string
 ): Promise<BackendMessage> {
-  const res = await fetch(`${API_BASE}/api/chat/conversations/${conversationId}/messages`, {
+  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}/messages`, {
     method: 'POST',
     headers: getHeaders(true),
     body: JSON.stringify({ content }),
@@ -391,7 +445,7 @@ export async function updateConversationStatus(
   conversationId: string,
   status: 'open' | 'in_progress' | 'closed'
 ): Promise<BackendConversation> {
-  const res = await fetch(`${API_BASE}/api/chat/conversations/${conversationId}/status`, {
+  const res = await apiFetch(`${API_BASE}/api/chat/conversations/${conversationId}/status`, {
     method: 'PATCH',
     headers: getHeaders(true),
     body: JSON.stringify({ status }),
@@ -404,4 +458,3 @@ export async function updateConversationStatus(
 
   return await res.json();
 }
-

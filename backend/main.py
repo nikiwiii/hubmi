@@ -6,11 +6,12 @@ from login.router import router as login_router
 from ideas.router import router as ideas_router
 from matching.router import router as matching_router
 from chat.router import router as chat_router
+from innovations.router import router as innovations_router
 
 app = FastAPI(
     title="Hubmi API - Ideas, Community, RAG Matching & ROPS Kraków Chat",
     description="Backend API z FastAPI, Supabase, Groq RAG oraz komunikatorem ROPS Kraków dla ekspertów i mieszkańców (polling co 3s).",
-    version="1.2.0"
+    version="1.3.0"
 )
 
 # CORS Middleware
@@ -27,6 +28,7 @@ app.include_router(login_router)
 app.include_router(ideas_router)
 app.include_router(matching_router)
 app.include_router(chat_router)
+app.include_router(innovations_router)
 
 @app.get("/", tags=["Status"])
 def root():

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { User, UserRole } from "../lib/types";
 import { getUsers, saveUsers, setCurrentUser } from "../lib/auth";
 import {
@@ -10,6 +11,8 @@ import {
   Trash2,
   CheckCircle2,
   Search,
+  RefreshCw,
+  Lock,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
@@ -20,7 +23,9 @@ export default function AdminPage() {
     setCurrentUser: onUserChange,
     deleteIdea,
     updateIdeaStatus,
+    isLoadingUser,
   } = useApp();
+  const router = useRouter();
 
   const [usersList, setUsersList] = useState<User[]>(getUsers());
   const [searchUserQuery, setSearchUserQuery] = useState("");
@@ -37,6 +42,41 @@ export default function AdminPage() {
   const [adminFeedback, setAdminFeedback] = useState<string>("");
 
   const isAdmin = currentUser?.role === "admin";
+
+  // Auth guard
+  useEffect(() => {
+    if (!isLoadingUser && !currentUser) {
+      router.push('/auth');
+    }
+  }, [currentUser, isLoadingUser, router]);
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center h-96 text-stone-400">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+        <span className="text-sm font-medium">Wczytywanie panelu...</span>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return null; // redirect in progress
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4 text-stone-500">
+        <Lock className="w-8 h-8 text-stone-300" />
+        <p className="text-sm font-medium">Brak dostępu. Wymagane uprawnienia administratora.</p>
+        <button
+          onClick={() => router.push('/')}
+          className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors"
+        >
+          Wróć do strony głównej
+        </button>
+      </div>
+    );
+  }
 
   const handleElevateToAdmin = () => {
     const all = getUsers();
@@ -245,13 +285,13 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2.5">
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-stone-800 text-[11px] shrink-0"
-                          style={{ backgroundColor: u.avatarBg }}
+                          style={{ backgroundColor: u.avatarBg || '#A4B3F6' }}
                         >
-                          {u.name.charAt(0)}
+                          {(u.name || u.email || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <p className="font-semibold text-stone-900">
-                            {u.name}
+                            {u.name || u.email || 'Użytkownik'}
                           </p>
                           <p className="text-[10px] text-stone-400">
                             {u.email}

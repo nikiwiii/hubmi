@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Sparkles, Check, X, SkipForward, Send, Square, RotateCcw, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Sparkles, Check, X, SkipForward, Send, Square, RotateCcw, Loader2, Lock, RefreshCw } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import {
   AssistantQuestion,
@@ -46,7 +47,14 @@ function fieldValueLabel(field: IdeaField, fields: IdeaFields): string {
 }
 
 export default function ProposePage() {
-  const { currentUser, addPublishedIdea, selectIdea, navigate } = useApp();
+  const { currentUser, isLoadingUser, addPublishedIdea, selectIdea } = useApp();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoadingUser && !currentUser) {
+      router.push('/auth');
+    }
+  }, [currentUser, isLoadingUser, router]);
 
   const [fields, setFields] = useState<IdeaFields>(EMPTY_FIELDS);
   const [category, setCategory] = useState('');
@@ -67,6 +75,30 @@ export default function ProposePage() {
       assistantPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, [phase, question]);
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center h-96 text-stone-400">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+        <span className="text-sm font-medium">Sprawdzanie sesji...</span>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4 text-stone-500">
+        <Lock className="w-8 h-8 text-stone-300" />
+        <p className="text-sm font-medium">Zaloguj się, aby zaproponować pomysł.</p>
+        <button
+          onClick={() => router.push('/auth')}
+          className="px-5 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors"
+        >
+          Przejdź do logowania
+        </button>
+      </div>
+    );
+  }
 
   const loopActive = phase !== 'edit';
   const isLoading = phase === 'loadingQuestion' || phase === 'loadingRefine';
@@ -266,7 +298,7 @@ export default function ProposePage() {
             </button>
             <button
               onClick={handlePublish}
-              disabled={!canPublish || isPublishing || !currentUser}
+              disabled={!canPublish || isPublishing}
               className="px-5 py-3 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
@@ -275,16 +307,7 @@ export default function ProposePage() {
           </div>
         )}
 
-        {phase === 'edit' && !currentUser && (
-          <p className="text-xs text-stone-500">
-            Aby opublikować projekt,{' '}
-            <button onClick={() => navigate('auth')} className="underline font-semibold text-stone-900">
-              zaloguj się
-            </button>
-            . Z asystenta możesz korzystać bez logowania.
-          </p>
-        )}
-        {phase === 'edit' && currentUser && !canPublish && (
+        {phase === 'edit' && !canPublish && (
           <p className="text-xs text-stone-500">Aby opublikować, wypełnij wszystkie pola i wybierz etap.</p>
         )}
         {publishError && <p className="text-xs text-red-600 font-medium">{publishError}</p>}

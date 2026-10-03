@@ -2,12 +2,7 @@
 
 import React, { useState } from "react";
 import { User } from "../lib/types";
-import {
-  computeSha256,
-  getUsers,
-  saveUsers,
-  setCurrentUser,
-} from "../lib/auth";
+import { setCurrentUser } from "../lib/auth";
 import { loginUser, loginAdmin, registerUser } from "../lib/api";
 import {
   Lock,
@@ -15,6 +10,8 @@ import {
   User as UserIcon,
   ArrowRight,
   CheckCircle2,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
@@ -25,180 +22,98 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [shaHashPreview, setShaHashPreview] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handlePasswordChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
+  const handleLoginOrRegister = async (
+    e: React.SyntheticEvent<HTMLFormElement>,
   ) => {
-    const val = e.target.value;
-    setPassword(val);
-    if (val) {
-      const hash = await computeSha256(val);
-      setShaHashPreview(hash);
-    } else {
-      setShaHashPreview("");
-    }
-  };
-
-  const handleLoginOrRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
 
-    if (!email || !password) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
       setErrorMsg("Wprowadź e-mail oraz hasło.");
       return;
     }
 
     setIsSubmitting(true);
-    await computeSha256(password);
-    const users = getUsers();
 
     if (isRegister) {
-      if (!name) {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
         setErrorMsg("Wprowadź swoje imię.");
         setIsSubmitting(false);
         return;
       }
 
-      // Try Backend Registration
       try {
-        const isAdminEmail = email.toLowerCase().includes("admin");
+        const isAdminEmail = trimmedEmail.toLowerCase().includes("admin");
         const user = await registerUser(
-          email,
+          trimmedEmail,
           password,
-          name,
+          trimmedName,
           isAdminEmail ? "admin" : "user",
         );
         setCurrentUser(user);
         onUserChange(user);
-        setSuccessMsg(`Konto utworzone w bazie i zalogowano (${user.name})!`);
-        setTimeout(() => navigate("discover"), 800);
-        return;
+        setSuccessMsg(`Konto utworzone pomyślnie. Witaj, ${user.name}!`);
+        setTimeout(() => navigate("discover"), 600);
       } catch (backendErr: any) {
-        console.warn(
-          "Backend register error, trying local fallback:",
-          backendErr,
-        );
-        // Local fallback
-        const existing = users.find(
-          (u) => u.email.toLowerCase() === email.toLowerCase(),
-        );
-        if (existing) {
-          setErrorMsg(
-            backendErr?.message || "Konto z tym adresem już istnieje.",
-          );
-          setIsSubmitting(false);
-          return;
-        }
-
-        const newUser: User = {
-          id: `user-${Date.now()}`,
-          email: email.trim(),
-          name: name.trim(),
-          role: email.toLowerCase().includes("admin") ? "admin" : "creator",
-          avatarBg: "#D2D8EE",
-          createdAt: new Date().toISOString().split("T")[0],
-          status: "active",
-          bio: "Nowy użytkownik.",
-        };
-
-        saveUsers([...users, newUser]);
-        setCurrentUser(newUser);
-        onUserChange(newUser);
-        setSuccessMsg("Konto utworzone.");
-        setTimeout(() => navigate("discover"), 800);
+        setErrorMsg(backendErr?.message || "Wystąpił błąd podczas rejestracji konta.");
+        setIsSubmitting(false);
       }
     } else {
-      // Try Backend Login
       try {
-        const isAdmin = email.toLowerCase().includes("admin");
-        const loggedUser = isAdmin
-          ? await loginAdmin(email, password)
-          : await loginUser(email, password);
+        const isAdmin = trimmedEmail.toLowerCase().includes("admin");
+        let loggedUser: User;
+        if (isAdmin) {
+          try {
+            loggedUser = await loginAdmin(trimmedEmail, password);
+          } catch (adminErr: any) {
+            // Fallback to normal user login if role wasn't admin
+            if (
+              adminErr?.message?.includes("Dostęp zabroniony") ||
+              adminErr?.message?.includes("uprawnień")
+            ) {
+              loggedUser = await loginUser(trimmedEmail, password);
+            } else {
+              throw adminErr;
+            }
+          }
+        } else {
+          loggedUser = await loginUser(trimmedEmail, password);
+        }
 
         setCurrentUser(loggedUser);
         onUserChange(loggedUser);
         setSuccessMsg(`Zalogowano pomyślnie: ${loggedUser.name}`);
         setTimeout(() => navigate("discover"), 600);
-        return;
       } catch (backendErr: any) {
-        console.warn("Backend login error, trying local fallback:", backendErr);
-        // Fallback to local accounts
-        const user = users.find(
-          (u) => u.email.toLowerCase() === email.toLowerCase(),
-        );
-        if (!user) {
-          setErrorMsg(backendErr?.message || "Niepoprawne dane logowania.");
-          setIsSubmitting(false);
-          return;
-        }
-
-        if (user.status === "blocked") {
-          setErrorMsg("Konto zablokowane.");
-          setIsSubmitting(false);
-          return;
-        }
-
-        setCurrentUser(user);
-        onUserChange(user);
-        setSuccessMsg(`Zalogowano: ${user.name}`);
-        setTimeout(() => navigate("discover"), 600);
+        setErrorMsg(backendErr?.message || "Niepoprawne dane logowania.");
+        setIsSubmitting(false);
       }
-    }
-
-    setIsSubmitting(false);
-  };
-
-  const handleQuickLogin = async (demoEmail: string) => {
-    setErrorMsg("");
-    setSuccessMsg("");
-    setIsSubmitting(true);
-
-    const isAdmin = demoEmail.toLowerCase().includes("admin");
-    const defaultPassword = isAdmin ? "admin123" : "user123";
-
-    try {
-      const loggedUser = isAdmin
-        ? await loginAdmin(demoEmail, defaultPassword)
-        : await loginUser(demoEmail, defaultPassword);
-
-      setCurrentUser(loggedUser);
-      onUserChange(loggedUser);
-      setSuccessMsg(`Zalogowano profil: ${loggedUser.name}`);
-      setTimeout(
-        () => navigate(loggedUser.role === "admin" ? "admin" : "discover"),
-        400,
-      );
-      return;
-    } catch {
-      const users = getUsers();
-      const user = users.find((u) => u.email === demoEmail);
-      if (user) {
-        setCurrentUser(user);
-        onUserChange(user);
-        setTimeout(
-          () => navigate(user.role === "admin" ? "admin" : "discover"),
-          400,
-        );
-      }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto py-10 px-4">
-      <div className="mb-6 text-center">
-        <h1 className="text-3xl font-bold text-stone-900 tracking-tight">
-          {isRegister ? "Rejestracja" : "Logowanie"}
-        </h1>
+    <div className="min-h-screen flex-1 flex flex-col items-center justify-center p-4 sm:p-6 bg-[#F4F4F0]">
+      {/* App Logo */}
+      <div className="flex flex-col items-center justify-center mb-8 select-none text-center">
+        <div className="w-14 h-14 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-bold text-2xl shadow-sm mb-3">
+          H
+        </div>
+        <span className="text-2xl font-bold text-stone-900 tracking-tight">
+          Hubmi
+        </span>
+        <p className="text-xs text-stone-500 font-medium mt-1">
+          Platforma Pomysłów &amp; Społeczność
+        </p>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 border border-black/5 shadow-2xs">
         {/* Toggle Login / Register */}
         <div className="flex bg-stone-100 p-1 rounded-xl mb-6">
           <button
@@ -206,12 +121,12 @@ export default function AuthPage() {
             onClick={() => {
               setIsRegister(false);
               setErrorMsg("");
+              setSuccessMsg("");
             }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              !isRegister
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${!isRegister
                 ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-500"
-            }`}
+                : "text-stone-500 hover:text-stone-800"
+              }`}
           >
             Logowanie
           </button>
@@ -220,25 +135,26 @@ export default function AuthPage() {
             onClick={() => {
               setIsRegister(true);
               setErrorMsg("");
+              setSuccessMsg("");
             }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              isRegister
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${isRegister
                 ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-500"
-            }`}
+                : "text-stone-500 hover:text-stone-800"
+              }`}
           >
             Nowe Konto
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 bg-rose-50 text-rose-700 rounded-xl text-xs font-medium">
-            {errorMsg}
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200/60 text-rose-700 rounded-xl text-xs font-medium flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-4 p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-medium flex items-center gap-1.5">
+          <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200/60 text-emerald-800 rounded-xl text-xs font-medium flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{successMsg}</span>
           </div>
@@ -257,7 +173,8 @@ export default function AuthPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="np. Anna"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900"
+                  disabled={isSubmitting}
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
                 />
               </div>
             </div>
@@ -274,7 +191,8 @@ export default function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="twoj@email.pl"
-                className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900"
+                disabled={isSubmitting}
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
               />
             </div>
           </div>
@@ -288,66 +206,32 @@ export default function AuthPage() {
               <input
                 type="password"
                 value={password}
-                onChange={handlePasswordChange}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Hasło"
-                className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900"
+                disabled={isSubmitting}
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-sm text-stone-900 disabled:opacity-50"
               />
             </div>
           </div>
 
-          {shaHashPreview && (
-            <div className="p-2.5 bg-stone-50 rounded-xl text-[10px] font-mono text-stone-500 break-all border border-stone-200">
-              SHA-256: {shaHashPreview.slice(0, 28)}...
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+            className="w-full py-3 px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <span>{isRegister ? "Utwórz konto" : "Zaloguj się"}</span>
-            <ArrowRight className="w-4 h-4" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Trwa weryfikacja...</span>
+              </>
+            ) : (
+              <>
+                <span>{isRegister ? "Utwórz konto" : "Zaloguj się"}</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
-
-        {/* Quick Demo Switcher */}
-        <div className="mt-6 pt-5 border-t border-stone-100">
-          <p className="text-[11px] font-semibold text-stone-400 text-center mb-2">
-            Szybki profil testowy:
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => handleQuickLogin("anna.kowalska@hubmi.pl")}
-              className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-center transition-colors cursor-pointer"
-            >
-              <span className="block text-xs font-semibold text-stone-800">
-                Anna
-              </span>
-              <span className="text-[10px] text-stone-400">Twórca</span>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin("admin@hubmi.pl")}
-              className="p-2 rounded-xl bg-[#EFE5C6]/60 hover:bg-[#EFE5C6] border border-[#DFD3AE] text-center transition-colors cursor-pointer"
-            >
-              <span className="block text-xs font-semibold text-stone-800">
-                Marek
-              </span>
-              <span className="text-[10px] text-stone-600">Admin</span>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin("jan.wisniewski@hubmi.pl")}
-              className="p-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-center transition-colors cursor-pointer"
-            >
-              <span className="block text-xs font-semibold text-stone-800">
-                Jan
-              </span>
-              <span className="text-[10px] text-stone-400">Tester</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

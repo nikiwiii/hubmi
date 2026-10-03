@@ -1,31 +1,50 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { IdeaCard } from "../components/shared/IdeaCard";
-import { Lightbulb, Users, Plus } from "lucide-react";
+import { Lightbulb, Users, Plus, RefreshCw, LogOut } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 export default function DashboardPage() {
   const {
     currentUser,
+    setCurrentUser,
     ideas,
     selectIdea,
     openChatWithAuthor,
     navigate,
     isLargeFont,
     toggleFontSize,
+    isLoadingUser,
   } = useApp();
+  const router = useRouter();
 
-  const user = currentUser || {
-    id: "user-anna-2",
-    name: "Anna Kowalska",
-    email: "anna.kowalska@hubmi.pl",
-    role: "creator" as const,
-    avatarBg: "#D2D8EE",
-    createdAt: "2026-02-10",
-    status: "active" as const,
-    bio: "Twórczyni projektów.",
+  useEffect(() => {
+    if (!isLoadingUser && !currentUser) {
+      router.push("/auth");
+    }
+  }, [currentUser, isLoadingUser, router]);
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    router.push("/auth");
   };
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center h-96 text-stone-400">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+        <span className="text-sm font-medium">Wczytywanie profilu...</span>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return null;
+  }
+
+  const user = currentUser;
 
   const myCreatedIdeas = ideas.filter(
     (i) =>
@@ -44,14 +63,14 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3.5">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-stone-800 shrink-0"
-            style={{ backgroundColor: user.avatarBg }}
+            style={{ backgroundColor: user.avatarBg || '#A4B3F6' }}
           >
-            {user.name.charAt(0)}
+            {(user.name || user.email || 'U').charAt(0).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-stone-900 leading-tight">
-                {user.name}
+                {user.name || user.email || 'Użytkownik'}
               </span>
               <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
                 {user.role}
@@ -139,6 +158,17 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Logout Action Bar */}
+      <div className="pt-6 border-t border-stone-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/70 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Wyloguj się</span>
+        </button>
       </div>
     </div>
   );
