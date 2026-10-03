@@ -1,50 +1,53 @@
--- ============================================================
--- SQL Schema dla bazy Supabase: Hubmi / Ideas & Auth
--- Wklej tę treść w panelu Supabase: SQL Editor -> New Query -> Run
--- ============================================================
-
--- 1. Tabela profili użytkowników
-CREATE TABLE IF NOT EXISTS public.profiles (
+-- ==========================================
+-- TABELA: Użytkownicy (Users)
+-- ==========================================
+CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    full_name TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL, -- Do bezpiecznego przechowywania haseł
+    full_name VARCHAR(255), -- Imię i nazwisko lub nazwa organizacji
+    organization_type VARCHAR(100), -- Opcjonalne pole, np. 'Fundacja', 'Gmina'
+    role VARCHAR(50) NOT NULL DEFAULT 'resident', -- role np.: 'resident', 'ngo', 'jst', 'rops_admin', 'expert'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indeks na email
-CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
-
--- 2. Tabela pomysłów / postów (ideas)
-CREATE TABLE IF NOT EXISTS public.ideas (
+-- ==========================================
+-- ZAKTUALIZOWANA TABELA 2: Zgłaszane wyzwania
+-- ==========================================
+CREATE TABLE reported_problems (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    category TEXT DEFAULT 'general',
-    author_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-    author_name TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE, -- Klucz obcy do tabeli users
+    problem_description TEXT NOT NULL,
+    embedding VECTOR(1536), 
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX reported_problems_embedding_idx ON reported_problems USING hnsw (embedding vector_cosine_ops);
+
+
+-- ==========================================
+-- ZAKTUALIZOWANA TABELA 3: Kreator pomysłów
+-- ==========================================
+CREATE TABLE ideas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE, -- Powiązanie pomysłu z jego autorem
+    title VARCHAR(255) NOT NULL,
+    essence TEXT NOT NULL,
+    dedicated_to VARCHAR(255),
+    stage VARCHAR(100), 
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE innovations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  addressed_problems TEXT,
+  target_group VARCHAR(255),
+  beneficiaries VARCHAR(255),
+  validation TEXT,
+  authors VARCHAR(255),
+  embedding VECTOR(1536), -- Wektor dla wyszukiwania semantycznego
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indeks na autora
-CREATE INDEX IF NOT EXISTS idx_ideas_author ON public.ideas(author_id);
-CREATE INDEX IF NOT EXISTS idx_ideas_created_at ON public.ideas(created_at DESC);
-
--- 3. Tabela reakcji: like, volunteer, dislike
-CREATE TABLE IF NOT EXISTS public.reactions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    idea_id UUID REFERENCES public.ideas(id) ON DELETE CASCADE NOT NULL,
-    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-    reaction_type TEXT NOT NULL CHECK (reaction_type IN ('like', 'volunteer', 'dislike')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    CONSTRAINT unique_user_idea_reaction UNIQUE (idea_id, user_id, reaction_type)
-);
-
--- Indeksy dla reakcji
-CREATE INDEX IF NOT EXISTS idx_reactions_idea ON public.reactions(idea_id);
-CREATE INDEX IF NOT EXISTS idx_reactions_user ON public.reactions(user_id);
-
--- Opcjonalny przykładowy administrator (hasło: admin123)
--- Hash bcrypt dla 'admin123': $2b$12$e/aPq7vI8L9k2zL17QZ2yOXoT7U0V0jJjR4g/hXG8N3dO4i6vP9Y6
--- Możesz też zarejestrować admina przez endpoint /api/login/register wybierając role='admin'
+-- Indeks HNSW dla bardzo szybkiego wyszukiwania wektorowego (korzystamy z dystansu cosinusowego)
+CREATE INDEX innovations_embedding_idx ON innovations USING hnsw (embedding vector_cosine_ops);
