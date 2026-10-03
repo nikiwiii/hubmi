@@ -1,12 +1,14 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { Navbar } from './Navbar';
-import { useApp } from '../../context/AppContext';
-import { Loader2 } from 'lucide-react';
+import React, { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Navbar } from "./Navbar";
+import { useApp } from "../../context/AppContext";
+import { Loader2 } from "lucide-react";
 
-export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppShell: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const {
     currentUser,
     setCurrentUser,
@@ -19,20 +21,20 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const pathname = usePathname();
   const router = useRouter();
 
-  const isAuthPage = pathname === '/auth' || pathname?.startsWith('/auth');
+  const isAuthPage = pathname === "/auth" || pathname?.startsWith("/auth");
 
   useEffect(() => {
     if (!isLoadingUser) {
       if (!currentUser && !isAuthPage) {
         // Niezalogowany użytkownik próbuje wejść na chronioną stronę -> przekieruj do /auth
         const redirectParam =
-          pathname && pathname !== '/'
+          pathname && pathname !== "/"
             ? `?redirect=${encodeURIComponent(pathname)}`
-            : '';
+            : "";
         router.replace(`/auth${redirectParam}`);
       } else if (currentUser && isAuthPage) {
         // Zalogowany użytkownik wszedł na /auth -> przekieruj na stronę główną
-        router.replace('/');
+        router.replace("/");
       }
     }
   }, [currentUser, isLoadingUser, isAuthPage, pathname, router]);
@@ -68,7 +70,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   const handleLogout = () => {
     setCurrentUser(null);
-    router.replace('/auth');
+    router.replace("/auth");
   };
 
   // Użytkownik jest zalogowany – pełny dostęp do aplikacji
@@ -80,11 +82,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         onToggleFontSize={toggleFontSize}
         ideasCount={ideas.length}
         onNavigate={navigate}
-        onLogout={handleLogout}
       />
-      <main className="flex-1 pb-20 md:pb-8">
-        {children}
-      </main>
+      <main className="flex-1 pb-20 md:pb-8">{children}</main>
     </>
   );
 };

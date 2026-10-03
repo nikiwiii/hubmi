@@ -223,7 +223,7 @@ function MiddlemanContent() {
     try {
       const budgetLabel = BUDGET_OPTIONS.find((b) => b.value === profile.budget_range)?.label;
       const conversation = await startExpertConversation({
-        topic: `Middleman: ${result.innovation_title}`,
+        topic: `Innowacje: ${result.innovation_title}`,
         initial_message:
           `Dzień dobry, piszę w imieniu: ${institutionDisplayName(profile)}. ` +
           `Chcemy wdrożyć innowację „${result.innovation_title}” jako usługę „${result.card.service_name}” ` +
@@ -248,11 +248,17 @@ function MiddlemanContent() {
   };
 
   return (
-    <div className="mm-print-root py-6 px-4 sm:px-6 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
+    <div className="mm-print-root py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-200">
       <div className="print:hidden flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
-        <div className="text-3xl sm:text-4xl font-bold tracking-tight leading-[0.95] select-none">
-          <span className="block text-stone-900">Middleman</span>
-          <span className="block text-stone-300">Innowacja → Usługa</span>
+        <div>
+          <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
+            <span className="block text-stone-900">Innowacje</span>
+            <span className="block text-stone-300">Innowacja → Usługa</span>
+          </div>
+          <p className="mt-2 text-stone-500 text-xs sm:text-sm font-medium max-w-2xl leading-relaxed">
+            Wybierz innowację społeczną z bazy ROPS Kraków i opisz swoją instytucję. Asystent AI
+            przygotuje z niej konkretną kartę usługi: zakres, zasoby, harmonogram, budżet i wskaźniki.
+          </p>
         </div>
         {step !== "pick" && (
           <button
@@ -264,11 +270,6 @@ function MiddlemanContent() {
           </button>
         )}
       </div>
-
-      <p className="print:hidden text-sm text-stone-600 leading-relaxed max-w-2xl">
-        Wybierz innowację społeczną z bazy ROPS Kraków i opisz swoją instytucję. Asystent AI
-        przygotuje z niej konkretną kartę usługi: zakres, zasoby, harmonogram, budżet i wskaźniki.
-      </p>
 
       <StepIndicator current={step} />
 
