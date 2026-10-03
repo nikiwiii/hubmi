@@ -20,6 +20,7 @@ import {
   Sparkles,
   Users,
   AlertCircle,
+  FlaskConical,
 } from "lucide-react";
 import { CustomSelect } from "../components/shared/CustomSelect";
 import { useApp } from "../context/AppContext";
@@ -280,15 +281,29 @@ export default function AdminPage() {
   return (
     <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-black/5">
         <div>
           <h1 className="text-2xl font-bold text-stone-900 tracking-tight">
             Panel Zarządzania
           </h1>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Zarządzanie użytkownikami, zgłoszeniami oraz ewaluacją prototypów
+          </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex flex-wrap bg-stone-200/50 p-1 rounded-xl self-start sm:self-auto gap-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => router.push("/testing")}
+            className="flex items-center gap-2 px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+            title="Przejdź do sekcji testera innowacji"
+          >
+            <FlaskConical className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+            <span>Sekcja Testera</span>
+            <ExternalLink className="w-3.5 h-3.5 text-stone-400 group-hover:text-white transition-colors" />
+          </button>
+
+          {/* Tab Switcher */}
+          <div className="flex flex-wrap bg-stone-200/50 p-1 rounded-xl self-start sm:self-auto gap-1">
           <button
             onClick={() => setActiveTab("users")}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
@@ -337,6 +352,7 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+    </div>
 
       {adminFeedback && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between">
@@ -638,6 +654,31 @@ export default function AdminPage() {
       {/* TAB 3: TESTER APPLICATIONS */}
       {activeTab === "testers" && (
         <div className="space-y-4">
+          {/* Quick link banner to Tester module */}
+          <div className="p-4 sm:p-5 bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-white rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 bg-amber-500/20 text-amber-300 rounded-lg">
+                  <FlaskConical className="w-4 h-4" />
+                </span>
+                <h3 className="text-sm font-bold text-white">
+                  Tester Innowacji (Walidacja & Użyteczność)
+                </h3>
+              </div>
+              <p className="text-xs text-stone-300 max-w-xl">
+                Przejdź do pełnej sekcji testowania innowacji, weryfikacji prototypów w mikroskali, formularzy ocen WCAG oraz uwag testerów.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/testing")}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-stone-900 hover:bg-stone-100 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs"
+            >
+              <FlaskConical className="w-4 h-4 text-amber-600" />
+              <span>Otwórz sekcję Testera</span>
+              <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
+            </button>
+          </div>
+
           {/* Summary Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-4 rounded-2xl bg-white border border-black/5 shadow-2xs space-y-1">

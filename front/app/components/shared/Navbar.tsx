@@ -14,7 +14,6 @@ import {
   BookOpen,
   Search,
   Handshake,
-  FlaskConical,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 
@@ -45,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     if (pathname.startsWith("/matching")) return "matching";
     if (pathname.startsWith("/middleman")) return "middleman";
     if (pathname.startsWith("/knowledge")) return "knowledge";
-    if (pathname.startsWith("/testing")) return "testing";
+    if (pathname.startsWith("/testing")) return "admin";
     if (pathname.startsWith("/propose")) return "propose";
     if (pathname.startsWith("/chat")) return "chat";
     if (pathname.startsWith("/dashboard")) return "dashboard";
@@ -131,18 +130,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Raporty
             </button>
-            {isAdmin && (
-              <button
-                onClick={() => navigateTo("testing")}
-                className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                  activeScreen === "testing"
-                    ? "bg-white text-stone-900 shadow-2xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                Tester
-              </button>
-            )}
             <button
               onClick={() => navigateTo("propose")}
               className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
@@ -287,15 +274,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {isAdmin && (
             <button
-              onClick={() => navigateTo("testing")}
+              onClick={() => navigateTo("admin")}
               className={`flex flex-col items-center gap-0.5 py-1 px-1.5 transition-all cursor-pointer ${
-                activeScreen === "testing"
+                activeScreen === "admin"
                   ? "text-stone-900 font-bold"
                   : "text-stone-400"
               }`}
             >
-              <FlaskConical className="w-5 h-5" />
-              <span className="text-[10px]">Tester</span>
+              <Shield className="w-5 h-5" />
+              <span className="text-[10px]">Admin</span>
             </button>
           )}
 
