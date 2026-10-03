@@ -62,10 +62,10 @@ export function CustomTabList(props: TabListProps) {
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
         <View style={styles.brandBadge}>
-          <ThemedText style={styles.brandBadgeText}>H</ThemedText>
+          <ThemedText style={styles.brandBadgeText}>m</ThemedText>
         </View>
         <ThemedText type="smallBold" style={styles.brandText}>
-          Hubmi
+          minno
         </ThemedText>
 
         {props.children}

@@ -118,10 +118,21 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
         </p>
       </div>
 
-      {/* Center Geometric Illustration */}
-      <div className="my-auto flex items-center justify-center py-2 transition-transform duration-300 group-hover:scale-103">
-        <GeometricIllustration shape={shape} theme={theme} size={100} />
-      </div>
+      {/* Center: generated visualization or Geometric Illustration */}
+      {idea.visualMockupUrl ? (
+        <div className="my-4 overflow-hidden rounded-2xl border border-black/[0.06] bg-white/40">
+          {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
+          <img
+            src={idea.visualMockupUrl}
+            alt={`Wizualizacja: ${idea.title}`}
+            className="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-103"
+          />
+        </div>
+      ) : (
+        <div className="my-auto flex items-center justify-center py-2 transition-transform duration-300 group-hover:scale-103">
+          <GeometricIllustration shape={shape} theme={theme} size={100} />
+        </div>
+      )}
 
       {/* Bottom Footer with Author and Stats */}
       <div className="z-10 mt-auto flex items-center justify-between pt-3 border-t border-black/[0.06]">

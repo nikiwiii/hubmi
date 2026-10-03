@@ -53,6 +53,23 @@ ALTER TABLE public.reactions
 
 DROP TABLE IF EXISTS public.profiles CASCADE;
 
+-- Wizualizacje pomysłów z kreatora (POST /api/idea-creator/projects z polem "image")
+ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS image_url TEXT;
+
+-- Publiczny bucket na obrazy (odczyt przez publiczny URL, limit 8 MB, tylko png/jpeg/webp)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('idea-images', 'idea-images', true, 8388608, ARRAY['image/png', 'image/jpeg', 'image/webp'])
+ON CONFLICT (id) DO UPDATE
+SET public = EXCLUDED.public,
+    file_size_limit = EXCLUDED.file_size_limit,
+    allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+-- Backend używa klucza publishable (rola anon), więc potrzebuje prawa do dodawania plików (bez nadpisywania i usuwania)
+DROP POLICY IF EXISTS "idea_images_insert" ON storage.objects;
+CREATE POLICY "idea_images_insert" ON storage.objects
+    FOR INSERT TO anon, authenticated
+    WITH CHECK (bucket_id = 'idea-images');
+
 -- Wyłączenie RLS dla tabel jeśli backend loguje się własnym JWT
 ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ideas DISABLE ROW LEVEL SECURITY;

@@ -49,6 +49,12 @@ export default function AuthPage() {
         return;
       }
 
+      if (password.length < 4) {
+        setErrorMsg("Za krótkie hasło!");
+        setIsSubmitting(false);
+        return;
+      }
+
       try {
         const isAdminEmail = trimmedEmail.toLowerCase().includes("admin");
         const user = await registerUser(
@@ -62,7 +68,21 @@ export default function AuthPage() {
         setSuccessMsg(`Konto utworzone pomyślnie. Witaj, ${user.name}!`);
         setTimeout(() => navigate("discover"), 600);
       } catch (backendErr: any) {
-        setErrorMsg(backendErr?.message || "Wystąpił błąd podczas rejestracji konta.");
+        let msg = backendErr?.message || "Wystąpił błąd podczas rejestracji konta.";
+        if (
+          typeof msg !== "string" ||
+          msg.includes("[object Object]") ||
+          msg.includes("object Object")
+        ) {
+          msg = password.length < 4 ? "Za krótkie hasło!" : "Wystąpił błąd podczas rejestracji konta.";
+        }
+        if (
+          msg.toLowerCase().includes("hasło") &&
+          (msg.toLowerCase().includes("krótki") || msg.toLowerCase().includes("znaki") || msg.toLowerCase().includes("short"))
+        ) {
+          msg = "Za krótkie hasło!";
+        }
+        setErrorMsg(msg);
         setIsSubmitting(false);
       }
     } else {
@@ -103,10 +123,10 @@ export default function AuthPage() {
       {/* App Logo */}
       <div className="flex flex-col items-center justify-center mb-8 select-none text-center">
         <div className="w-14 h-14 rounded-2xl bg-stone-900 flex items-center justify-center text-white font-bold text-2xl shadow-sm mb-3">
-          H
+          m
         </div>
         <span className="text-2xl font-bold text-stone-900 tracking-tight">
-          Hubmi
+          minno
         </span>
         <p className="text-xs text-stone-500 font-medium mt-1">
           Platforma Pomysłów &amp; Społeczność
