@@ -119,3 +119,72 @@ export function getCategoryThemeAndShape(category: string): {
   }
   return { theme: 'slate', shape: 'v-shape' }; // Neutral stone slate
 }
+
+export interface InnovationMatchItem {
+  id: string;
+  title: string;
+  problem_statement: string;
+  solution: string;
+  funding_info?: string | null;
+  target_group?: string | null;
+  url?: string | null;
+  file_source?: string | null;
+  similarity: number;
+  similarity_percentage: string;
+  is_top_match: boolean;
+  is_close_match: boolean;
+}
+
+export interface ExplainabilityInfo {
+  summary: string;
+  matched_aspects: string[];
+  source_file: string;
+  source_url: string;
+}
+
+export interface TraceStep {
+  step_number: number;
+  name: string;
+  status: string;
+  duration_ms: number;
+  details: Record<string, any>;
+}
+
+export interface MatchResponse {
+  answer: string;
+  guardrail_status: 'PASSED' | 'BLOCKED_NOT_FOUND' | 'BLOCKED_OFF_TOPIC';
+  guardrail_message?: string | null;
+  top_solution?: InnovationMatchItem | null;
+  close_solutions: InnovationMatchItem[];
+  explainability?: ExplainabilityInfo | null;
+  trace: TraceStep[];
+  total_duration_ms: number;
+}
+
+export interface BackendConversation {
+  id: string;
+  user_id: string;
+  user_name: string;
+  user_email?: string | null;
+  idea_id?: string | null;
+  idea_title?: string | null;
+  topic: string;
+  status: 'open' | 'in_progress' | 'closed';
+  assigned_admin_id?: string | null;
+  assigned_admin_name?: string | null;
+  unread_by_admin: number;
+  unread_by_user: number;
+  last_message?: string | null;
+  last_message_at: string;
+  created_at: string;
+}
+
+export interface BackendMessage {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_role: 'user' | 'admin' | 'expert';
+  content: string;
+  created_at: string;
+}

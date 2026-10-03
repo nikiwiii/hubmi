@@ -14,10 +14,12 @@ import {
   ChevronUp,
   X,
   Play,
-  Sparkles
+  Sparkles,
+  Bot
 } from 'lucide-react';
 
 import { MalopolskaMap } from '../components/knowledge/MalopolskaMap';
+import { RagChatSection } from '../components/knowledge/RagChatSection';
 import { PowiatItem } from '../lib/malopolskaMapData';
 import { useApp } from '../context/AppContext';
 
@@ -25,7 +27,7 @@ export default function KnowledgePage() {
   const { navigate } = useApp();
 
   const [resources] = useState<KnowledgeResource[]>(getKnowledgeResources());
-  const [activeFilter, setActiveFilter] = useState<'all' | KnowledgeType>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'rag' | KnowledgeType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [activeVideoModal, setActiveVideoModal] = useState<KnowledgeResource | null>(null);
@@ -33,6 +35,7 @@ export default function KnowledgePage() {
 
   const filteredResources = useMemo(() => {
     return resources.filter((item) => {
+      if (activeFilter === 'rag') return false;
       const matchesType = activeFilter === 'all' || item.type === activeFilter;
       const q = searchQuery.toLowerCase();
       const matchesQuery =
@@ -116,6 +119,18 @@ export default function KnowledgePage() {
         </button>
 
         <button
+          onClick={() => setActiveFilter('rag')}
+          className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            activeFilter === 'rag'
+              ? 'bg-stone-900 text-white'
+              : 'bg-[#EFE5C6] text-stone-900 hover:bg-[#E5D9B4] border border-[#DDD0A6]'
+          }`}
+        >
+          <Bot className="w-3.5 h-3.5" />
+          <span>🤖 Doradca RAG (Groq AI)</span>
+        </button>
+
+        <button
           onClick={() => setActiveFilter('challenge')}
           className={`flex items-center gap-1.5 whitespace-nowrap px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
             activeFilter === 'challenge'
@@ -152,8 +167,10 @@ export default function KnowledgePage() {
         </button>
       </div>
 
-      {/* Resources Grid */}
-      {filteredResources.length === 0 ? (
+      {/* Main Content Area */}
+      {activeFilter === 'rag' ? (
+        <RagChatSection />
+      ) : filteredResources.length === 0 ? (
         <div className="bg-white rounded-2xl p-10 text-center border border-stone-200">
           <p className="text-base font-semibold text-stone-800">
             Brak materiałów dla wybranych kryteriów

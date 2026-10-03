@@ -40,6 +40,16 @@ def get_optional_user_payload(
         return None
     return decode_access_token(credentials.credentials)
 
+def get_current_admin_payload(
+    user_payload: dict = Depends(get_current_user_payload),
+) -> dict:
+    if user_payload.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Brak uprawnień administratora. Tylko administratorzy mogą wykonywać tę operację.",
+        )
+    return user_payload
+
 # 1) Endpoint do logowania userów
 @router.post("/user", response_model=TokenResponse, summary="1) Logowanie zwykłego użytkownika")
 def login_user(credentials: UserLoginRequest):

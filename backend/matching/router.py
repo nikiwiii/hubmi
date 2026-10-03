@@ -1,6 +1,7 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException
 from typing import List
 from supabase_client import DatabaseRepository
+from login.router import get_current_admin_payload
 from matching.schemas import MatchRequest, MatchResponse, InnovationCreate
 from matching.service import MatchingService
 from matching.embeddings import compute_embedding
@@ -41,9 +42,12 @@ def get_innovations():
         sanitized.append(d)
     return sanitized
 
-@router.post("/innovations", status_code=status.HTTP_201_CREATED, summary="Dodaj nową innowację do bazy danych")
-def add_innovation(data: InnovationCreate):
-    """Pozwala dodać nową innowację do bazy wraz z adresem URL i plikiem źródłowym."""
+@router.post("/innovations", status_code=status.HTTP_201_CREATED, summary="Dodaj nową innowację do bazy danych (tylko administrator)")
+def add_innovation(
+    data: InnovationCreate,
+    admin_payload: dict = Depends(get_current_admin_payload)
+):
+    """Pozwala dodać nową innowację do bazy (wymaga uprawnień administratora) wraz z adresem URL i plikiem źródłowym."""
     text_to_embed = f"{data.title}. Problem: {data.addressed_problems}. Opis: {data.description}. Dofinansowanie: {data.funding_info or ''}"
     embedding = compute_embedding(text_to_embed)
 

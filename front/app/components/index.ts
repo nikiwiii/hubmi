@@ -9,4 +9,5 @@ export * from "./shared/AppShell";
 
 // Screen subcomponents
 export * from "./knowledge/MalopolskaMap";
+export * from "./knowledge/RagChatSection";
 export * from "./propose/IdeaMockupVisualizer";

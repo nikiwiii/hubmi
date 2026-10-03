@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { User } from '../lib/types';
 import { computeSha256, getUsers, saveUsers, setCurrentUser } from '../lib/auth';
+import { loginUser, loginAdmin, registerUser } from '../lib/api';
 import { Lock, Mail, User as UserIcon, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -50,59 +51,109 @@ export default function AuthPage() {
         return;
       }
 
-      const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (existing) {
-        setErrorMsg('Konto z tym adresem już istnieje.');
-        setIsSubmitting(false);
+      // Try Backend Registration
+      try {
+        const isAdminEmail = email.toLowerCase().includes('admin');
+        const user = await registerUser(email, password, name, isAdminEmail ? 'admin' : 'user');
+        setCurrentUser(user);
+        onUserChange(user);
+        setSuccessMsg(`Konto utworzone w bazie i zalogowano (${user.name})!`);
+        setTimeout(() => navigate('discover'), 800);
         return;
+      } catch (backendErr: any) {
+        console.warn('Backend register error, trying local fallback:', backendErr);
+        // Local fallback
+        const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+        if (existing) {
+          setErrorMsg(backendErr?.message || 'Konto z tym adresem już istnieje.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const newUser: User = {
+          id: `user-${Date.now()}`,
+          email: email.trim(),
+          name: name.trim(),
+          role: email.toLowerCase().includes('admin') ? 'admin' : 'creator',
+          avatarBg: '#D2D8EE',
+          createdAt: new Date().toISOString().split('T')[0],
+          status: 'active',
+          bio: 'Nowy użytkownik.'
+        };
+
+        saveUsers([...users, newUser]);
+        setCurrentUser(newUser);
+        onUserChange(newUser);
+        setSuccessMsg('Konto utworzone.');
+        setTimeout(() => navigate('discover'), 800);
       }
-
-      const newUser: User = {
-        id: `user-${Date.now()}`,
-        email: email.trim(),
-        name: name.trim(),
-        role: 'creator',
-        avatarBg: '#D2D8EE',
-        createdAt: new Date().toISOString().split('T')[0],
-        status: 'active',
-        bio: 'Nowy użytkownik.'
-      };
-
-      saveUsers([...users, newUser]);
-      setCurrentUser(newUser);
-      onUserChange(newUser);
-      setSuccessMsg('Konto utworzone.');
-      setTimeout(() => navigate('discover'), 800);
     } else {
-      const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (!user) {
-        setErrorMsg('Nie znaleziono konta. Skorzystaj z szybkiego wyboru profilu poniżej.');
-        setIsSubmitting(false);
-        return;
-      }
+      // Try Backend Login
+      try {
+        const isAdmin = email.toLowerCase().includes('admin');
+        const loggedUser = isAdmin
+          ? await loginAdmin(email, password)
+          : await loginUser(email, password);
 
-      if (user.status === 'blocked') {
-        setErrorMsg('Konto zablokowane.');
-        setIsSubmitting(false);
+        setCurrentUser(loggedUser);
+        onUserChange(loggedUser);
+        setSuccessMsg(`Zalogowano pomyślnie: ${loggedUser.name}`);
+        setTimeout(() => navigate('discover'), 600);
         return;
-      }
+      } catch (backendErr: any) {
+        console.warn('Backend login error, trying local fallback:', backendErr);
+        // Fallback to local accounts
+        const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+        if (!user) {
+          setErrorMsg(backendErr?.message || 'Niepoprawne dane logowania.');
+          setIsSubmitting(false);
+          return;
+        }
 
-      setCurrentUser(user);
-      onUserChange(user);
-      setSuccessMsg(`Zalogowano: ${user.name}`);
-      setTimeout(() => navigate('discover'), 600);
+        if (user.status === 'blocked') {
+          setErrorMsg('Konto zablokowane.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        setCurrentUser(user);
+        onUserChange(user);
+        setSuccessMsg(`Zalogowano: ${user.name}`);
+        setTimeout(() => navigate('discover'), 600);
+      }
     }
 
     setIsSubmitting(false);
   };
 
-  const handleQuickLogin = (demoEmail: string) => {
-    const users = getUsers();
-    const user = users.find((u) => u.email === demoEmail);
-    if (user) {
-      setCurrentUser(user);
-      onUserChange(user);
-      setTimeout(() => navigate(user.role === 'admin' ? 'admin' : 'discover'), 400);
+  const handleQuickLogin = async (demoEmail: string) => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    setIsSubmitting(true);
+
+    const isAdmin = demoEmail.toLowerCase().includes('admin');
+    const defaultPassword = isAdmin ? 'admin123' : 'user123';
+
+    try {
+      const loggedUser = isAdmin
+        ? await loginAdmin(demoEmail, defaultPassword)
+        : await loginUser(demoEmail, defaultPassword);
+
+      setCurrentUser(loggedUser);
+      onUserChange(loggedUser);
+      setSuccessMsg(`Zalogowano profil: ${loggedUser.name}`);
+      setTimeout(() => navigate(loggedUser.role === 'admin' ? 'admin' : 'discover'), 400);
+      return;
+    } catch {
+      const users = getUsers();
+      const user = users.find((u) => u.email === demoEmail);
+      if (user) {
+        setCurrentUser(user);
+        onUserChange(user);
+        setTimeout(() => navigate(user.role === 'admin' ? 'admin' : 'discover'), 400);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
