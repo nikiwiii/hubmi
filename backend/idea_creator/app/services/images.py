@@ -1,7 +1,7 @@
 import base64
 import logging
 from functools import lru_cache
-from typing import Protocol
+from typing import Optional, Protocol
 from urllib.parse import quote
 
 import httpx
@@ -13,7 +13,7 @@ logger = logging.getLogger("idea_creator.images")
 
 
 class ImageGenerationError(Exception):
-    def __init__(self, message: str, status_code: int | None = None):
+    def __init__(self, message: str, status_code: Optional[int] = None):
         super().__init__(message)
         self.status_code = status_code
 
