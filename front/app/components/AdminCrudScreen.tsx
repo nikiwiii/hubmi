@@ -154,7 +154,7 @@ export const AdminCrudScreen: React.FC<AdminCrudScreenProps> = ({
   );
 
   return (
-    <div className="py-6 px-4 sm:px-6 max-w-5xl mx-auto space-y-5">
+    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>

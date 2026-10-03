@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Idea, User, ScreenId } from '../lib/types';
+import { Idea, User, ScreenId, getCategoryThemeAndShape } from '../lib/types';
 import { GeometricIllustration } from './GeometricIllustration';
 import { getThemeStyles } from './IdeaCard';
 import {
@@ -33,14 +33,13 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
   onVote,
   onToggleTesting,
   onSelectIdea,
-  onOpenChatWithAuthor,
-  onNavigate
+  onOpenChatWithAuthor
 }) => {
   const currentIndex = ideas.findIndex(i => i.id === selectedIdeaId);
   const activeIndex = currentIndex >= 0 ? currentIndex : 0;
   const currentIdea = ideas[activeIndex] || ideas[0];
 
-  // Collapsible states - hidden by default as requested
+  // Collapsible states - hidden by default
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
 
@@ -69,7 +68,9 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
   }
 
   const isTester = currentUser ? currentIdea.testersList.includes(currentUser.email) : false;
-  const styles = getThemeStyles(currentIdea.colorTheme);
+  // Category-driven theme and shape
+  const { theme, shape } = getCategoryThemeAndShape(currentIdea.category);
+  const styles = getThemeStyles(theme);
 
   const handlePrev = () => {
     const nextIdx = (activeIndex - 1 + ideas.length) % ideas.length;
@@ -97,11 +98,11 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
   };
 
   return (
-    <div className="py-8 px-4 sm:px-6 max-w-4xl mx-auto space-y-6">
-      {/* Navigation Header */}
+    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6">
+      {/* Navigation Header (Clean, without redundant Back button) */}
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">
-          {activeIndex + 1} z {ideas.length}
+          Pomysł {activeIndex + 1} z {ideas.length}
         </span>
 
         {/* Carousel Prev/Next */}
@@ -124,10 +125,10 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
       </div>
 
       {/* Hero Card Container */}
-      <div className="bg-white rounded-[32px] border border-black/[0.06] shadow-sm overflow-hidden">
-        {/* Banner with subtle color palette */}
-        <div className={`p-8 sm:p-10 ${styles.bg} flex flex-col md:flex-row md:items-center justify-between gap-6`}>
-          <div className="space-y-2 max-w-lg">
+      <div className="bg-white rounded-[32px] border border-black/[0.05] shadow-2xs overflow-hidden">
+        {/* Banner with category-bound subtle color palette */}
+        <div className={`p-6 sm:p-10 ${styles.bg} flex flex-col md:flex-row md:items-center justify-between gap-6`}>
+          <div className="space-y-2 max-w-xl">
             <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${styles.badge}`}>
               {currentIdea.category}
             </span>
@@ -145,18 +146,18 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
             </p>
           </div>
 
-          <div className="shrink-0 flex items-center justify-center p-3 bg-white/40 backdrop-blur-xs rounded-2xl border border-white/50">
+          <div className="shrink-0 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xs rounded-2xl border border-white/50">
             <GeometricIllustration
-              shape={currentIdea.geometricShape}
-              theme={currentIdea.colorTheme}
-              size={110}
+              shape={shape}
+              theme={theme}
+              size={120}
             />
           </div>
         </div>
 
-        {/* Action Bar: Like / Dislike WITHOUT labels + Testing Button + Chat */}
-        <div className="p-6 bg-white border-b border-stone-100 flex flex-wrap items-center justify-between gap-4">
-          {/* Like / Dislike (No labels, just clean icons + numbers as requested) */}
+        {/* Action Bar */}
+        <div className="p-6 sm:p-8 bg-white border-b border-stone-100 flex flex-wrap items-center justify-between gap-4">
+          {/* Like / Dislike (No labels, clean icons + numbers) */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => onVote(currentIdea.id, 'like')}
@@ -224,7 +225,7 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
           <div>
             <button
               onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
-              className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-stone-50/50 transition-colors cursor-pointer"
+              className="w-full px-6 sm:px-8 py-4 flex items-center justify-between text-left hover:bg-stone-50/50 transition-colors cursor-pointer"
             >
               <span className="text-sm font-bold text-stone-800">
                 {isDetailsExpanded ? 'Ukryj opis pomysłu' : 'Rozwiń opis pomysłu'}
@@ -237,7 +238,7 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
             </button>
 
             {isDetailsExpanded && (
-              <div className="px-6 pb-6 pt-2 space-y-4 animate-in fade-in duration-200">
+              <div className="px-6 sm:px-8 pb-6 pt-2 space-y-4 animate-in fade-in duration-200">
                 <p className="text-stone-700 text-base leading-relaxed">
                   {currentIdea.description}
                 </p>
@@ -258,7 +259,7 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
           <div>
             <button
               onClick={() => setIsCommentsExpanded(!isCommentsExpanded)}
-              className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-stone-50/50 transition-colors cursor-pointer"
+              className="w-full px-6 sm:px-8 py-4 flex items-center justify-between text-left hover:bg-stone-50/50 transition-colors cursor-pointer"
             >
               <span className="text-sm font-bold text-stone-800">
                 {isCommentsExpanded ? 'Ukryj opinie' : `Pokaż opinie (${comments.length})`}
@@ -271,8 +272,8 @@ export const BrowseIdeasScreen: React.FC<BrowseIdeasScreenProps> = ({
             </button>
 
             {isCommentsExpanded && (
-              <div className="px-6 pb-6 pt-2 space-y-4 animate-in fade-in duration-200">
-                {/* Minimal add comment */}
+              <div className="px-6 sm:px-8 pb-6 pt-2 space-y-4 animate-in fade-in duration-200">
+                {/* Add comment */}
                 <form onSubmit={handleAddComment} className="flex gap-2">
                   <input
                     type="text"

@@ -22,6 +22,7 @@ import { UserDashboardScreen } from './components/UserDashboardScreen';
 
 export default function Home() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('discover');
+  const [previousScreen, setPreviousScreen] = useState<ScreenId>('discover');
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [selectedIdeaId, setSelectedIdeaId] = useState<string | null>(null);
@@ -33,6 +34,13 @@ export default function Home() {
     setCurrentUserState(getCurrentUser());
     setIdeas(getIdeas());
   }, []);
+
+  const handleNavigate = (screen: ScreenId) => {
+    if (screen !== currentScreen) {
+      setPreviousScreen(currentScreen);
+      setCurrentScreen(screen);
+    }
+  };
 
   const handleUserChange = (user: User | null) => {
     setCurrentUserState(user);
@@ -53,7 +61,9 @@ export default function Home() {
   const handleAddIdea = (newIdeaData: any) => {
     const created = addIdea(newIdeaData);
     setIdeas(getIdeas());
+    setPreviousScreen(currentScreen);
     setSelectedIdeaId(created.id);
+    setCurrentScreen('browse');
   };
 
   const handleDeleteIdea = (id: string) => {
@@ -70,13 +80,14 @@ export default function Home() {
   };
 
   const handleSelectIdea = (idea: Idea) => {
+    setPreviousScreen(currentScreen);
     setSelectedIdeaId(idea.id);
     setCurrentScreen('browse');
   };
 
   const handleOpenChatWithAuthor = (authorId: string) => {
     setChatRecipientId(authorId);
-    setCurrentScreen('chat');
+    handleNavigate('chat');
   };
 
   // Render current active screen
@@ -87,7 +98,7 @@ export default function Home() {
           <AuthScreen
             currentUser={currentUser}
             onUserChange={handleUserChange}
-            onNavigate={(screen) => setCurrentScreen(screen)}
+            onNavigate={handleNavigate}
           />
         );
 
@@ -99,7 +110,7 @@ export default function Home() {
             onSelectIdea={handleSelectIdea}
             onVote={handleVote}
             onToggleTesting={handleToggleTesting}
-            onNavigate={(screen) => setCurrentScreen(screen)}
+            onNavigate={handleNavigate}
           />
         );
 
@@ -108,7 +119,7 @@ export default function Home() {
           <ProposeIdeaScreen
             currentUser={currentUser}
             onAddIdea={handleAddIdea}
-            onNavigate={(screen) => setCurrentScreen(screen)}
+            onNavigate={handleNavigate}
           />
         );
 
@@ -122,7 +133,7 @@ export default function Home() {
             onToggleTesting={handleToggleTesting}
             onSelectIdea={(idea) => setSelectedIdeaId(idea.id)}
             onOpenChatWithAuthor={handleOpenChatWithAuthor}
-            onNavigate={(screen) => setCurrentScreen(screen)}
+            onNavigate={handleNavigate}
           />
         );
 
@@ -142,7 +153,7 @@ export default function Home() {
             onUserChange={handleUserChange}
             onDeleteIdea={handleDeleteIdea}
             onUpdateIdeaStatus={handleUpdateIdeaStatus}
-            onNavigate={(screen) => setCurrentScreen(screen)}
+            onNavigate={handleNavigate}
           />
         );
 
@@ -154,7 +165,7 @@ export default function Home() {
             ideas={ideas}
             onSelectIdea={handleSelectIdea}
             onOpenChatWithAuthor={handleOpenChatWithAuthor}
-            onNavigate={(screen) => setCurrentScreen(screen)}
+            onNavigate={handleNavigate}
             isLargeFont={isLargeFont}
             onToggleFontSize={() => setIsLargeFont(!isLargeFont)}
           />
@@ -167,7 +178,7 @@ export default function Home() {
       {/* Top Navbar */}
       <Navbar
         currentScreen={currentScreen}
-        onNavigate={(screen) => setCurrentScreen(screen)}
+        onNavigate={handleNavigate}
         currentUser={currentUser}
         isLargeFont={isLargeFont}
         onToggleFontSize={() => setIsLargeFont(!isLargeFont)}

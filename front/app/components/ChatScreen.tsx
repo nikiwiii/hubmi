@@ -71,7 +71,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   };
 
   return (
-    <div className="py-6 px-4 sm:px-6 max-w-5xl mx-auto">
+    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto">
       {/* Clean Minimalist Messenger Container */}
       <div className="grid grid-cols-1 md:grid-cols-12 bg-white rounded-[32px] border border-black/[0.06] shadow-sm overflow-hidden h-[620px]">
         {/* Left Column: Contacts List */}

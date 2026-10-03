@@ -68,3 +68,30 @@ export type ScreenId =
   | 'chat'
   | 'admin'
   | 'dashboard';
+
+// Deterministic category to color theme & shape mapping
+export function getCategoryThemeAndShape(category: string): {
+  theme: ColorTheme;
+  shape: ShapeType;
+} {
+  const cat = (category || '').toLowerCase();
+  if (cat.includes('ogród') || cat.includes('dom')) {
+    return { theme: 'sage', shape: 'v-shape' }; // Nature/garden green
+  }
+  if (cat.includes('zdrowie') || cat.includes('lek') || cat.includes('bezpieczeństwo')) {
+    return { theme: 'lavender', shape: 'cloud' }; // Peaceful misty periwinkle
+  }
+  if (cat.includes('społecz') || cat.includes('rozwój') || cat.includes('mądrość')) {
+    return { theme: 'yellow', shape: 'donut' }; // Warm pale sun yellow
+  }
+  if (cat.includes('podróż') || cat.includes('kamper')) {
+    return { theme: 'cyan', shape: 'wave' }; // Sea glass cyan
+  }
+  if (cat.includes('rzemiosł') || cat.includes('mebl') || cat.includes('pasj')) {
+    return { theme: 'lilac', shape: 'crescent' }; // Heather lilac
+  }
+  if (cat.includes('prac') || cat.includes('biznes') || cat.includes('finanse') || cat.includes('księg')) {
+    return { theme: 'pink', shape: 'diamond' }; // Soft rose
+  }
+  return { theme: 'slate', shape: 'v-shape' }; // Neutral stone slate
+}
