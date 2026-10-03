@@ -28,6 +28,41 @@ HEADERS = {
 
 INDICATORS_CONFIG = [
     {
+        "key": "working_age_population",
+        "pointer_id": 56,
+        "name": "Working-age population",
+        "unit": "%",
+        "description": "Share of working-age population in the total population (women 18-59, men 18-64).",
+    },
+    {
+        "key": "unemployed_longer_than_1_year",
+        "pointer_id": 189,
+        "name": "Unemployed for more than 1 year",
+        "unit": "%",
+        "description": "Share of unemployed persons registered for more than 1 year in the total number of unemployed.",
+    },
+    {
+        "key": "cash_social_assistance_benefits",
+        "pointer_id": 225,
+        "name": "Cash social assistance benefits",
+        "unit": "%",
+        "description": "Share of cash benefits in the total number of social assistance benefits granted.",
+    },
+    {
+        "key": "foster_families_count",
+        "pointer_id": 29,
+        "name": "Number of foster families",
+        "unit": "count",
+        "description": "Number of active foster families (related, non-professional, professional).",
+    },
+    {
+        "key": "average_hospital_stay",
+        "pointer_id": 85,
+        "name": "Average hospital stay duration",
+        "unit": "days",
+        "description": "Average length of patient stay in a hospital ward (in days).",
+    },
+    {
         "key": "urbanization_rate",
         "pointer_id": 4,
         "name": "Urbanization rate",
