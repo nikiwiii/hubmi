@@ -128,6 +128,8 @@ function MiddlemanContent() {
     setInstitutionProfile: setProfile,
     serviceCardResult: result,
     setServiceCardResult: setResult,
+    middlemanRefineText: refineText,
+    setMiddlemanRefineText: setRefineText,
     resetMiddleman,
   } = useApp();
 
@@ -136,7 +138,6 @@ function MiddlemanContent() {
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refineText, setRefineText] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isConsulting, setIsConsulting] = useState(false);
@@ -316,7 +317,8 @@ function MiddlemanContent() {
           <SelectedInnovation innovation={innovation} onChange={handleBackToPick} />
           <div className="bg-white rounded-[28px] border border-black/5 p-5 sm:p-8 shadow-2xs">
             <InstitutionForm
-              initialProfile={profile}
+              profile={profile}
+              onChange={setProfile}
               isLoading={isGenerating}
               onBack={handleBackToPick}
               onSubmit={handleGenerate}

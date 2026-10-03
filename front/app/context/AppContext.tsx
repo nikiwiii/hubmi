@@ -80,6 +80,8 @@ interface AppContextType {
   setPickerQuery: (query: string) => void;
   pickerPage: number;
   setPickerPage: (page: number) => void;
+  middlemanRefineText: string;
+  setMiddlemanRefineText: (text: string) => void;
   resetMiddleman: () => void;
 
   // Asystent Innowacji (Matching chat history)
@@ -126,11 +128,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [pickerPage, setPickerPageState] = useState<number>(
     initialDraft?.pickerPage || 1
   );
+  const [middlemanRefineText, setMiddlemanRefineTextState] = useState<string>(
+    initialDraft?.refineText || ''
+  );
 
   // Matching Chat Turn history
   const [matchingMessages, setMatchingMessages] = useState<any[]>([]);
 
-  // Synchronizacja szkicu middleman z sessionStorage
+  // Synchronizacja szkicu middleman z pamięcią podręczną
   useEffect(() => {
     saveStoredMiddlemanDraft({
       step: middlemanStep,
@@ -139,6 +144,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       result: serviceCardResult,
       pickerQuery,
       pickerPage,
+      refineText: middlemanRefineText,
     });
   }, [
     middlemanStep,
@@ -147,6 +153,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     serviceCardResult,
     pickerQuery,
     pickerPage,
+    middlemanRefineText,
   ]);
 
   const loadInnovations = async (forceRefresh = false): Promise<InnovationRecord[]> => {
@@ -181,6 +188,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSelectedInnovationState(null);
     setInstitutionProfile(EMPTY_PROFILE);
     setServiceCardResultState(null);
+    setMiddlemanRefineTextState('');
     clearStoredMiddlemanDraft();
   };
 
@@ -402,6 +410,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setPickerQuery: setPickerQueryState,
         pickerPage,
         setPickerPage: setPickerPageState,
+        middlemanRefineText,
+        setMiddlemanRefineText: setMiddlemanRefineTextState,
         resetMiddleman,
 
         // Matching

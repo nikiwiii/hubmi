@@ -12,7 +12,8 @@ import {
 } from "../../lib/middleman";
 
 interface InstitutionFormProps {
-  initialProfile: InstitutionProfile;
+  profile: InstitutionProfile;
+  onChange: (profile: InstitutionProfile) => void;
   isLoading: boolean;
   onBack: () => void;
   onSubmit: (profile: InstitutionProfile) => void;
@@ -77,16 +78,17 @@ function ChoiceChips<T extends string | number>({
 }
 
 export const InstitutionForm: React.FC<InstitutionFormProps> = ({
-  initialProfile,
+  profile,
+  onChange,
   isLoading,
   onBack,
   onSubmit,
 }) => {
-  const [profile, setProfile] = useState<InstitutionProfile>(initialProfile);
   const [showErrors, setShowErrors] = useState(false);
 
-  const update = <K extends keyof InstitutionProfile>(key: K, value: InstitutionProfile[K]) =>
-    setProfile((prev) => ({ ...prev, [key]: value }));
+  const update = <K extends keyof InstitutionProfile>(key: K, value: InstitutionProfile[K]) => {
+    onChange({ ...profile, [key]: value });
+  };
 
   const missing = {
     powiat: !profile.powiat,

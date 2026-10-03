@@ -75,12 +75,15 @@ export interface MiddlemanStoredDraft {
   result: ServiceCardResponse | null;
   pickerQuery: string;
   pickerPage: number;
+  refineText?: string;
 }
 
 export function getStoredMiddlemanDraft(): MiddlemanStoredDraft | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = sessionStorage.getItem(STORAGE_MIDDLEMAN_KEY);
+    const raw =
+      sessionStorage.getItem(STORAGE_MIDDLEMAN_KEY) ||
+      localStorage.getItem(STORAGE_MIDDLEMAN_KEY);
     if (!raw) return null;
     return JSON.parse(raw);
   } catch {
@@ -91,7 +94,9 @@ export function getStoredMiddlemanDraft(): MiddlemanStoredDraft | null {
 export function saveStoredMiddlemanDraft(draft: MiddlemanStoredDraft): void {
   if (typeof window === "undefined") return;
   try {
-    sessionStorage.setItem(STORAGE_MIDDLEMAN_KEY, JSON.stringify(draft));
+    const json = JSON.stringify(draft);
+    sessionStorage.setItem(STORAGE_MIDDLEMAN_KEY, json);
+    localStorage.setItem(STORAGE_MIDDLEMAN_KEY, json);
   } catch {
     // Ignore storage quota errors
   }
@@ -101,6 +106,7 @@ export function clearStoredMiddlemanDraft(): void {
   if (typeof window === "undefined") return;
   try {
     sessionStorage.removeItem(STORAGE_MIDDLEMAN_KEY);
+    localStorage.removeItem(STORAGE_MIDDLEMAN_KEY);
   } catch {
     // Ignore
   }
