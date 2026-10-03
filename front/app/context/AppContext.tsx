@@ -25,6 +25,8 @@ interface AppContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
   ideas: Idea[];
+  isLoadingIdeas: boolean;
+  isLoadingUser: boolean;
   isLargeFont: boolean;
   toggleFontSize: () => void;
   vote: (id: string, type: 'like' | 'dislike') => Promise<void>;
@@ -35,6 +37,7 @@ interface AppContextType {
   navigate: (screen: ScreenId | string) => void;
   selectIdea: (idea: Idea) => void;
   openChatWithAuthor: (authorId: string) => void;
+  refreshIdeas: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -43,35 +46,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const router = useRouter();
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isLargeFont, setIsLargeFont] = useState(false);
+
+  const loadIdeas = async () => {
+    setIsLoadingIdeas(true);
+    try {
+      const backendIdeas = await fetchIdeasFromBackend();
+      if (backendIdeas && backendIdeas.length > 0) {
+        setIdeas(backendIdeas);
+      } else {
+        setIdeas(getIdeas());
+      }
+    } catch {
+      setIdeas(getIdeas());
+    } finally {
+      setIsLoadingIdeas(false);
+    }
+  };
 
   useEffect(() => {
     // 1. Sprawdź profil z backendu (sesja JWT)
-    fetchCurrentProfile()
-      .then((profile) => {
+    const loadUser = async () => {
+      setIsLoadingUser(true);
+      try {
+        const profile = await fetchCurrentProfile();
         if (profile) {
           setCurrentUserState(profile);
           setStoredCurrentUser(profile);
         } else {
           setCurrentUserState(getCurrentUser());
         }
-      })
-      .catch(() => {
+      } catch {
         setCurrentUserState(getCurrentUser());
-      });
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    loadUser();
 
     // 2. Pobierz pomysły z backendu FastAPI lub lokalnie
-    fetchIdeasFromBackend()
-      .then((backendIdeas) => {
-        if (backendIdeas && backendIdeas.length > 0) {
-          setIdeas(backendIdeas);
-        } else {
-          setIdeas(getIdeas());
-        }
-      })
-      .catch(() => {
-        setIdeas(getIdeas());
-      });
+    loadIdeas();
   }, []);
 
   const handleSetCurrentUser = (user: User | null) => {
@@ -186,6 +203,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser,
         setCurrentUser: handleSetCurrentUser,
         ideas,
+        isLoadingIdeas,
+        isLoadingUser,
         isLargeFont,
         toggleFontSize,
         vote: handleVote,
@@ -195,7 +214,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateIdeaStatus: handleUpdateIdeaStatus,
         navigate: handleNavigate,
         selectIdea: handleSelectIdea,
-        openChatWithAuthor: handleOpenChatWithAuthor
+        openChatWithAuthor: handleOpenChatWithAuthor,
+        refreshIdeas: loadIdeas,
       }}
     >
       <div className={`min-h-screen flex flex-col bg-[#F7F6F1] ${isLargeFont ? 'font-scale-large' : ''}`}>

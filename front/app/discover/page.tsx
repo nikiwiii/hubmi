@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { IdeaCard } from "../components/shared/IdeaCard";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, Loader2 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
 const CATEGORIES = [
@@ -15,8 +15,25 @@ const CATEGORIES = [
   "Praca",
 ];
 
+function IdeaCardSkeleton() {
+  return (
+    <div className="rounded-[28px] overflow-hidden bg-white border border-black/4 min-h-75 animate-pulse p-6 flex flex-col gap-4">
+      <div className="h-3 w-20 bg-stone-200 rounded-full" />
+      <div className="h-6 w-3/4 bg-stone-200 rounded-xl" />
+      <div className="h-3 w-1/2 bg-stone-100 rounded-full" />
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-20 h-20 rounded-full bg-stone-100" />
+      </div>
+      <div className="pt-2 border-t border-stone-100 flex gap-2">
+        <div className="h-7 flex-1 bg-stone-100 rounded-xl" />
+        <div className="h-7 flex-1 bg-stone-100 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
 export default function DiscoverPage() {
-  const { ideas, currentUser, selectIdea, vote, toggleTesting, navigate } =
+  const { ideas, currentUser, selectIdea, vote, toggleTesting, navigate, isLoadingIdeas } =
     useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Wszystkie");
@@ -127,8 +144,14 @@ export default function DiscoverPage() {
         </div>
       </div>
 
-      {/* Grid of Idea Cards */}
-      {filteredIdeas.length === 0 ? (
+      {/* Grid of Idea Cards — Skeleton during loading */}
+      {isLoadingIdeas ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <IdeaCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : filteredIdeas.length === 0 ? (
         <div className="bg-white rounded-2xl p-10 text-center border border-stone-200">
           <p className="text-base font-semibold text-stone-800">Brak wyników</p>
           <button
