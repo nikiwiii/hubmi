@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Idea, ColorTheme, User, getCategoryThemeAndShape } from "../../lib/types";
 import { GeometricIllustration } from "./GeometricIllustration";
 import {
@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { canUserDeleteIdea, isUserAdmin, isUserIdeaAuthor } from "../../lib/ideasStore";
 import { useApp } from "../../context/AppContext";
-import { DeleteIdeaModal } from "./DeleteIdeaModal";
 
 interface IdeaCardProps {
   idea: Idea;
@@ -113,7 +112,6 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const { theme, shape } = getCategoryThemeAndShape(idea.category);
   const styles = getThemeStyles(theme);
 
-  const [isInternalDeleteOpen, setIsInternalDeleteOpen] = useState(false);
   const canDelete = Boolean(effectiveUser && canUserDeleteIdea(idea, effectiveUser));
   const isAuthor = isUserIdeaAuthor(idea, effectiveUser);
   const isAdmin = isUserAdmin(effectiveUser);
@@ -265,11 +263,10 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
               title={idea.userVote === "like" ? "Cofnij polubienie" : "Polub ten pomysł"}
               aria-label={`Polub pomysł. Aktualna liczba polubień: ${idea.likes}`}
               aria-pressed={idea.userVote === "like"}
-              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-stone-900 ${
-                idea.userVote === "like"
+              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-stone-900 ${idea.userVote === "like"
                   ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-xs"
                   : "bg-white/80 hover:bg-white dark:bg-white/10 dark:hover:bg-white/20 text-stone-900 dark:text-stone-100"
-              }`}
+                }`}
             >
               <ThumbsUp
                 aria-hidden="true"
@@ -286,11 +283,10 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
               title={isTester ? "Rezygnuj z testowania" : "Dołącz jako tester"}
               aria-label={`Dołącz jako tester pomysłu. Aktualna liczba testerów: ${idea.testersCount}`}
               aria-pressed={isTester}
-              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-stone-900 ${
-                isTester
+              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border border-black/5 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-stone-900 ${isTester
                   ? "bg-emerald-700 text-white shadow-xs"
                   : "bg-white/80 hover:bg-white dark:bg-white/10 dark:hover:bg-white/20 text-stone-900 dark:text-stone-100"
-              }`}
+                }`}
             >
               <Users className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{idea.testersCount}</span>
@@ -298,16 +294,12 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}
 
           {/* Dedykowany, spójny przycisk usunięcia dla Autora lub Administratora */}
-          {canDelete && (
+          {canDelete && onDelete && (
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                if (onDelete) {
-                  onDelete(idea);
-                } else if (Boolean(appContext)) {
-                  setIsInternalDeleteOpen(true);
-                }
+                onDelete(idea);
               }}
               title={
                 isAdmin && !isAuthor
@@ -323,19 +315,6 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}
         </div>
       </div>
-
-      {isInternalDeleteOpen && (
-        <DeleteIdeaModal
-          idea={idea}
-          isOpen={isInternalDeleteOpen}
-          onClose={() => setIsInternalDeleteOpen(false)}
-          currentUser={effectiveUser}
-          onConfirm={async (item) => {
-            await appContext?.deleteIdea(item.id);
-            setIsInternalDeleteOpen(false);
-          }}
-        />
-      )}
     </article>
   );
 };

@@ -278,7 +278,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             return fresh ? { ...current, ...fresh } : current;
           });
         }
-      }).catch(() => {});
+      }).catch(() => { });
       return innovations;
     }
     setIsLoadingInnovations(true);
@@ -432,11 +432,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const next = prev.map((item) =>
           item.id === id
             ? {
-                ...item,
-                likes: res.likes,
-                dislikes: res.dislikes,
-                userVote: res.active ? type : null,
-              }
+              ...item,
+              likes: res.likes,
+              dislikes: res.dislikes,
+              userVote: res.active ? type : null,
+            }
             : item
         );
         saveIdeas(next);
@@ -480,12 +480,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const next = prev.map((item) =>
           item.id === id
             ? {
-                ...item,
-                testersCount: res.volunteers,
-                testersList: res.active
-                  ? Array.from(new Set([...item.testersList, email]))
-                  : item.testersList.filter((e) => e !== email),
-              }
+              ...item,
+              testersCount: res.volunteers,
+              testersList: res.active
+                ? Array.from(new Set([...item.testersList, email]))
+                : item.testersList.filter((e) => e !== email),
+            }
             : item
         );
         saveIdeas(next);
@@ -534,7 +534,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const handleDeleteIdea = async (id: string) => {
     const targetIdea = ideas.find((i) => i.id === id);
-    if (!currentUser || (targetIdea && !canUserDeleteIdea(targetIdea, currentUser))) {
+    if (targetIdea && currentUser && !canUserDeleteIdea(targetIdea, currentUser)) {
       throw new Error("Brak uprawnień. Tylko autor lub administrator może usunąć tę propozycję.");
     }
     try {
@@ -642,19 +642,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }}
     >
       <div
-        className={`min-h-screen flex flex-col transition-colors duration-150 ${
-          fontSizeLevel === 'huge'
+        className={`min-h-screen flex flex-col transition-colors duration-150 ${fontSizeLevel === 'huge'
             ? 'font-scale-huge'
             : fontSizeLevel === 'large'
-            ? 'font-scale-large'
-            : ''
-        } ${
-          isHighContrast
+              ? 'font-scale-large'
+              : ''
+          } ${isHighContrast
             ? 'high-contrast bg-black text-white'
             : isDarkMode
-            ? 'dark bg-[#141518] text-[#F3F4F6]'
-            : 'bg-[#F7F6F1] text-stone-900'
-        }`}
+              ? 'dark bg-[#141518] text-[#F3F4F6]'
+              : 'bg-[#F7F6F1] text-stone-900'
+          }`}
       >
         {children}
       </div>

@@ -66,6 +66,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#F4F4F0] dark:bg-[#141518] text-stone-900 dark:text-[#F3F4F6] transition-colors">
         <Providers>{children}</Providers>
       </body>
-    </html>
+  </html>
   );
 }

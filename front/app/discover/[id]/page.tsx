@@ -9,7 +9,7 @@ import { InnovationTestPanel } from "../../components/testing/InnovationTestPane
 import { DeleteIdeaModal } from "../../components/shared/DeleteIdeaModal";
 import { useApp } from "../../context/AppContext";
 import { startExpertConversation, fetchIdeaById } from "../../lib/api";
-import { canUserDeleteIdea, isUserAdmin } from "../../lib/ideasStore";
+import { canUserDeleteIdea } from "../../lib/ideasStore";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -288,19 +288,15 @@ export default function DiscoverIdeaDetailPage() {
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
                 title={
-                  isUserAdmin(currentUser) && currentUser?.email !== currentIdea.authorEmail
+                  currentUser?.role === "admin"
                     ? "Usuń tę propozycję (uprawnienia Administratora)"
                     : "Usuń swoją propozycję"
                 }
                 aria-label="Usuń tę propozycję"
-                className="min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                className="min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 transition-all cursor-pointer"
               >
                 <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" aria-hidden="true" />
-                <span>
-                  {isUserAdmin(currentUser) && currentUser?.email !== currentIdea.authorEmail
-                    ? "Usuń propozycję (Admin)"
-                    : "Usuń swoją propozycję"}
-                </span>
+                <span>{currentUser?.role === "admin" ? "Usuń (Admin)" : "Usuń propozycję"}</span>
               </button>
             )}
 
