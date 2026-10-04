@@ -6,6 +6,10 @@ export interface RawResearchEntry {
   name: string;
   unit: string;
   description: string;
+  category?: string;
+  category_id?: string;
+  color?: string;
+  source?: string;
   years: string[];
   dane_powiaty: Record<string, Record<string, number>>;
 }
@@ -767,13 +771,14 @@ export function getAllResearches(): ResearchInfo[] {
 
   return keys.map((key) => {
     const raw = dynamicRawData[key];
+    const categoryName = raw.category || 'Badanie Społeczne';
     const cfg = RESEARCH_CONFIGS[key] || {
       titlePl: raw.name,
       titleEn: raw.name,
-      category: 'Badanie Społeczne',
+      category: categoryName,
       descriptionPl: raw.description,
       iconName: 'activity' as const,
-      theme: getResearchThemeForCategory(raw.name)
+      theme: getResearchThemeForCategory(categoryName || raw.name)
     };
 
     const years = raw.years;

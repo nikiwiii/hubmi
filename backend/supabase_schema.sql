@@ -302,6 +302,7 @@ CREATE INDEX IF NOT EXISTS idx_tester_apps_user ON public.tester_applications(us
 CREATE INDEX IF NOT EXISTS idx_tester_apps_status ON public.tester_applications(status);
 
 -- ============================================================
+<<<<<<< Updated upstream
 -- 11. Nabory wniosków grantowych (Kreator pomysłów)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.grant_calls (
@@ -367,16 +368,25 @@ CREATE POLICY "grant_templates_insert" ON storage.objects
 
 -- ============================================================
 -- 13. TABELA: indicator_categories (Kategorie wskaźników)
+=======
+-- TABELA 11: Kategorie Wskaźników (Indicator Categories)
+>>>>>>> Stashed changes
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.indicator_categories (
     id VARCHAR(64) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
+<<<<<<< Updated upstream
     icon VARCHAR(50),
+=======
+    icon VARCHAR(50) DEFAULT 'activity',
+    color VARCHAR(50) DEFAULT '#698B99',
+>>>>>>> Stashed changes
     sort_order INT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+<<<<<<< Updated upstream
 ALTER TABLE public.indicator_categories ADD COLUMN IF NOT EXISTS name VARCHAR(100);
 ALTER TABLE public.indicator_categories ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE public.indicator_categories ADD COLUMN IF NOT EXISTS icon VARCHAR(50);
@@ -465,6 +475,14 @@ SET name = EXCLUDED.name,
 
 -- ============================================================
 -- 15. TABELA: indicators (Definicje wskaźników)
+=======
+ALTER TABLE public.indicator_categories ADD COLUMN IF NOT EXISTS color VARCHAR(50) DEFAULT '#698B99';
+ALTER TABLE public.indicator_categories ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0;
+ALTER TABLE public.indicator_categories DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- TABELA 12: Wskaźniki Społeczne (Indicators)
+>>>>>>> Stashed changes
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.indicators (
     id VARCHAR(64) PRIMARY KEY,
@@ -472,6 +490,7 @@ CREATE TABLE IF NOT EXISTS public.indicators (
     name VARCHAR(255) NOT NULL,
     unit VARCHAR(50),
     description TEXT,
+<<<<<<< Updated upstream
     source VARCHAR(100) DEFAULT 'ROPS Kraków / GUS',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -504,6 +523,25 @@ CREATE TABLE IF NOT EXISTS public.indicator_measurements (
     indicator_id VARCHAR(64) NOT NULL,
     powiat_id VARCHAR(64),
     powiat_name VARCHAR(100) NOT NULL,
+=======
+    source TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.indicators ADD COLUMN IF NOT EXISTS category_id VARCHAR(64) REFERENCES public.indicator_categories(id) ON DELETE SET NULL;
+ALTER TABLE public.indicators ADD COLUMN IF NOT EXISTS source TEXT;
+CREATE INDEX IF NOT EXISTS idx_indicators_category ON public.indicators(category_id);
+ALTER TABLE public.indicators DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- TABELA 13: Pomiary Wskaźników w Powiatach (Indicator Measurements)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.indicator_measurements (
+    id BIGSERIAL PRIMARY KEY,
+    indicator_id VARCHAR(64) NOT NULL REFERENCES public.indicators(id) ON DELETE CASCADE,
+    powiat_name VARCHAR(100) NOT NULL,
+    powiat_id VARCHAR(50),
+>>>>>>> Stashed changes
     year INT NOT NULL,
     val NUMERIC NOT NULL,
     unit VARCHAR(20),
