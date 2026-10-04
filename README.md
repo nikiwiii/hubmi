@@ -7,29 +7,31 @@
 [![WCAG 2.2 AAA](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AAA%20Compliant-blue?style=for-the-badge)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 
 > **MiNNO** to zintegrowana platforma cyfrowa stworzona dla **Regionalnego Ośrodka Polityki Społecznej w Krakowie (ROPS Kraków)**, małopolskich samorządów (JST, CUS, OPS), organizacji pozarządowych oraz mieszkańców regionu.  
-> Łączy **zweryfikowaną bazę 115 innowacji społecznych**, inteligentny silnik **RAG & Matching AI**, moduł **Middlemana Innowacji** adaptujący projekty do standardu usług publicznych, **interaktywne kartogramy 22 powiatów Małopolski** (GUS/ROPS 2014–2024) oraz zaawansowane narzędzia dostępności cyfrowej **WCAG 2.2 AAA**.
+> Łączy **zweryfikowaną bazę 115 innowacji społecznych**, inteligentny silnik **RAG & Matching AI**, unikalny moduł **Middlemana Innowacji** adaptujący projekty do standardu usług publicznych, **interaktywne kartogramy 22 powiatów Małopolski** (GUS/ROPS 2014–2024) oraz laboratorium dostępności cyfrowej **WCAG 2.2 AAA**.
 
 ---
 
 ## 🌐 Wersja Demonstracyjna Live
 
-Aplikacja jest wdrożona i dostępna publicznie pod adresem:
+Aplikacja jest wdrożona na serwerze i publicznie dostępna:  
 👉 **[https://hubmi.185.180.206.16.nip.io](https://hubmi.185.180.206.16.nip.io)**
 
 ### 🔑 Konta demonstracyjne:
 
-| Rola | E-mail | Hasło | Uprawnienia |
+| Rola | E-mail | Hasło | Uprawnienia i dostęp |
 | :--- | :--- | :--- | :--- |
-| **Administrator (ROPS)** | `admin@hubmi.com` | `admin` | Pełny dostęp: panel koordynatora, moderacja pomysłów, testerzy, użytkownicy |
-| **Użytkownik / Twórca** | `user@hubmi.com` | `user123` | Zgłaszanie innowacji w kreatorze, reakcje społeczności, czat z ekspertem |
-| **Tester innowacji** | `tester@gmail.com` | `tester123` | Dostęp do strefy testowania innowacji, zgłoszenia ewaluacyjne |
+| **Administrator (ROPS)** | `admin@hubmi.com` | `admin` | Pełny dostęp do panelu koordynatora, moderacji pomysłów, naborów i bazy użytkowników |
+| **Użytkownik / Twórca** | `user@hubmi.com` | `user123` | Zgłaszanie innowacji w kreatorze, reakcje społeczności, czat z doradcą |
+| **Tester innowacji** | `tester@gmail.com` | `tester123` | Strefa testera, zgłoszenia ewaluacyjne innowacji w gminach |
+
+*(Możliwa jest również rejestracja nowego konta z poziomu aplikacji).*
 
 ---
 
-## 🎯 Jaki problem rozwiązujemy?
+## 🎯 Jaki problem rozwiązuje projekt?
 
 1. **Bariera transferu innowacji:** Gotowe innowacje społeczne z programów ROPS rzadko trafiają do gmin z powodu braku narzędzi adaptacyjnych.
-2. **Deficyty wiedzy lokalnej:** Samorządom brakuje szybkich diagnoz łączących dane statystyczne o problemach społecznych powiatu z konkretnymi rozwiązaniami.
+2. **Deficyty wiedzy terytorialnej:** Samorządom brakuje szybkich diagnoz łączących dane statystyczne o problemach społecznych powiatu z konkretnymi, przetestowanymi rozwiązaniami.
 3. **Biurokracja wdrożeniowa:** Przekształcenie pomysłu w formalną usługę CUS/OPS z budżetem i harmonogramem zajmowało dotąd tygodnie.
 
 **MiNNO skraca ten proces do kilkunastu sekund dzięki AI.**
@@ -93,6 +95,37 @@ Aplikacja jest wdrożona i dostępna publicznie pod adresem:
   * Zaćma (rozmycie i spadek kontrastu),
   * Jaskra (widzenie tunelowe).
 * Tryb wysokiego kontrastu, skalowanie typografii do 200%, pełna nawigacja klawiaturą z indykatorami fokusu.
+
+---
+
+## 💰 Koszty technicznego utrzymania (TCO)
+
+**Szacunek na 4 października 2026 r. | Kwoty netto**
+
+Dla **10 000 odwiedzających miesięcznie** przewidywany koszt technicznego utrzymania strony w wariancie oszczędnym wynosi **47–80 zł miesięcznie**, czyli **564–960 zł rocznie**.
+
+### Koszty zależnie od liczby odwiedzających:
+
+| Pozycja kosztowa | 1 000 osób/mies. | 10 000 osób/mies. | 50 000 osób/mies. | 200 000 osób/mies. |
+| :--- | ---: | ---: | ---: | ---: |
+| **Serwer strony i zaplecza** | 40–50 zł | 40–60 zł | 80–120 zł | 150–250 zł |
+| **Baza danych i przechowywanie plików** | 0 zł* | 0 zł* | 100 zł | 100–140 zł |
+| **Asystent tekstowy AI** | 0–2 zł | 2–5 zł | 15–25 zł | 60–90 zł |
+| **Kopie zapasowe i drobne dodatki** | 5–10 zł | 5–15 zł | 10–20 zł | 20–40 zł |
+| **Łącznie miesięcznie** | **45–62 zł** | **47–80 zł** | **205–265 zł** | **330–520 zł** |
+| **Łącznie rocznie** | **540–744 zł** | **564–960 zł** | **2 460–3 180 zł** | **3 960–6 240 zł** |
+
+*\* Darmowa baza jest dostępna w limitach planu Supabase Free: 500 MB danych, 1 GB plików i ograniczony transfer. Po przekroczeniu limitów należy doliczyć około **100 zł miesięcznie** za plan Pro. Plan Free wymaga własnych kopii zapasowych i może zostać wstrzymany po tygodniu bezczynności.*
+
+### Niezbędne zasoby:
+- **Serwer internetowy** — wspólne miejsce działania strony i jej zaplecza; na start około 4 rdzeni procesora, 8 GB pamięci i 80 GB dysku.
+- **Baza danych i miejsce na pliki** — konta, pomysły, wiadomości i dokumenty przechowywane w Supabase.
+- **Usługa AI** — Groq, rozliczany według rzeczywistego wykorzystania, z ograniczeniem liczby i długości odpowiedzi.
+- **Domena, poczta i zabezpieczenie HTTPS** — wykorzystanie istniejącej domeny i poczty instytucji oraz bezpłatnego certyfikatu SSL/TLS Let's Encrypt.
+- **Kopie zapasowe i monitoring** — kopie danych i plików poza głównym serwerem oraz podstawowe alerty o awarii.
+
+### Założenia wyceny:
+Wariant zakłada głównie przeglądanie strony: średnio 2 wizyty po 5 podstron na osobę miesięcznie oraz 5% odwiedzających korzystających z AI po 2 wywołania. Domena i poczta klienta nie wymagają nowego abonamentu. Kwoty dotyczą wyłącznie infrastruktury i usług technicznych. Podstawa cenowa: Hetzner, Supabase, Groq. Przeliczniki: 1 EUR = 4,30 zł; 1 USD = 4,00 zł.
 
 ---
 
@@ -182,8 +215,8 @@ hubmi/
 
 ## 🔒 Bezpieczeństwo i Dostępność
 
-* **Zgodność z WCAG 2.2 AAA:** Zaprojektowano zgodnie z polską Ustawą o Dostępności Cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych.
-* **Ochrona danych i RODO:** Bezpieczne hashowanie haseł (bcrypt), bezstanowe tokeny JWT (HS256) oraz separacja ról w systemie.
+* **Zgodność z WCAG 2.2 AAA:** Zaprojektowano zgodnie z Ustawą o Dostępności Cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych.
+* **Ochrona danych i RODO:** Bezpieczne hashowanie haseł (bcrypt), bezstanowe tokeny JWT (HS256) oraz separacja uprawnień (RBAC).
 * **Niezawodność (Zero-Downtime Design):** Hybrydowa architektura bazy danych – przy problemach z zewnętrznym dostawcą baza automatycznie przełącza się na lokalny silnik danych bez przerywania pracy użytkownika.
 
 ---
