@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Bell,
   CheckCheck,
+  Check,
   Mail,
   ExternalLink,
   X,
@@ -72,37 +73,61 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const handleMarkAsRead = async (notif: NotificationItem) => {
-    if (!notif.read) {
-      try {
-        await markNotificationRead(notif.id);
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
-        );
-      } catch (e) {
-        console.warn(e);
-      }
+  const handleMarkAsRead = (notif: NotificationItem, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
     }
+    if (!notif.read) {
+      // 1. Natychmiastowa optymistyczna aktualizacja stanu w UI (zmniejsza licznik bez opóźnienia)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+      );
+      // 2. Trwały zapis w localStorage oraz synchronizacja w tle z backendem
+      markNotificationRead(notif.id).catch((err) =>
+        console.warn('Błąd oznaczania powiadomienia jako przeczytane:', err)
+      );
+    }
+  };
+
+  const handleNavigate = (notif: NotificationItem, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    handleMarkAsRead(notif);
     if (notif.link) {
       setIsOpen(false);
       router.push(notif.link);
     }
   };
 
+  const handleCardClick = (notif: NotificationItem) => {
+    if (!notif.read) {
+      // Kliknięcie w nieprzeczytane powiadomienie oznacza je jako przeczytane i zmniejsza licznik
+      handleMarkAsRead(notif);
+    } else if (notif.link) {
+      // Kliknięcie w już przeczytane powiadomienie z linkiem nawiguje do celu
+      setIsOpen(false);
+      router.push(notif.link);
+    }
+  };
+
   const handleMarkAllRead = async () => {
+    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     try {
-      await markAllNotificationsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      await markAllNotificationsRead(unreadIds);
     } catch (e) {
       console.warn(e);
     }
   };
 
-  const handleOpenEmailPreview = async (notifId: string, e: React.MouseEvent) => {
+  const handleOpenEmailPreview = async (notif: NotificationItem, e: React.MouseEvent) => {
     e.stopPropagation();
+    // Otwarcie podglądu wiadomości również oznacza powiadomienie jako przeczytane
+    handleMarkAsRead(notif);
     setIsLoadingEmail(true);
     try {
-      const email = await fetchSimulatedEmail(notifId);
+      const email = await fetchSimulatedEmail(notif.id);
       setActiveEmail(email);
     } catch (err) {
       console.warn('Błąd pobierania podglądu e-mail:', err);
@@ -240,40 +265,79 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
                   key={notif.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => handleMarkAsRead(notif)}
+                  onClick={() => handleCardClick(notif)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      handleMarkAsRead(notif);
+                      handleCardClick(notif);
                     }
                   }}
-                  className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-stone-900 ${
-                    !notif.read ? 'bg-amber-50/50' : 'bg-white'
+                  className={`p-3.5 transition-all cursor-pointer flex items-start gap-3 border-l-4 focus-visible:outline-2 focus-visible:outline-stone-900 ${
+                    !notif.read
+                      ? 'bg-amber-50/70 hover:bg-amber-100/60 border-l-amber-500 shadow-2xs'
+                      : 'bg-white hover:bg-stone-50 border-l-transparent text-stone-600'
                   }`}
+                  aria-label={`${notif.title}, ${notif.read ? 'przeczytane' : 'nowe nieprzeczytane'}. Kliknij, aby ${notif.read && notif.link ? 'przejść do strony' : 'oznaczyć jako przeczytane'}.`}
                 >
-                  <div className="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center shrink-0 mt-0.5 border border-stone-200">
+                  <div
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border ${
+                      !notif.read
+                        ? 'bg-amber-100/80 border-amber-300 text-stone-900'
+                        : 'bg-stone-100 border-stone-200 text-stone-500'
+                    }`}
+                  >
                     {getNotifIcon(notif.type)}
                   </div>
 
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-start justify-between gap-1">
-                      <h4 className="text-xs font-bold text-stone-900 leading-tight">
-                        {notif.title}
-                      </h4>
-                      {!notif.read && (
-                        <div
-                          className="w-2 h-2 rounded-full bg-amber-600 shrink-0 mt-1"
-                          aria-label="Nowe powiadomienie"
-                        />
-                      )}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-start justify-between gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                        <h4
+                          className={`text-xs font-bold leading-tight truncate ${
+                            !notif.read ? 'text-stone-900' : 'text-stone-700'
+                          }`}
+                        >
+                          {notif.title}
+                        </h4>
+                        {!notif.read && (
+                          <span className="shrink-0 px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-amber-200 text-amber-900 border border-amber-300/80">
+                            NOWE
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        {!notif.read ? (
+                          <button
+                            type="button"
+                            onClick={(e) => handleMarkAsRead(notif, e)}
+                            title="Oznacz jako przeczytane"
+                            aria-label={`Oznacz jako przeczytane: ${notif.title}`}
+                            className="p-1 rounded-md text-amber-800 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                          >
+                            <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                          </button>
+                        ) : (
+                          <span
+                            className="inline-flex items-center text-[10px] text-stone-400 gap-0.5"
+                            title="Przeczytane"
+                          >
+                            <CheckCheck className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <p className="text-[11px] text-stone-700 line-clamp-2 leading-relaxed">
+                    <p
+                      className={`text-[11px] line-clamp-2 leading-relaxed ${
+                        !notif.read ? 'text-stone-800' : 'text-stone-500'
+                      }`}
+                    >
                       {notif.message}
                     </p>
 
                     <div className="flex items-center justify-between gap-2 pt-1">
-                      <span className="text-[10px] text-stone-600 flex items-center gap-1 font-mono">
+                      <span className="text-[10px] text-stone-500 flex items-center gap-1 font-mono">
                         <Clock className="w-2.5 h-2.5" aria-hidden="true" />
                         {new Date(notif.created_at).toLocaleTimeString([], {
                           hour: '2-digit',
@@ -281,19 +345,35 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
                         })}
                       </span>
 
-                      {/* Przycisk Podglądu Symulowanego E-maila (dla jury!) */}
-                      {notif.email_sent && (
-                        <button
-                          type="button"
-                          onClick={(e) => handleOpenEmailPreview(notif.id, e)}
-                          title="Zobacz kopię e-mail wysłaną przez system"
-                          aria-label={`Zobacz kopię e-mail: ${notif.title}`}
-                          className="min-h-[24px] inline-flex items-center gap-1 text-[10px] font-semibold text-stone-800 hover:text-stone-950 bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
-                        >
-                          <Mail className="w-3 h-3 text-stone-700" aria-hidden="true" />
-                          <span>Podgląd e-mail</span>
-                        </button>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {/* Przycisk Podglądu Symulowanego E-maila (dla jury!) */}
+                        {notif.email_sent && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenEmailPreview(notif, e)}
+                            title="Zobacz kopię e-mail wysłaną przez system"
+                            aria-label={`Zobacz kopię e-mail: ${notif.title}`}
+                            className="min-h-[24px] inline-flex items-center gap-1 text-[10px] font-semibold text-stone-800 hover:text-stone-950 bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded-md transition-colors cursor-pointer border border-stone-200/80"
+                          >
+                            <Mail className="w-3 h-3 text-stone-700" aria-hidden="true" />
+                            <span>Podgląd e-mail</span>
+                          </button>
+                        )}
+
+                        {/* Przycisk Przejścia do powiązanego ekranu */}
+                        {notif.link && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleNavigate(notif, e)}
+                            title="Przejdź do powiązanego ekranu"
+                            aria-label={`Przejdź do: ${notif.title}`}
+                            className="min-h-[24px] inline-flex items-center gap-1 text-[10px] font-semibold text-stone-900 bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded-md transition-colors cursor-pointer border border-stone-200/80"
+                          >
+                            <span>Otwórz</span>
+                            <ExternalLink className="w-3 h-3 text-stone-700" aria-hidden="true" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
