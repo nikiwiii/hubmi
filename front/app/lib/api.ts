@@ -21,6 +21,12 @@ import {
 } from "./types";
 import { setCurrentUser } from "./auth";
 import { saveStoredInnovations } from "./innovationsStore";
+import {
+  getInitialNotifications,
+  applyReadState,
+  markStoredNotificationAsRead,
+  markAllStoredNotificationsAsRead,
+} from "./notificationsStore";
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -862,40 +868,78 @@ export async function refreshIndicatorsCache(): Promise<void> {
 // 5. NOTIFICATIONS & EMAIL SIMULATION API (/api/notifications)
 // ==========================================
 export async function fetchNotifications(role: string = "creator"): Promise<NotificationItem[]> {
-  const res = await apiFetch(`${API_BASE}/api/notifications?role=${encodeURIComponent(role)}`, {
-    method: "GET",
-    headers: getHeaders(true),
-  });
-  if (!res.ok) {
-    console.warn("Błąd pobierania powiadomień");
-    return [];
+  try {
+    const res = await apiFetch(`${API_BASE}/api/notifications?role=${encodeURIComponent(role)}`, {
+      method: "GET",
+      headers: getHeaders(true),
+    });
+    if (res.ok) {
+      const data: NotificationItem[] = await res.json();
+      return applyReadState(data);
+    }
+  } catch (err) {
+    console.warn("Błąd pobierania powiadomień z backendu, stosowanie kopii lokalnej:", err);
   }
-  return await res.json();
+  return getInitialNotifications(role);
 }
 
 export async function markNotificationRead(notificationId: string): Promise<void> {
-  await apiFetch(`${API_BASE}/api/notifications/${notificationId}/read`, {
-    method: "POST",
-    headers: getHeaders(true),
-  });
+  markStoredNotificationAsRead(notificationId);
+  try {
+    await apiFetch(`${API_BASE}/api/notifications/${notificationId}/read`, {
+      method: "POST",
+      headers: getHeaders(true),
+    });
+  } catch (e) {
+    console.warn("Błąd synchronizacji przeczytania powiadomienia z backendem:", e);
+  }
 }
 
-export async function markAllNotificationsRead(): Promise<void> {
-  await apiFetch(`${API_BASE}/api/notifications/read-all`, {
-    method: "POST",
-    headers: getHeaders(true),
-  });
+export async function markAllNotificationsRead(ids?: string[]): Promise<void> {
+  if (ids && ids.length > 0) {
+    markAllStoredNotificationsAsRead(ids);
+  }
+  try {
+    await apiFetch(`${API_BASE}/api/notifications/read-all`, {
+      method: "POST",
+      headers: getHeaders(true),
+    });
+  } catch (e) {
+    console.warn("Błąd synchronizacji oznaczenia wszystkich powiadomień z backendem:", e);
+  }
 }
 
 export async function fetchSimulatedEmail(notificationId: string): Promise<SimulatedEmail> {
-  const res = await apiFetch(`${API_BASE}/api/notifications/${notificationId}/email`, {
-    method: "GET",
-    headers: getHeaders(true),
-  });
-  if (!res.ok) {
-    throw new Error("Błąd pobierania szczegółów symulowanego e-maila.");
+  try {
+    const res = await apiFetch(`${API_BASE}/api/notifications/${notificationId}/email`, {
+      method: "GET",
+      headers: getHeaders(true),
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn("Błąd pobierania szczegółów symulowanego e-maila z backendu:", err);
   }
-  return await res.json();
+
+  return {
+    notification_id: notificationId,
+    sender: "powiadomienia@rops.krakow.pl (ROPS Kraków)",
+    recipient: "uzytkownik@malopolska.pl",
+    subject: "[ROPS Kraków] Powiadomienie systemowe platformy MiNNO",
+    sent_at: new Date().toISOString(),
+    body_text: "Regionalny Ośrodek Polityki Społecznej w Krakowie\nPlatforma Innowacji Społecznych 'MiNNO'\n\nTwoje powiadomienie zostało zarejestrowane w systemie.",
+    body_html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; border: 1px solid #e5e5e0; border-radius: 16px; overflow: hidden; background: #ffffff;">
+        <div style="background: #1c1917; color: #ffffff; padding: 24px; text-align: left;">
+          <h2 style="margin: 0; font-size: 20px; font-weight: bold; color: #ffffff;">MiNNO • Powiadomienie Systemowe</h2>
+        </div>
+        <div style="padding: 24px; color: #292524; line-height: 1.6; font-size: 14px;">
+          <p>Wiadomość z platformy innowacji społecznych ROPS Kraków.</p>
+        </div>
+      </div>
+    `
+  };
 }
 
 // ==========================================

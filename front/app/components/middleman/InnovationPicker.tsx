@@ -9,13 +9,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
-  Video,
 } from "lucide-react";
 import { InnovationRecord } from "../../lib/types";
 import { useApp } from "../../context/AppContext";
 
 interface InnovationPickerProps {
   onSelect: (innovation: InnovationRecord) => void;
+  onQuickCreate?: (innovation: InnovationRecord) => void;
 }
 
 const PAGE_SIZE = 15;
@@ -33,7 +33,10 @@ function getPageNumbers(current: number, total: number): (number | "...")[] {
   return [1, "...", current - 1, current, current + 1, "...", total];
 }
 
-export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) => {
+export const InnovationPicker: React.FC<InnovationPickerProps> = ({
+  onSelect,
+  onQuickCreate,
+}) => {
   const {
     innovations,
     isLoadingInnovations,
@@ -110,12 +113,17 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
           <div className="flex items-center gap-1.5 font-medium">
             <Layers className="w-3.5 h-3.5 text-stone-400" />
             <span>
-              Znaleziono <strong className="text-stone-800">{totalItems}</strong> innowacji w bazie ROPS Kraków
+              Znaleziono{" "}
+              <strong className="text-stone-800">{totalItems}</strong> innowacji
+              w bazie ROPS Kraków
             </span>
           </div>
           <div>
-            Wyświetlam <strong className="text-stone-800">{startIndex + 1}–{endIndex}</strong> z{" "}
-            <strong className="text-stone-800">{totalItems}</strong> (strona{" "}
+            Wyświetlam{" "}
+            <strong className="text-stone-800">
+              {startIndex + 1}–{endIndex}
+            </strong>{" "}
+            z <strong className="text-stone-800">{totalItems}</strong> (strona{" "}
             <strong className="text-stone-800">{validCurrentPage}</strong> z{" "}
             <strong className="text-stone-800">{totalPages}</strong>)
           </div>
@@ -129,7 +137,8 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
         </div>
       ) : totalItems === 0 ? (
         <p className="text-sm text-stone-500 py-12 text-center bg-stone-50 rounded-2xl border border-stone-100">
-          Nie znaleziono innowacji dla podanej frazy. Spróbuj innego słowa kluczowego.
+          Nie znaleziono innowacji dla podanej frazy. Spróbuj innego słowa
+          kluczowego.
         </p>
       ) : (
         <>
@@ -138,38 +147,36 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
             {currentResults.map((inn) => (
               <li key={inn.id}>
                 <button
+                  type="button"
                   onClick={() => onSelect(inn)}
-                  className="w-full h-full text-left p-5 bg-white hover:bg-[#FAF9F5] border border-black/5 hover:border-black/15 rounded-2xl shadow-2xs transition-all cursor-pointer group flex flex-col gap-2"
+                  className="w-full h-full text-left p-5 bg-white hover:bg-[#FAF9F5] border border-black/5 hover:border-black/15 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between gap-3"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-base font-bold text-stone-900 leading-snug">
+                  <div className="space-y-2">
+                    <h3 className="text-base font-bold text-stone-900 group-hover:text-stone-950 leading-snug line-clamp-2">
                       {inn.title}
-                    </span>
-                    {inn.video_url && (
-                      <span
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full shrink-0"
-                        title="Dostępny filmik na YouTube"
-                      >
-                        <Video className="w-3 h-3" />
-                        <span>Wideo</span>
-                      </span>
+                    </h3>
+                    {(inn.addressed_problems || inn.description) && (
+                      <p className="text-xs sm:text-sm text-stone-600 leading-relaxed line-clamp-3">
+                        {inn.addressed_problems || inn.description}
+                      </p>
                     )}
                   </div>
-                  {(inn.addressed_problems || inn.description) && (
-                    <span className="text-sm text-stone-600 leading-relaxed line-clamp-2">
-                      {inn.addressed_problems || inn.description}
-                    </span>
-                  )}
-                  {inn.target_group && (
-                    <span className="text-xs text-stone-500 flex items-center gap-1.5 mt-auto pt-1">
-                      <Users2 className="w-3.5 h-3.5 shrink-0" />
-                      <span className="line-clamp-1">{inn.target_group}</span>
-                    </span>
-                  )}
-                  <span className="mt-2 pt-2 border-t border-black/5 inline-flex items-center gap-1 text-sm font-semibold text-stone-900 group-hover:underline underline-offset-4">
-                    Wybierz tę innowację
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </span>
+
+                  <div className="space-y-3 pt-1">
+                    {inn.target_group && (
+                      <div className="inline-flex items-center gap-1.5 text-xs text-stone-500 bg-stone-50 px-2.5 py-1 rounded-lg border border-black/5 max-w-full">
+                        <Users2 className="w-3.5 h-3.5 shrink-0 text-stone-400" />
+                        <span className="truncate">{inn.target_group}</span>
+                      </div>
+                    )}
+
+                    <div className="pt-2.5 border-t border-black/5 flex items-center justify-between text-xs sm:text-sm font-semibold text-stone-800 group-hover:text-stone-950">
+                      <span>Wybierz innowację</span>
+                      <div className="w-7 h-7 rounded-full bg-stone-100 group-hover:bg-stone-900 text-stone-500 group-hover:text-white flex items-center justify-center transition-all shrink-0">
+                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                      </div>
+                    </div>
+                  </div>
                 </button>
               </li>
             ))}
@@ -179,11 +186,15 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
           {totalPages > 1 && (
             <div className="pt-6 pb-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-black/5">
               <span className="text-xs text-stone-500">
-                Strona <strong className="text-stone-800">{validCurrentPage}</strong> z{" "}
-                <strong className="text-stone-800">{totalPages}</strong> (po 15 na stronę)
+                Strona{" "}
+                <strong className="text-stone-800">{validCurrentPage}</strong> z{" "}
+                <strong className="text-stone-800">{totalPages}</strong>
               </span>
 
-              <nav aria-label="Paginacja innowacji" className="flex items-center gap-1.5 flex-wrap justify-center">
+              <nav
+                aria-label="Paginacja innowacji"
+                className="flex items-center gap-1.5 flex-wrap justify-center"
+              >
                 {/* Poprzednia strona */}
                 <button
                   type="button"

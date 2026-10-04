@@ -16,6 +16,7 @@ import {
   saveIdeas,
   addIdea as storeAddIdea,
   updateIdea as storeUpdateIdea,
+  canUserDeleteIdea,
 } from '../lib/ideasStore';
 import { EMPTY_PROFILE } from '../lib/middleman';
 import {
@@ -38,7 +39,7 @@ import {
   searchInnovations,
 } from '../lib/api';
 
-export type MiddlemanStep = 'pick' | 'profile' | 'result';
+export type MiddlemanStep = 'pick' | 'view' | 'profile' | 'result';
 
 interface AppContextType {
   currentUser: User | null;
@@ -167,8 +168,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const root = document.documentElement;
     if (isDarkMode) {
       root.classList.add('dark');
+      document.body?.classList.add('dark');
     } else {
       root.classList.remove('dark');
+      document.body?.classList.remove('dark');
     }
   }, [isDarkMode]);
 
@@ -177,10 +180,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const root = document.documentElement;
     if (isHighContrast) {
       root.classList.add('high-contrast');
+      document.body?.classList.add('high-contrast');
     } else {
       root.classList.remove('high-contrast');
+      document.body?.classList.remove('high-contrast');
     }
   }, [isHighContrast]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.classList.remove('font-scale-large', 'font-scale-huge');
+    document.body?.classList.remove('font-scale-large', 'font-scale-huge');
+    if (fontSizeLevel === 'large') {
+      root.classList.add('font-scale-large');
+      document.body?.classList.add('font-scale-large');
+    } else if (fontSizeLevel === 'huge') {
+      root.classList.add('font-scale-huge');
+      document.body?.classList.add('font-scale-huge');
+    }
+  }, [fontSizeLevel]);
 
   const toggleSound = () => {
     setIsSoundEnabled((prev) => {
@@ -249,6 +268,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const loadInnovations = async (forceRefresh = false): Promise<InnovationRecord[]> => {
     if (!forceRefresh && innovations.length > 0) {
+      searchInnovations('').then((data) => {
+        if (data && data.length > 0) {
+          setInnovations(data);
+          saveStoredInnovations(data);
+          setSelectedInnovationState((current) => {
+            if (!current) return current;
+            const fresh = data.find((d) => d.id === current.id);
+            return fresh ? { ...current, ...fresh } : current;
+          });
+        }
+      }).catch(() => { });
       return innovations;
     }
     setIsLoadingInnovations(true);
@@ -258,6 +288,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (data && data.length > 0) {
         setInnovations(data);
         saveStoredInnovations(data);
+        setSelectedInnovationState((current) => {
+          if (!current) return current;
+          const fresh = data.find((d) => d.id === current.id);
+          return fresh ? { ...current, ...fresh } : current;
+        });
         return data;
       }
       return innovations;
@@ -397,11 +432,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const next = prev.map((item) =>
           item.id === id
             ? {
-                ...item,
-                likes: res.likes,
-                dislikes: res.dislikes,
-                userVote: res.active ? type : null,
-              }
+              ...item,
+              likes: res.likes,
+              dislikes: res.dislikes,
+              userVote: res.active ? type : null,
+            }
             : item
         );
         saveIdeas(next);
@@ -445,12 +480,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const next = prev.map((item) =>
           item.id === id
             ? {
-                ...item,
-                testersCount: res.volunteers,
-                testersList: res.active
-                  ? Array.from(new Set([...item.testersList, email]))
-                  : item.testersList.filter((e) => e !== email),
-              }
+              ...item,
+              testersCount: res.volunteers,
+              testersList: res.active
+                ? Array.from(new Set([...item.testersList, email]))
+                : item.testersList.filter((e) => e !== email),
+            }
             : item
         );
         saveIdeas(next);
@@ -498,6 +533,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleDeleteIdea = async (id: string) => {
+    const targetIdea = ideas.find((i) => i.id === id);
+    if (targetIdea && currentUser && !canUserDeleteIdea(targetIdea, currentUser)) {
+      throw new Error("Brak uprawnień. Tylko autor lub administrator może usunąć tę propozycję.");
+    }
     try {
       await deleteIdeaOnBackend(id);
     } catch (e) {
@@ -603,19 +642,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }}
     >
       <div
-        className={`min-h-screen flex flex-col transition-colors duration-150 ${
-          fontSizeLevel === 'huge'
+        className={`min-h-screen flex flex-col transition-colors duration-150 ${fontSizeLevel === 'huge'
             ? 'font-scale-huge'
             : fontSizeLevel === 'large'
-            ? 'font-scale-large'
-            : ''
-        } ${
-          isHighContrast
+              ? 'font-scale-large'
+              : ''
+          } ${isHighContrast
             ? 'high-contrast bg-black text-white'
             : isDarkMode
-            ? 'dark bg-[#141518] text-[#F3F4F6]'
-            : 'bg-[#F7F6F1] text-stone-900'
-        }`}
+              ? 'dark bg-[#141518] text-[#F3F4F6]'
+              : 'bg-[#F7F6F1] text-stone-900'
+          }`}
       >
         {children}
       </div>

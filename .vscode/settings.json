@@ -3,5 +3,6 @@
   "python.analysis.extraPaths": [
     "${workspaceFolder}/backend",
     "${workspaceFolder}/backend/idea_creator"
-  ]
+  ],
+  "css.lint.unknownAtRules": "ignore"
 }

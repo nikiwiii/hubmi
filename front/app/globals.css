@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant high-contrast (&:where(.high-contrast, .high-contrast *));
+
 @theme {
   --font-ubuntu: var(--font-ubuntu), "Ubuntu", sans-serif;
 }
@@ -29,13 +32,16 @@ body {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.12);
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.22);
 }
@@ -67,6 +73,7 @@ body {
   text-decoration: none;
   transition: top 0.2s ease-in-out;
 }
+
 .skip-to-content:focus {
   top: 1rem;
 }
@@ -87,6 +94,7 @@ input[type="reset"],
 
 /* Wygodny rozmiar kliknięcia dla urządzeń dotykowych (Smartfony / Tablety) */
 @media (pointer: coarse) {
+
   button,
   [role="button"],
   [role="tab"],
@@ -104,313 +112,333 @@ textarea::placeholder,
   opacity: 1;
 }
 
-/* Kontrast tekstu na jasnym tle */
-body:not(.dark) .text-stone-400:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+/* Kontrast tekstu na jasnym tle (aktywny wyłącznie w standardowym profilu jasnym) */
+html:not(.dark):not(.high-contrast) body:not(.dark):not(.high-contrast) .text-stone-400:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #57534E;
 }
-body:not(.dark) .text-stone-500:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+
+html:not(.dark):not(.high-contrast) body:not(.dark):not(.high-contrast) .text-stone-500:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #44403C;
 }
-body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+
+html:not(.dark):not(.high-contrast) body:not(.dark):not(.high-contrast) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #57534E;
 }
 
-/* Zachowanie wysokiego kontrastu w ciemnych kontenerach */
-.bg-stone-900 .text-stone-400,
-.bg-stone-950 .text-stone-400,
-.bg-black .text-stone-400,
-[class*="from-stone-900"] .text-stone-400,
-[role="dialog"] .text-stone-400 {
-  color: #D6D3CD;
-}
-.bg-stone-900 .text-stone-300,
-.bg-stone-950 .text-stone-300,
-.bg-black .text-stone-300,
-[class*="from-stone-900"] .text-stone-300,
-[role="dialog"] .text-stone-300 {
-  color: #E7E5E0;
-}
+  /* Zachowanie wysokiego kontrastu w ciemnych kontenerach */
+  .bg-stone-900 .text-stone-400,
+  .bg-stone-950 .text-stone-400,
+  .bg-black .text-stone-400,
+  [class*="from-stone-900"] .text-stone-400,
+  [role="dialog"] .text-stone-400 {
+    color: #D6D3CD;
+  }
 
-/* Utility dla czytników ekranu */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
+  .bg-stone-900 .text-stone-300,
+  .bg-stone-950 .text-stone-300,
+  .bg-black .text-stone-300,
+  [class*="from-stone-900"] .text-stone-300,
+  [role="dialog"] .text-stone-300 {
+    color: #E7E5E0;
+  }
 
-/* WCAG 1.4.4 Font Scaling (up to 200% scalable) */
-.font-scale-large,
-.font-scale-150 {
-  font-size: 1.25rem;
-}
-.font-scale-large h1,
-.font-scale-150 h1 {
-  font-size: 130% !important;
-}
-.font-scale-large h2,
-.font-scale-150 h2 {
-  font-size: 125% !important;
-}
-.font-scale-large p,
-.font-scale-large span,
-.font-scale-large button,
-.font-scale-large input,
-.font-scale-large textarea,
-.font-scale-150 p,
-.font-scale-150 span,
-.font-scale-150 button,
-.font-scale-150 input,
-.font-scale-150 textarea {
-  font-size: 115% !important;
-}
+  /* Utility dla czytników ekranu */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 
-.font-scale-huge,
-.font-scale-200 {
-  font-size: 1.5rem;
-}
-.font-scale-huge h1,
-.font-scale-200 h1 {
-  font-size: 160% !important;
-}
-.font-scale-huge h2,
-.font-scale-200 h2 {
-  font-size: 150% !important;
-}
-.font-scale-huge p,
-.font-scale-huge span,
-.font-scale-huge button,
-.font-scale-huge input,
-.font-scale-huge textarea,
-.font-scale-200 p,
-.font-scale-200 span,
-.font-scale-200 button,
-.font-scale-200 input,
-.font-scale-200 textarea {
-  font-size: 135% !important;
-}
+  /* WCAG 1.4.4 Font Scaling (up to 200% scalable) */
+  .font-scale-large,
+  .font-scale-150 {
+    font-size: 1.25rem;
+  }
 
-/* =========================================================================
+  .font-scale-large h1,
+  .font-scale-150 h1 {
+    font-size: 130% !important;
+  }
+
+  .font-scale-large h2,
+  .font-scale-150 h2 {
+    font-size: 125% !important;
+  }
+
+  .font-scale-large p,
+  .font-scale-large span,
+  .font-scale-large button,
+  .font-scale-large input,
+  .font-scale-large textarea,
+  .font-scale-150 p,
+  .font-scale-150 span,
+  .font-scale-150 button,
+  .font-scale-150 input,
+  .font-scale-150 textarea {
+    font-size: 115% !important;
+  }
+
+  .font-scale-huge,
+  .font-scale-200 {
+    font-size: 1.5rem;
+  }
+
+  .font-scale-huge h1,
+  .font-scale-200 h1 {
+    font-size: 160% !important;
+  }
+
+  .font-scale-huge h2,
+  .font-scale-200 h2 {
+    font-size: 150% !important;
+  }
+
+  .font-scale-huge p,
+  .font-scale-huge span,
+  .font-scale-huge button,
+  .font-scale-huge input,
+  .font-scale-huge textarea,
+  .font-scale-200 p,
+  .font-scale-200 span,
+  .font-scale-200 button,
+  .font-scale-200 input,
+  .font-scale-200 textarea {
+    font-size: 135% !important;
+  }
+
+  /* =========================================================================
    DARK THEME (TRYB CIEMNY)
    ========================================================================= */
-html.dark,
-body.dark,
-.dark {
-  --background: #141518;
-  --foreground: #F3F4F6;
-  background-color: #141518;
-  color: #F3F4F6;
-}
+  html.dark,
+  body.dark,
+  .dark {
+    --background: #141518;
+    --foreground: #F3F4F6;
+    background-color: #141518;
+    color: #F3F4F6;
+  }
 
-.dark body {
-  background-color: #141518;
-  color: #F3F4F6;
-}
+  .dark body {
+    background-color: #141518;
+    color: #F3F4F6;
+  }
 
-.dark header,
-.dark nav.bg-\[\#F7F6F1\]\/95,
-.dark nav.bg-\[\#F7F6F1\],
-.dark .bg-\[\#F7F6F1\] {
-  background-color: rgba(20, 21, 24, 0.95) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
+  .dark header,
+  .dark nav.bg-\[\#F7F6F1\]\/95,
+  .dark nav.bg-\[\#F7F6F1\],
+  .dark .bg-\[\#F7F6F1\],
+  .dark .bg-\[\#F4F4F0\],
+  .dark .bg-\[\#FAF9F5\] {
+    background-color: #141518 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
 
-.dark div.bg-white,
-.dark article.bg-white,
-.dark section.bg-white,
-.dark .bg-white {
-  background-color: #1C1E23 !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #F3F4F6;
-}
+  .dark div.bg-white,
+  .dark article.bg-white,
+  .dark section.bg-white,
+  .dark nav.bg-white,
+  .dark header.bg-white,
+  .dark .bg-white {
+    background-color: #1C1E23 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #F3F4F6;
+  }
 
-.dark .bg-stone-50,
-.dark .bg-stone-100,
-.dark .bg-stone-50\/60,
-.dark .bg-stone-50\/70,
-.dark .bg-stone-50\/80,
-.dark .bg-stone-100\/90,
-.dark .bg-stone-200\/60,
-.dark .bg-stone-200\/70,
-.dark .bg-stone-200\/80 {
-  background-color: #24272F !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #E5E7EB;
-}
+  .dark .bg-stone-50,
+  .dark .bg-stone-100,
+  .dark .bg-stone-50\/60,
+  .dark .bg-stone-50\/70,
+  .dark .bg-stone-50\/80,
+  .dark .bg-stone-100\/90,
+  .dark .bg-stone-200\/60,
+  .dark .bg-stone-200\/70,
+  .dark .bg-stone-200\/80 {
+    background-color: #24272F !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #E5E7EB;
+  }
 
-.dark .text-stone-900,
-.dark .text-stone-950,
-.dark .text-stone-800 {
-  color: #F9FAFB !important;
-}
+  .dark .text-stone-900,
+  .dark .text-stone-950,
+  .dark .text-stone-800 {
+    color: #F9FAFB !important;
+  }
 
-.dark .text-stone-700 {
-  color: #D1D5DB !important;
-}
+  .dark .text-stone-700 {
+    color: #E5E7EB !important;
+  }
 
-.dark .text-stone-600,
-.dark .text-stone-500 {
-  color: #9CA3AF !important;
-}
+  .dark .text-stone-600,
+  .dark .text-stone-500 {
+    color: #D1D5DB !important;
+  }
 
-.dark .text-stone-400 {
-  color: #9CA3AF !important;
-}
+  .dark .text-stone-400 {
+    color: #9CA3AF !important;
+  }
 
-.dark .border-stone-100,
-.dark .border-stone-200,
-.dark .border-stone-200\/70,
-.dark .border-stone-200\/80,
-.dark .border-stone-200\/90,
-.dark .border-stone-300,
-.dark .border-black\/5,
-.dark .border-black\/10 {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
+  .dark .border-stone-100,
+  .dark .border-stone-200,
+  .dark .border-stone-200\/70,
+  .dark .border-stone-200\/80,
+  .dark .border-stone-200\/90,
+  .dark .border-stone-300,
+  .dark .border-black\/5,
+  .dark .border-black\/10 {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
 
-.dark input,
-.dark textarea,
-.dark select {
-  background-color: #141518 !important;
-  color: #F3F4F6 !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
-}
+  .dark input,
+  .dark textarea,
+  .dark select {
+    background-color: #141518 !important;
+    color: #F3F4F6 !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+  }
 
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: #6B7280 !important;
-}
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #9CA3AF !important;
+  }
 
-.dark button:not(.bg-stone-900):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-yellow-400) {
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
+  .dark button:not(.bg-stone-900):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-yellow-400):not(.bg-amber-500):not(.bg-amber-600) {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
 
-/* =========================================================================
+  /* =========================================================================
    HIGH CONTRAST MODE (TRYB WYSOKIEGO KONTRASTU - WCAG AAA ŻÓŁTO-CZARNY)
    ========================================================================= */
-html.high-contrast,
-body.high-contrast,
-.high-contrast {
-  --background: #000000 !important;
-  --foreground: #FFFFFF !important;
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
-}
-
-.high-contrast body {
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
-}
-
-.high-contrast :focus-visible {
-  outline: 3px solid #FACC15 !important;
-  outline-offset: 3px !important;
-}
-
-.high-contrast header,
-.high-contrast nav,
-.high-contrast aside,
-.high-contrast section,
-.high-contrast article,
-.high-contrast main,
-.high-contrast div.bg-white,
-.high-contrast div.bg-stone-50,
-.high-contrast div.bg-stone-100,
-.high-contrast div.bg-\[\#FAF9F5\],
-.high-contrast div.bg-\[\#F7F6F1\] {
-  background-color: #000000 !important;
-  border: 2px solid #FACC15 !important;
-  color: #FFFFFF !important;
-  box-shadow: none !important;
-}
-
-.high-contrast text,
-.high-contrast span,
-.high-contrast p,
-.high-contrast label,
-.high-contrast h1,
-.high-contrast h2,
-.high-contrast h3,
-.high-contrast h4 {
-  color: #FFFFFF !important;
-}
-
-.high-contrast .text-stone-400,
-.high-contrast .text-stone-500,
-.high-contrast .text-stone-600,
-.high-contrast .text-stone-700 {
-  color: #FEF08A !important;
-}
-
-.high-contrast button,
-.high-contrast a[role="button"] {
-  background-color: #000000 !important;
-  border: 2px solid #FACC15 !important;
-  color: #FACC15 !important;
-  font-weight: 700 !important;
-  box-shadow: none !important;
-}
-
-.high-contrast button:hover,
-.high-contrast a[role="button"]:hover {
-  background-color: #FACC15 !important;
-  color: #000000 !important;
-}
-
-.high-contrast input,
-.high-contrast textarea,
-.high-contrast select {
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
-  border: 2px solid #FACC15 !important;
-}
-
-.high-contrast input::placeholder,
-.high-contrast textarea::placeholder {
-  color: #FEF08A !important;
-}
-
-/* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */
-@media print {
-  @page {
-    size: A4;
-    margin: 14mm 12mm;
+  html.high-contrast,
+  body.high-contrast,
+  .high-contrast {
+    --background: #000000 !important;
+    --foreground: #FFFFFF !important;
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
   }
-  html {
-    overflow: visible;
-    scrollbar-gutter: auto;
+
+  .high-contrast body {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
   }
-  body {
-    background: #fff !important;
-    color: #000;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+
+  .high-contrast :focus-visible {
+    outline: 3px solid #FACC15 !important;
+    outline-offset: 3px !important;
   }
-  main {
-    padding: 0 !important;
-  }
-  .mm-print-root {
-    max-width: none !important;
-    padding: 0 !important;
-    animation: none !important;
-  }
-  .mm-print-root * {
+
+  .high-contrast header,
+  .high-contrast nav,
+  .high-contrast aside,
+  .high-contrast section,
+  .high-contrast article,
+  .high-contrast main,
+  .high-contrast div.bg-white,
+  .high-contrast div.bg-stone-50,
+  .high-contrast div.bg-stone-100,
+  .high-contrast div.bg-\[\#FAF9F5\],
+  .high-contrast div.bg-\[\#F7F6F1\] {
+    background-color: #000000 !important;
+    border: 2px solid #FACC15 !important;
+    color: #FFFFFF !important;
     box-shadow: none !important;
   }
-  .mm-print-section {
-    break-inside: avoid;
-    border-color: #d6d3d1 !important;
-    background: #fff !important;
-    border-radius: 8px !important;
-    padding: 10px 14px !important;
+
+  .high-contrast text,
+  .high-contrast span,
+  .high-contrast p,
+  .high-contrast label,
+  .high-contrast h1,
+  .high-contrast h2,
+  .high-contrast h3,
+  .high-contrast h4 {
+    color: #FFFFFF !important;
   }
-  .mm-print-root a {
-    color: inherit;
-    text-decoration: none;
+
+  .high-contrast .text-stone-400,
+  .high-contrast .text-stone-500,
+  .high-contrast .text-stone-600,
+  .high-contrast .text-stone-700 {
+    color: #FEF08A !important;
   }
-}
+
+  .high-contrast button,
+  .high-contrast a[role="button"] {
+    background-color: #000000 !important;
+    border: 2px solid #FACC15 !important;
+    color: #FACC15 !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+  }
+
+  .high-contrast button:hover,
+  .high-contrast a[role="button"]:hover {
+    background-color: #FACC15 !important;
+    color: #000000 !important;
+  }
+
+  .high-contrast input,
+  .high-contrast textarea,
+  .high-contrast select {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #FACC15 !important;
+  }
+
+  .high-contrast input::placeholder,
+  .high-contrast textarea::placeholder {
+    color: #FEF08A !important;
+  }
+
+  /* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */
+  @media print {
+    @page {
+      size: A4;
+      margin: 14mm 12mm;
+    }
+
+    html {
+      overflow: visible;
+      scrollbar-gutter: auto;
+    }
+
+    body {
+      background: #fff !important;
+      color: #000;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    main {
+      padding: 0 !important;
+    }
+
+    .mm-print-root {
+      max-width: none !important;
+      padding: 0 !important;
+      animation: none !important;
+    }
+
+    .mm-print-root * {
+      box-shadow: none !important;
+    }
+
+    .mm-print-section {
+      break-inside: avoid;
+      border-color: #d6d3d1 !important;
+      background: #fff !important;
+      border-radius: 8px !important;
+      padding: 10px 14px !important;
+    }
+
+    .mm-print-root a {
+      color: inherit;
+      text-decoration: none;
+    }
+  }

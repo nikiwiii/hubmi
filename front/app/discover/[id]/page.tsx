@@ -6,8 +6,10 @@ import { Idea, getCategoryThemeAndShape } from "../../lib/types";
 import { GeometricIllustration } from "../../components/shared/GeometricIllustration";
 import { getThemeStyles } from "../../components/shared/IdeaCard";
 import { InnovationTestPanel } from "../../components/testing/InnovationTestPanel";
+import { DeleteIdeaModal } from "../../components/shared/DeleteIdeaModal";
 import { useApp } from "../../context/AppContext";
 import { startExpertConversation, fetchIdeaById } from "../../lib/api";
+import { canUserDeleteIdea } from "../../lib/ideasStore";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -24,6 +26,7 @@ import {
   Sparkles,
   Eye,
   Clock,
+  Trash2,
 } from "lucide-react";
 
 export default function DiscoverIdeaDetailPage() {
@@ -36,12 +39,14 @@ export default function DiscoverIdeaDetailPage() {
     currentUser,
     vote,
     toggleTesting,
+    deleteIdea,
     openChatWithAuthor,
     isLoadingIdeas,
   } = useApp();
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isOpeningChat, setIsOpeningChat] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [directIdea, setDirectIdea] = useState<Idea | null>(null);
   const [isDirectLoading, setIsDirectLoading] = useState(false);
 
@@ -240,7 +245,7 @@ export default function DiscoverIdeaDetailPage() {
         </div>
 
         {/* Action Bar */}
-        <div className="p-6 sm:p-8 bg-white border-b border-stone-100 flex flex-wrap items-center justify-between gap-4">
+        <div className="p-6 sm:p-8 bg-white dark:bg-[#1C1E23] border-b border-stone-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
           {/* Like / Dislike */}
           <div className="flex items-center gap-2">
             <button
@@ -248,13 +253,13 @@ export default function DiscoverIdeaDetailPage() {
               onClick={() => vote(currentIdea.id, "like")}
               aria-label={`Polub pomysł (${currentIdea.likes} polubień)`}
               className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "like"
-                ? "bg-stone-900 text-white"
-                : "bg-stone-100 hover:bg-stone-200 text-stone-800"
+                ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
+                : "bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-800 dark:text-stone-200"
                 }`}
             >
               <ThumbsUp
                 aria-hidden="true"
-                className={`w-4 h-4 ${currentIdea.userVote === "like" ? "fill-white" : ""}`}
+                className={`w-4 h-4 ${currentIdea.userVote === "like" ? "fill-current" : ""}`}
               />
               <span>{currentIdea.likes}</span>
             </button>
@@ -264,20 +269,37 @@ export default function DiscoverIdeaDetailPage() {
               onClick={() => vote(currentIdea.id, "dislike")}
               aria-label={`Nie podoba mi się (${currentIdea.dislikes} ocen)`}
               className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "dislike"
-                ? "bg-stone-800 text-white"
-                : "bg-stone-100 hover:bg-stone-200 text-stone-700"
+                ? "bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900"
+                : "bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-700 dark:text-stone-300"
                 }`}
             >
               <ThumbsDown
                 aria-hidden="true"
-                className={`w-4 h-4 ${currentIdea.userVote === "dislike" ? "fill-white" : ""}`}
+                className={`w-4 h-4 ${currentIdea.userVote === "dislike" ? "fill-current" : ""}`}
               />
               <span>{currentIdea.dislikes}</span>
             </button>
           </div>
 
           {/* Right Action buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {canUserDeleteIdea(currentIdea, currentUser) && (
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(true)}
+                title={
+                  currentUser?.role === "admin"
+                    ? "Usuń tę propozycję (uprawnienia Administratora)"
+                    : "Usuń swoją propozycję"
+                }
+                aria-label="Usuń tę propozycję"
+                className="min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" aria-hidden="true" />
+                <span>{currentUser?.role === "admin" ? "Usuń (Admin)" : "Usuń propozycję"}</span>
+              </button>
+            )}
+
             <button
               onClick={async () => {
                 if (!currentUser) {
@@ -305,12 +327,12 @@ export default function DiscoverIdeaDetailPage() {
                 }
               }}
               disabled={isOpeningChat}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 dark:border-white/15 bg-white dark:bg-white/10 hover:bg-stone-50 dark:hover:bg-white/15 text-stone-800 dark:text-stone-200 text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60"
             >
               {isOpeningChat ? (
                 <RefreshCw className="w-4 h-4 animate-spin text-stone-500" />
               ) : (
-                <MessageSquare className="w-4 h-4 text-stone-500" />
+                <MessageSquare className="w-4 h-4 text-stone-500 dark:text-stone-400" />
               )}
               <span>Zapytaj eksperta</span>
             </button>
@@ -322,7 +344,7 @@ export default function DiscoverIdeaDetailPage() {
               }}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${isTester
                 ? "bg-emerald-700 text-white"
-                : "bg-stone-900 hover:bg-stone-800 text-white"
+                : "bg-stone-900 dark:bg-white hover:bg-stone-800 dark:hover:bg-stone-100 text-white dark:text-stone-950"
                 }`}
             >
               {isTester ? (
@@ -471,6 +493,18 @@ export default function DiscoverIdeaDetailPage() {
           onToggleTesting={toggleTesting}
         />
       </div>
+
+      {/* Modal potwierdzenia usunięcia propozycji */}
+      <DeleteIdeaModal
+        idea={currentIdea}
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        currentUser={currentUser}
+        onConfirm={async (idea) => {
+          await deleteIdea(idea.id);
+          router.push("/discover");
+        }}
+      />
     </div>
   );
 }

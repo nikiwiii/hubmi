@@ -18,8 +18,10 @@ import {
   Clock,
   Users,
   FlaskConical,
+  LogOut,
 } from "lucide-react";
 import { CustomSelect } from "../components/shared/CustomSelect";
+import { DeleteIdeaModal } from "../components/shared/DeleteIdeaModal";
 import { AdminCallsTab } from "../components/grants/AdminCallsTab";
 import { fetchAllCalls } from "../lib/grantsApi";
 import { useApp } from "../context/AppContext";
@@ -61,6 +63,7 @@ export default function AdminPage() {
   const [formStatus, setFormStatus] = useState<"active" | "blocked">("active");
   const [formBio, setFormBio] = useState("");
   const [adminFeedback, setAdminFeedback] = useState<string>("");
+  const [deleteCandidateIdea, setDeleteCandidateIdea] = useState<any | null>(null);
 
   const isAdmin = currentUser?.role === "admin";
 
@@ -255,22 +258,22 @@ export default function AdminPage() {
   if (!isAdmin) {
     return (
       <div className="py-16 px-4 max-w-md mx-auto text-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 mx-auto flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-500/30 mx-auto flex items-center justify-center">
           <ShieldAlert className="w-6 h-6" />
         </div>
 
-        <h1 className="text-xl font-bold text-stone-900">
+        <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
           Wymagane uprawnienia administratora
         </h1>
 
-        <div className="p-5 bg-white rounded-2xl border border-black/5 shadow-2xs space-y-3">
-          <p className="text-xs text-stone-600">
-            Zalogowany: <strong>{currentUser?.name || "Gość"}</strong>
+        <div className="p-5 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs space-y-3">
+          <p className="text-xs text-stone-600 dark:text-stone-400">
+            Zalogowany: <strong className="text-stone-800 dark:text-stone-200">{currentUser?.name || "Gość"}</strong>
           </p>
 
           <button
             onClick={handleElevateToAdmin}
-            className="w-full py-2.5 px-4 bg-stone-900 text-white rounded-xl text-xs font-semibold cursor-pointer"
+            className="w-full py-2.5 px-4 bg-stone-900 dark:bg-amber-400 text-white dark:text-stone-950 hover:bg-stone-800 dark:hover:bg-amber-300 rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs"
           >
             Przełącz na konto Administratora (Marek)
           </button>
@@ -289,12 +292,12 @@ export default function AdminPage() {
   return (
     <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-5">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-black/5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-black/5 dark:border-white/10">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">
             Panel Zarządzania
           </h1>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
             Zarządzanie użytkownikami, zgłoszeniami oraz ewaluacją prototypów
           </p>
         </div>
@@ -302,7 +305,7 @@ export default function AdminPage() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => router.push("/testing")}
-            className="flex items-center gap-2 px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+            className="flex items-center gap-2 px-3.5 py-2 bg-stone-900 hover:bg-stone-800 dark:bg-stone-800 dark:hover:bg-stone-700 text-white rounded-xl text-xs font-semibold shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
             title="Przejdź do sekcji testera innowacji"
           >
             <FlaskConical className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
@@ -310,11 +313,25 @@ export default function AdminPage() {
             <ExternalLink className="w-3.5 h-3.5 text-stone-400 group-hover:text-white transition-colors" />
           </button>
 
+          <button
+            type="button"
+            onClick={() => {
+              onUserChange(null);
+              setCurrentUser(null);
+              router.push("/auth");
+            }}
+            title="Wyloguj się z konta administratora"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/60 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5 text-red-600 dark:text-red-400" aria-hidden="true" />
+            <span>Wyloguj</span>
+          </button>
+
           {/* Tab Switcher */}
           <div
             role="tablist"
             aria-label="Widoki panelu administratora"
-            className="flex flex-wrap bg-stone-200/50 p-1 rounded-xl self-start sm:self-auto gap-1"
+            className="flex flex-wrap bg-stone-200/50 dark:bg-white/5 p-1 rounded-xl self-start sm:self-auto gap-1 border border-transparent dark:border-white/10"
           >
           <button
             type="button"
@@ -323,8 +340,8 @@ export default function AdminPage() {
             onClick={() => setActiveTab("users")}
             className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "users"
-                ? "bg-white text-stone-900 shadow-2xs font-bold"
-                : "text-stone-700 hover:text-stone-900"
+                ? "bg-white text-stone-900 dark:bg-white/15 dark:text-white shadow-2xs font-bold"
+                : "text-stone-700 hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
             }`}
           >
             Użytkownicy ({usersList.length})
@@ -337,8 +354,8 @@ export default function AdminPage() {
             onClick={() => setActiveTab("ideas")}
             className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "ideas"
-                ? "bg-white text-stone-900 shadow-2xs font-bold"
-                : "text-stone-700 hover:text-stone-900"
+                ? "bg-white text-stone-900 dark:bg-white/15 dark:text-white shadow-2xs font-bold"
+                : "text-stone-700 hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
             }`}
           >
             <span>Pomysły & Moderacja</span>
@@ -347,7 +364,7 @@ export default function AdminPage() {
                 {pendingIdeasCount} do akceptacji
               </span>
             ) : (
-              <span className="text-[11px] text-stone-500 font-mono">({ideas.length})</span>
+              <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono">({ideas.length})</span>
             )}
           </button>
 
@@ -358,8 +375,8 @@ export default function AdminPage() {
             onClick={() => setActiveTab("testers")}
             className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "testers"
-                ? "bg-white text-stone-900 shadow-2xs font-bold"
-                : "text-stone-700 hover:text-stone-900"
+                ? "bg-white text-stone-900 dark:bg-white/15 dark:text-white shadow-2xs font-bold"
+                : "text-stone-700 hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
             }`}
           >
             <span>Zgłoszenia Testerów</span>
@@ -368,7 +385,7 @@ export default function AdminPage() {
                 {pendingTesterAppsCount} do weryfikacji
               </span>
             ) : (
-              <span className="text-[11px] text-stone-500 font-mono">({testerApps.length})</span>
+              <span className="text-[11px] text-stone-500 dark:text-stone-400 font-mono">({testerApps.length})</span>
             )}
           </button>
           <button
@@ -378,8 +395,8 @@ export default function AdminPage() {
             onClick={() => setActiveTab("calls")}
             className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "calls"
-                ? "bg-white text-stone-900 shadow-2xs font-bold"
-                : "text-stone-700 hover:text-stone-900"
+                ? "bg-white text-stone-900 dark:bg-white/15 dark:text-white shadow-2xs font-bold"
+                : "text-stone-700 hover:text-stone-900 dark:text-stone-300 dark:hover:text-white"
             }`}
           >
             Nabory ({callsCount})
@@ -389,16 +406,16 @@ export default function AdminPage() {
     </div>
 
       {adminFeedback && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-medium flex items-center justify-between">
+        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-medium flex items-center justify-between border border-transparent dark:border-emerald-500/20">
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{adminFeedback}</span>
           </div>
           <button
             type="button"
             onClick={() => setAdminFeedback("")}
             aria-label="Zamknij powiadomienie"
-            className="p-1 min-h-[28px] min-w-[28px] flex items-center justify-center text-emerald-800 hover:text-emerald-950 font-bold text-xs rounded-lg cursor-pointer"
+            className="p-1 min-h-[28px] min-w-[28px] flex items-center justify-center text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100 font-bold text-xs rounded-lg cursor-pointer transition-colors"
           >
             ✕
           </button>
@@ -407,22 +424,22 @@ export default function AdminPage() {
 
       {/* TAB 1: USERS CRUD */}
       {activeTab === "users" && (
-        <div className="bg-white rounded-2xl border border-black/5 shadow-2xs overflow-hidden p-5 space-y-4">
+        <div className="bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs overflow-hidden p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-stone-500" />
               <input
                 type="text"
                 value={searchUserQuery}
                 onChange={(e) => setSearchUserQuery(e.target.value)}
                 placeholder="Szukaj..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900"
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 dark:border-white/15 dark:bg-white/5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:border-stone-900 dark:focus:border-amber-400 focus:outline-none"
               />
             </div>
 
             <button
               onClick={openCreateModal}
-              className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-semibold cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 dark:bg-amber-400 text-white dark:text-stone-950 font-bold rounded-xl text-xs shadow-xs hover:bg-stone-800 dark:hover:bg-amber-300 transition-colors cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>Dodaj użytkownika</span>
@@ -431,8 +448,8 @@ export default function AdminPage() {
 
           {/* Users Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-stone-800">
-              <thead className="bg-stone-50 text-stone-500 font-semibold uppercase text-[10px] tracking-wider">
+            <table className="w-full text-left text-xs text-stone-800 dark:text-stone-200">
+              <thead className="bg-stone-50 dark:bg-white/5 text-stone-500 dark:text-stone-400 font-semibold uppercase text-[10px] tracking-wider">
                 <tr>
                   <th className="py-2.5 px-3 rounded-l-lg">Użytkownik</th>
                   <th className="py-2.5 px-3">Rola</th>
@@ -440,9 +457,9 @@ export default function AdminPage() {
                   <th className="py-2.5 px-3 text-right rounded-r-lg">Akcje</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-100 dark:divide-white/5">
                 {filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-stone-50/50">
+                  <tr key={u.id} className="hover:bg-stone-50/50 dark:hover:bg-white/[0.03] transition-colors">
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-2.5">
                         <div
@@ -452,10 +469,10 @@ export default function AdminPage() {
                           {(u.name || u.email || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-semibold text-stone-900">
+                          <p className="font-semibold text-stone-900 dark:text-white">
                             {u.name || u.email || 'Użytkownik'}
                           </p>
-                          <p className="text-[10px] text-stone-400">
+                          <p className="text-[10px] text-stone-400 dark:text-stone-500">
                             {u.email}
                           </p>
                         </div>
@@ -463,14 +480,14 @@ export default function AdminPage() {
                     </td>
 
                     <td className="py-3 px-3">
-                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-stone-100 text-stone-700">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300">
                         {u.role}
                       </span>
                     </td>
 
                     <td className="py-3 px-3">
                       <span
-                        className={`inline-flex items-center gap-1 text-[11px] font-medium ${u.status === "active" ? "text-emerald-700" : "text-stone-400"}`}
+                        className={`inline-flex items-center gap-1 text-[11px] font-medium ${u.status === "active" ? "text-emerald-700 dark:text-emerald-400" : "text-stone-400 dark:text-stone-500"}`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${u.status === "active" ? "bg-emerald-500" : "bg-stone-400"}`}
@@ -485,7 +502,7 @@ export default function AdminPage() {
                           type="button"
                           onClick={() => openEditModal(u)}
                           aria-label={`Edytuj użytkownika ${u.name}`}
-                          className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-600 hover:text-stone-900 cursor-pointer"
+                          className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg hover:bg-stone-100 dark:hover:bg-white/10 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white cursor-pointer transition-colors"
                         >
                           <Edit2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
@@ -493,7 +510,7 @@ export default function AdminPage() {
                           type="button"
                           onClick={() => handleDeleteUser(u.id, u.name)}
                           aria-label={`Usuń użytkownika ${u.name}`}
-                          className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg hover:bg-rose-50 text-rose-600 hover:text-rose-800 cursor-pointer"
+                          className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 cursor-pointer transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
@@ -511,9 +528,9 @@ export default function AdminPage() {
       {activeTab === "ideas" && (
         <div className="space-y-4">
           {/* Moderation Filter bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-2xl border border-black/5 shadow-2xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-stone-500 mr-1">Filtruj status:</span>
+              <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 mr-1">Filtruj status:</span>
               {(
                 [
                   { id: "all", label: `Wszystkie (${ideas.length})` },
@@ -528,9 +545,9 @@ export default function AdminPage() {
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     ideaStatusFilter === tab.id
                       ? tab.id === "pending" && pendingIdeasCount > 0
-                        ? "bg-amber-600 text-white shadow-2xs"
-                        : "bg-stone-900 text-white shadow-2xs"
-                      : "bg-stone-100 hover:bg-stone-200 text-stone-700"
+                        ? "bg-amber-600 text-white shadow-2xs font-bold"
+                        : "bg-stone-900 dark:bg-amber-400 text-white dark:text-stone-950 shadow-2xs font-bold"
+                      : "bg-stone-100 hover:bg-stone-200 dark:bg-white/5 dark:hover:bg-white/10 text-stone-700 dark:text-stone-300"
                   }`}
                 >
                   {tab.label}
@@ -538,14 +555,14 @@ export default function AdminPage() {
               ))}
             </div>
 
-            <div className="text-xs text-stone-500">
+            <div className="text-xs text-stone-500 dark:text-stone-400">
               {pendingIdeasCount > 0 ? (
-                <span className="inline-flex items-center gap-1.5 text-amber-700 font-semibold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                <span className="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-500/30">
                   <Clock className="w-3.5 h-3.5 animate-spin" />
                   Wymaga weryfikacji: {pendingIdeasCount} pomysłów
                 </span>
               ) : (
-                <span className="text-emerald-700 font-medium inline-flex items-center gap-1">
+                <span className="text-emerald-700 dark:text-emerald-400 font-medium inline-flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Wszystkie pomysły zweryfikowane
                 </span>
               )}
@@ -553,8 +570,8 @@ export default function AdminPage() {
           </div>
 
           {/* Ideas List */}
-          <div className="bg-white rounded-2xl border border-black/5 shadow-2xs overflow-hidden p-5 space-y-3">
-            <div className="divide-y divide-stone-100">
+          <div className="bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs overflow-hidden p-5 space-y-3">
+            <div className="divide-y divide-stone-100 dark:divide-white/5">
               {ideas
                 .filter((idea) => {
                   if (ideaStatusFilter === "all") return true;
@@ -571,60 +588,60 @@ export default function AdminPage() {
                       key={idea.id}
                       className={`py-4 px-3 sm:px-4 rounded-2xl transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
                         isPending
-                          ? "bg-amber-50/60 border border-amber-200/80 my-2"
-                          : "hover:bg-stone-50/60"
+                          ? "bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-500/30 my-2"
+                          : "hover:bg-stone-50/60 dark:hover:bg-white/[0.03]"
                       }`}
                     >
                       <div className="space-y-1.5 max-w-xl">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700">
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300">
                             {idea.category}
                           </span>
-                          <span className="text-[11px] text-stone-500">
-                            Autor: <strong>{idea.authorName}</strong>
+                          <span className="text-[11px] text-stone-500 dark:text-stone-400">
+                            Autor: <strong className="text-stone-800 dark:text-stone-200">{idea.authorName}</strong>
                           </span>
-                          <span className="text-[11px] text-stone-400">
+                          <span className="text-[11px] text-stone-400 dark:text-stone-500">
                             {idea.createdAt}
                           </span>
 
                           {/* Status Pill */}
                           {isPending ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                              <Clock className="w-3 h-3 text-amber-700" />
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40">
+                              <Clock className="w-3 h-3 text-amber-700 dark:text-amber-400" />
                               Oczekuje na akceptację
                             </span>
                           ) : idea.status === "active" ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300">
                               <CheckCircle2 className="w-3 h-3" />
                               Aktywny (na feedzie)
                             </span>
                           ) : idea.status === "testing" ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-100 text-sky-800">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-100 dark:bg-sky-950/50 text-sky-800 dark:text-sky-300">
                               <Users className="w-3 h-3" />
                               Testy społeczne ({idea.testersCount} testerów)
                             </span>
                           ) : idea.status === "rejected" ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-800">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300">
                               <X className="w-3 h-3" />
                               Odrzucony
                             </span>
                           ) : null}
                         </div>
 
-                        <h4 className="text-sm sm:text-base font-bold text-stone-900 flex items-center gap-2">
+                        <h4 className="text-sm sm:text-base font-bold text-stone-900 dark:text-white flex items-center gap-2">
                           <span>{idea.title}</span>
                           <button
                             type="button"
                             onClick={() => router.push(`/discover/${idea.id}`)}
                             aria-label={`Zobacz podgląd pomysłu ${idea.title}`}
-                            className="text-stone-500 hover:text-stone-900 p-1 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg cursor-pointer transition-colors"
+                            className="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white p-1 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg cursor-pointer transition-colors"
                             title="Zobacz podgląd pomysłu"
                           >
                             <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                           </button>
                         </h4>
 
-                        <p className="text-xs text-stone-600 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-stone-600 dark:text-stone-300 line-clamp-2 leading-relaxed">
                           {idea.description}
                         </p>
                       </div>
@@ -644,7 +661,7 @@ export default function AdminPage() {
 
                             <button
                               onClick={() => handleRejectIdea(idea.id, idea.title)}
-                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-stone-100 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-stone-100 dark:bg-white/10 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-400 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                               title="Odrzuć zgłoszenie"
                             >
                               <X className="w-3.5 h-3.5" />
@@ -673,15 +690,10 @@ export default function AdminPage() {
 
                         <button
                           type="button"
-                          onClick={() => {
-                            if (confirm(`Usunąć pomysł "${idea.title}"?`)) {
-                              deleteIdea(idea.id);
-                              setAdminFeedback("Usunięto pomysł.");
-                            }
-                          }}
-                          aria-label={`Usuń całkowicie pomysł ${idea.title}`}
-                          className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center hover:bg-rose-50 text-rose-600 rounded-xl cursor-pointer transition-colors"
-                          title="Usuń całkowicie"
+                          onClick={() => setDeleteCandidateIdea(idea)}
+                          aria-label={`Usuń całkowicie propozycję ${idea.title}`}
+                          className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl cursor-pointer transition-colors"
+                          title="Usuń propozycję (uprawnienia administratora)"
                         >
                           <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
@@ -691,7 +703,7 @@ export default function AdminPage() {
                 })}
 
               {ideas.length === 0 && (
-                <div className="py-12 text-center text-xs text-stone-500">
+                <div className="py-12 text-center text-xs text-stone-500 dark:text-stone-400">
                   Brak pomysłów spełniających wybrane kryteria.
                 </div>
               )}
@@ -730,50 +742,50 @@ export default function AdminPage() {
 
           {/* Summary Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-4 rounded-2xl bg-white border border-black/5 shadow-2xs space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#1C1E23] border border-black/5 dark:border-white/10 shadow-2xs space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
                 Oczekujące na akceptację
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-stone-900">{pendingTesterAppsCount}</span>
-                <span className="text-xs text-stone-400">zgłoszeń</span>
+                <span className="text-2xl font-bold text-stone-900 dark:text-white">{pendingTesterAppsCount}</span>
+                <span className="text-xs text-stone-400 dark:text-stone-500">zgłoszeń</span>
               </div>
-              <p className="text-[11px] text-stone-500">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Wymaga decyzji administratora przed przyznaniem roli testera
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-black/5 shadow-2xs space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#1C1E23] border border-black/5 dark:border-white/10 shadow-2xs space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">
                 Zatwierdzeni Testerzy
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-stone-900">{approvedTesterAppsCount}</span>
-                <span className="text-xs text-stone-400">aktywnych</span>
+                <span className="text-2xl font-bold text-stone-900 dark:text-white">{approvedTesterAppsCount}</span>
+                <span className="text-xs text-stone-400 dark:text-stone-500">aktywnych</span>
               </div>
-              <p className="text-[11px] text-stone-500">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Mają dostęp do oceny użyteczności prototypów
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-black/5 shadow-2xs space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+            <div className="p-4 rounded-2xl bg-white dark:bg-[#1C1E23] border border-black/5 dark:border-white/10 shadow-2xs space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 block">
                 Łącznie zgłoszeń
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-stone-900">{testerApps.length}</span>
-                <span className="text-xs text-stone-400">wszystkich</span>
+                <span className="text-2xl font-bold text-stone-900 dark:text-white">{testerApps.length}</span>
+                <span className="text-xs text-stone-400 dark:text-stone-500">wszystkich</span>
               </div>
-              <p className="text-[11px] text-stone-500">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Wszystkie aplikacje mieszkańców do pilotaży innowacji
               </p>
             </div>
           </div>
 
           {/* Filter Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-2xl border border-black/5 shadow-2xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-stone-500 mr-1">Status wniosku:</span>
+              <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 mr-1">Status wniosku:</span>
               {(
                 [
                   { id: "all", label: `Wszystkie (${testerApps.length})` },
@@ -788,9 +800,9 @@ export default function AdminPage() {
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     testerAppFilter === f.id
                       ? f.id === "pending" && pendingTesterAppsCount > 0
-                        ? "bg-amber-600 text-white shadow-2xs"
-                        : "bg-stone-900 text-white shadow-2xs"
-                      : "bg-stone-100 hover:bg-stone-200 text-stone-700"
+                        ? "bg-amber-600 text-white shadow-2xs font-bold"
+                        : "bg-stone-900 dark:bg-amber-400 text-white dark:text-stone-950 shadow-2xs font-bold"
+                      : "bg-stone-100 hover:bg-stone-200 dark:bg-white/5 dark:hover:bg-white/10 text-stone-700 dark:text-stone-300"
                   }`}
                 >
                   {f.label}
@@ -800,7 +812,7 @@ export default function AdminPage() {
 
             <button
               onClick={loadTesterApps}
-              className="p-2 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl cursor-pointer text-xs font-medium inline-flex items-center gap-1.5"
+              className="p-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10 rounded-xl cursor-pointer text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
               title="Odśwież zgłoszenia"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoadingTesterApps ? "animate-spin" : ""}`} />
@@ -809,14 +821,14 @@ export default function AdminPage() {
           </div>
 
           {/* Tester Applications Table / Cards */}
-          <div className="bg-white rounded-2xl border border-black/5 shadow-2xs overflow-hidden">
+          <div className="bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs overflow-hidden">
             {isLoadingTesterApps && testerApps.length === 0 ? (
-              <div className="p-8 text-center text-xs text-stone-400 flex items-center justify-center gap-2">
-                <RefreshCw className="w-4 h-4 animate-spin text-stone-500" />
+              <div className="p-8 text-center text-xs text-stone-400 dark:text-stone-500 flex items-center justify-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-stone-500 dark:text-stone-400" />
                 <span>Wczytywanie zgłoszeń testerów...</span>
               </div>
             ) : (
-              <div className="divide-y divide-stone-100">
+              <div className="divide-y divide-stone-100 dark:divide-white/5">
                 {testerApps
                   .filter((app) => {
                     if (testerAppFilter === "all") return true;
@@ -829,55 +841,55 @@ export default function AdminPage() {
                       <div
                         key={app.id}
                         className={`p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${
-                          isAppPending ? "bg-amber-50/40" : "hover:bg-stone-50/60"
+                          isAppPending ? "bg-amber-50/40 dark:bg-amber-950/20" : "hover:bg-stone-50/60 dark:hover:bg-white/[0.03]"
                         }`}
                       >
                         <div className="space-y-1.5 max-w-xl">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-bold text-stone-900">
+                            <span className="text-xs font-bold text-stone-900 dark:text-white">
                               {app.user_name}
                             </span>
                             {app.user_email && (
-                              <span className="text-xs text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                              <span className="text-xs text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-white/10 px-2 py-0.5 rounded-md">
                                 {app.user_email}
                               </span>
                             )}
-                            <span className="text-[11px] text-stone-400">
+                            <span className="text-[11px] text-stone-400 dark:text-stone-500">
                               {app.created_at ? app.created_at.split("T")[0] : ""}
                             </span>
 
                             {/* Status badge */}
                             {isAppPending ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                                <Clock className="w-3 h-3 text-amber-700" />
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40">
+                                <Clock className="w-3 h-3 text-amber-700 dark:text-amber-400" />
                                 Oczekuje na decyzję admina
                               </span>
                             ) : app.status === "approved" ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                                 Zaakceptowany tester
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
-                                <X className="w-3 h-3 text-rose-700" />
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300">
+                                <X className="w-3 h-3 text-rose-700 dark:text-rose-400" />
                                 Odrzucony
                               </span>
                             )}
                           </div>
 
-                          <div className="text-xs text-stone-800 flex items-center gap-1.5 pt-0.5">
-                            <span className="text-stone-400">Zgłoszenie do projektu:</span>
+                          <div className="text-xs text-stone-800 dark:text-stone-200 flex items-center gap-1.5 pt-0.5">
+                            <span className="text-stone-400 dark:text-stone-500">Zgłoszenie do projektu:</span>
                             <button
                               onClick={() => router.push(`/discover/${app.idea_id}`)}
-                              className="font-bold text-stone-900 hover:text-amber-700 underline underline-offset-2 flex items-center gap-1 cursor-pointer text-left"
+                              className="font-bold text-stone-900 dark:text-stone-100 hover:text-amber-700 dark:hover:text-amber-400 underline underline-offset-2 flex items-center gap-1 cursor-pointer text-left"
                             >
                               <span>{app.idea_title}</span>
-                              <ExternalLink className="w-3 h-3 text-stone-400" />
+                              <ExternalLink className="w-3 h-3 text-stone-400 dark:text-stone-500" />
                             </button>
                           </div>
 
                           {app.motivation && (
-                            <p className="text-xs text-stone-600 bg-white/80 p-2.5 rounded-xl border border-stone-200/80 leading-relaxed italic">
+                            <p className="text-xs text-stone-600 dark:text-stone-300 bg-white/80 dark:bg-white/5 p-2.5 rounded-xl border border-stone-200/80 dark:border-white/10 leading-relaxed italic">
                               &ldquo;{app.motivation}&rdquo;
                             </p>
                           )}
@@ -900,7 +912,7 @@ export default function AdminPage() {
 
                               <button
                                 onClick={() => handleRejectTester(app.id, app.user_name)}
-                                className="inline-flex items-center gap-1 px-3 py-2 bg-stone-100 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 px-3 py-2 bg-stone-100 dark:bg-white/10 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-400 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                                 title="Odrzuć aplikację"
                               >
                                 <X className="w-3.5 h-3.5" />
@@ -908,12 +920,12 @@ export default function AdminPage() {
                               </button>
                             </>
                           ) : app.status === "approved" ? (
-                            <div className="inline-flex items-center gap-1.5 text-xs text-emerald-700 font-semibold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+                            <div className="inline-flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-500/30">
                               <CheckCircle2 className="w-4 h-4" />
                               <span>Tester ma aktywny dostęp</span>
                             </div>
                           ) : (
-                            <div className="inline-flex items-center gap-1.5 text-xs text-rose-700 font-medium bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200">
+                            <div className="inline-flex items-center gap-1.5 text-xs text-rose-700 dark:text-rose-400 font-medium bg-rose-50 dark:bg-rose-950/30 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-500/30">
                               <span>Wniosek odrzucony</span>
                             </div>
                           )}
@@ -923,7 +935,7 @@ export default function AdminPage() {
                   })}
 
                 {testerApps.length === 0 && (
-                  <div className="py-12 text-center text-xs text-stone-500">
+                  <div className="py-12 text-center text-xs text-stone-500 dark:text-stone-400">
                     Brak zgłoszeń testerów w systemie.
                   </div>
                 )}
@@ -940,15 +952,15 @@ export default function AdminPage() {
 
       {/* CREATE / EDIT MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full border border-stone-200 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-stone-900">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#1C1E23] rounded-2xl p-6 max-w-md w-full border border-stone-200 dark:border-white/15 shadow-xl space-y-4">
+            <h3 className="text-base font-bold text-stone-900 dark:text-white">
               {editingUserId ? "Edytuj użytkownika" : "Nowy użytkownik"}
             </h3>
 
             <form onSubmit={handleSaveUser} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
+                <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                   Imię i nazwisko
                 </label>
                 <input
@@ -956,12 +968,12 @@ export default function AdminPage() {
                   required
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-white/15 dark:bg-white/5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:border-stone-900 dark:focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
+                <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                   E-mail
                 </label>
                 <input
@@ -969,13 +981,13 @@ export default function AdminPage() {
                   required
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-white/15 dark:bg-white/5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:border-stone-900 dark:focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
+                  <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                     Rola
                   </label>
                   <CustomSelect
@@ -991,7 +1003,7 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
+                  <label className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1">
                     Status
                   </label>
                   <CustomSelect
@@ -1010,13 +1022,13 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold cursor-pointer"
+                  className="flex-1 py-2 bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
                 >
                   Anuluj
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold cursor-pointer"
+                  className="flex-1 py-2 bg-stone-900 dark:bg-amber-400 hover:bg-stone-800 dark:hover:bg-amber-300 text-white dark:text-stone-950 rounded-xl text-xs font-bold cursor-pointer transition-colors"
                 >
                   Zapisz
                 </button>
@@ -1025,6 +1037,17 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+      {/* Delete Confirmation Modal for Admins */}
+      <DeleteIdeaModal
+        idea={deleteCandidateIdea}
+        isOpen={Boolean(deleteCandidateIdea)}
+        onClose={() => setDeleteCandidateIdea(null)}
+        onConfirm={async (idea) => {
+          await deleteIdea(idea.id);
+          setAdminFeedback("Pomyślnie usunięto propozycję (uprawnienia administratora).");
+        }}
+        currentUser={currentUser}
+      />
     </div>
   );
 }

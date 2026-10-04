@@ -76,7 +76,7 @@ export const ServiceCardView: React.FC<ServiceCardViewProps> = ({
         }}
       >
         <span className="inline-block px-3 py-1 bg-stone-900 text-white rounded-xl text-[10px] font-extrabold uppercase tracking-wider">
-          Karta usługi
+          Dostosowana forma usługi
         </span>
         <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight leading-tight">
           {card.service_name}

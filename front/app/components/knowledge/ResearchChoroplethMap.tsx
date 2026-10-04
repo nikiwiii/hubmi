@@ -158,13 +158,13 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs overflow-hidden">
+    <div className="bg-white dark:bg-[#1C1E23] rounded-[28px] border border-black/5 dark:border-white/10 shadow-2xs overflow-hidden">
       {/* Header paska mapy */}
-      <div className="px-5 py-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-50/60">
+      <div className="px-5 py-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-50/60 dark:bg-white/5">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: research.theme.accent }} />
-            <h3 className="text-base font-bold text-stone-900">
+            <h3 className="text-base font-bold text-stone-900 dark:text-white">
               Województwo Małopolskie
             </h3>
           </div>
@@ -172,14 +172,14 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
 
         {/* Wskaźnik wybranego powiatu */}
         {selectedPowiatId && selectedValueItem && (
-          <div className="flex items-center gap-2 bg-stone-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs">
+          <div className="flex items-center gap-2 bg-stone-900 dark:bg-white text-white dark:text-stone-950 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs">
             <span>Wybrano: {selectedValueItem.powiatName}</span>
-            <span className="bg-white/20 px-1.5 py-0.5 rounded text-[11px]">
+            <span className="bg-white/20 dark:bg-black/10 px-1.5 py-0.5 rounded text-[11px]">
               {formatResearchValue(selectedValueItem.value)} {research.unit}
             </span>
             <button
               onClick={() => onSelectPowiat(null)}
-              className="text-stone-400 hover:text-white ml-1 cursor-pointer"
+              className="text-stone-400 dark:text-stone-600 hover:text-white dark:hover:text-stone-950 ml-1 cursor-pointer"
               title="Wyczyść zaznaczenie"
             >
               <X className="w-3.5 h-3.5" />
@@ -190,7 +190,7 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
 
       <div className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-5">
         {/* Kontroler osi czasu / Year Scrubber */}
-        <div className="bg-stone-50 rounded-2xl p-3 sm:p-4 border border-stone-200/70 space-y-3">
+        <div className="bg-stone-50 dark:bg-white/5 rounded-2xl p-3 sm:p-4 border border-stone-200/70 dark:border-white/10 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               {/* Przycisk Play / Pause */}
@@ -198,7 +198,7 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
                 onClick={() => setIsPlaying(!isPlaying)}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${isPlaying
                   ? 'bg-rose-600 text-white hover:bg-rose-700'
-                  : 'bg-stone-900 text-white hover:bg-stone-800'
+                  : 'bg-stone-900 hover:bg-stone-800 text-white dark:bg-white dark:hover:bg-stone-100 dark:text-stone-950'
                   }`}
               >
                 {isPlaying ? (
@@ -254,8 +254,8 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
                   key={year}
                   onClick={() => onSelectYear(year)}
                   className={`flex-1 min-w-[58px] py-1.5 px-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer border ${isCurrent
-                    ? 'bg-stone-900 text-white border-stone-900 shadow-xs scale-102'
-                    : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100 hover:text-stone-900'
+                    ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-950 border-stone-900 dark:border-white shadow-xs scale-102'
+                    : 'bg-white dark:bg-white/5 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-white/10 hover:bg-stone-100 dark:hover:bg-white/10 hover:text-stone-900 dark:hover:text-white'
                     }`}
                 >
                   {year}
@@ -275,8 +275,8 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
                   key={sub.key}
                   onClick={() => setActiveSubregion(sub.key)}
                   className={`whitespace-nowrap px-3 py-1.5 rounded-xl font-semibold transition-all cursor-pointer border ${isActive
-                    ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-                    : 'bg-white text-stone-600 hover:bg-stone-50 border-stone-200/80'
+                    ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-950 border-stone-900 dark:border-white shadow-2xs'
+                    : 'bg-white dark:bg-white/5 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/10 border-stone-200/80 dark:border-white/10'
                     }`}
                 >
                   {sub.label}

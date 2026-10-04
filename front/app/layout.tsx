@@ -38,11 +38,34 @@ export default function RootLayout({
   return (
     <html
       lang="pl"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${ubuntu.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#F4F4F0] text-stone-900">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function() {
+              try {
+                var isDark = localStorage.getItem('minno_dark_mode') === 'true';
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+                var isHc = localStorage.getItem('minno_high_contrast') === 'true';
+                if (isHc) {
+                  document.documentElement.classList.add('high-contrast');
+                } else {
+                  document.documentElement.classList.remove('high-contrast');
+                }
+              } catch (e) {}
+            })();`,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-[#F4F4F0] dark:bg-[#141518] text-stone-900 dark:text-[#F3F4F6] transition-colors">
         <Providers>{children}</Providers>
       </body>
-    </html>
+  </html>
   );
 }

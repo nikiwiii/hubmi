@@ -409,13 +409,13 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
           aria-selected={activeTab === "reviews"}
           onClick={() => setActiveTab("reviews")}
           className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "reviews"
-              ? "bg-stone-900 text-white shadow-2xs"
-              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+              : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
             }`}
         >
           <ShieldCheck className="w-4 h-4" aria-hidden="true" />
           <span>Opinie i Usprawnienia</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 ml-1 font-mono">
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 dark:bg-black/10 ml-1 font-mono">
             {summary?.feedback_list.length || 0}
           </span>
         </button>
@@ -427,7 +427,7 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
           onClick={() => setActiveTab("add_review")}
           className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "add_review"
               ? "bg-amber-600 text-white shadow-2xs"
-              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
+              : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
             }`}
         >
           <Star className="w-4 h-4" aria-hidden="true" />
@@ -440,13 +440,13 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
           aria-selected={activeTab === "comments"}
           onClick={() => setActiveTab("comments")}
           className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "comments"
-              ? "bg-stone-900 text-white shadow-2xs"
-              : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+              : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
             }`}
         >
           <MessageSquare className="w-4 h-4" aria-hidden="true" />
           <span>Dyskusja Testerów</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 ml-1 font-mono">
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 dark:bg-black/10 ml-1 font-mono">
             {summary?.comments_list.length || 0}
           </span>
         </button>

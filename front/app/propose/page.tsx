@@ -130,17 +130,17 @@ function StepIndicator({
             <span
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                 active
-                  ? "bg-stone-900 text-white"
+                  ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
                   : done
                     ? "bg-emerald-600 text-white"
-                    : "bg-stone-200 text-stone-500"
+                    : "bg-stone-200 dark:bg-white/10 text-stone-500 dark:text-stone-400"
               }`}
             >
               {done ? <Check className="w-3.5 h-3.5" /> : idx + 1}
             </span>
             <span
               className={
-                active ? "font-semibold text-stone-900" : "text-stone-500"
+                active ? "font-semibold text-stone-900 dark:text-white" : "text-stone-500 dark:text-stone-400"
               }
             >
               {s.label}
@@ -501,11 +501,25 @@ export default function ProposePage() {
           {/* Tytuł */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="field-tytul" className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-stone-500" aria-hidden="true" />
-                <span>Tytuł pomysłu <span className="text-rose-600" aria-label="wymagane">*</span></span>
+              <label
+                htmlFor="field-tytul"
+                className="text-sm font-bold text-stone-900 flex items-center gap-2"
+              >
+                <Lightbulb
+                  className="w-4 h-4 text-stone-500"
+                  aria-hidden="true"
+                />
+                <span>
+                  Tytuł pomysłu{" "}
+                  <span className="text-rose-600" aria-label="wymagane">
+                    *
+                  </span>
+                </span>
               </label>
-              <span id="hint-tytul" className="text-[11px] text-stone-600 font-mono">
+              <span
+                id="hint-tytul"
+                className="text-[11px] text-stone-600 font-mono"
+              >
                 {fields.tytul.length} / 80 znaków
               </span>
             </div>
@@ -519,18 +533,32 @@ export default function ProposePage() {
               value={fields.tytul}
               onChange={(e) => updateField("tytul", e.target.value)}
               placeholder="np. Sąsiedzka lodówka, Ogród pokoleń, Kawiarenka naprawcza..."
-              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-base font-semibold placeholder:text-stone-500 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200 bg-[#FAF9F5]/40 focus:bg-white text-stone-900 text-sm font-medium placeholder:text-stone-500 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
             />
           </div>
 
           {/* Opis */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="field-opis" className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-stone-500" aria-hidden="true" />
-                <span>Opis pomysłu <span className="text-rose-600" aria-label="wymagane">*</span></span>
+              <label
+                htmlFor="field-opis"
+                className="text-sm font-bold text-stone-900 flex items-center gap-2"
+              >
+                <FileText
+                  className="w-4 h-4 text-stone-500"
+                  aria-hidden="true"
+                />
+                <span>
+                  Opis pomysłu{" "}
+                  <span className="text-rose-600" aria-label="wymagane">
+                    *
+                  </span>
+                </span>
               </label>
-              <span id="hint-opis" className="text-[11px] text-stone-600 font-mono">
+              <span
+                id="hint-opis"
+                className="text-[11px] text-stone-600 font-mono"
+              >
                 min. 10 znaków
               </span>
             </div>
@@ -549,7 +577,10 @@ export default function ProposePage() {
 
           {/* Wskazówka pomocnicza */}
           <div className="px-4 py-2.5 rounded-2xl bg-[#FAF9F5] border border-black/5 flex items-center gap-3 text-xs text-stone-700 leading-relaxed">
-            <div className="w-6 h-6 rounded-lg bg-stone-900 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]" aria-hidden="true">
+            <div
+              className="w-6 h-6 rounded-lg bg-stone-900 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]"
+              aria-hidden="true"
+            >
               i
             </div>
             <div>
@@ -593,11 +624,25 @@ export default function ProposePage() {
           {/* Na czym polega innowacyjność */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="field-innowacyjnosc" className="text-sm font-bold text-stone-900 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-stone-500" aria-hidden="true" />
-                <span>Na czym polega innowacja? <span className="text-rose-600" aria-label="wymagane">*</span></span>
+              <label
+                htmlFor="field-innowacyjnosc"
+                className="text-sm font-bold text-stone-900 flex items-center gap-2"
+              >
+                <Sparkles
+                  className="w-4 h-4 text-stone-500"
+                  aria-hidden="true"
+                />
+                <span>
+                  Na czym polega innowacja?{" "}
+                  <span className="text-rose-600" aria-label="wymagane">
+                    *
+                  </span>
+                </span>
               </label>
-              <span id="hint-innowacja" className="text-[11px] text-stone-600 font-mono">
+              <span
+                id="hint-innowacja"
+                className="text-[11px] text-stone-600 font-mono"
+              >
                 minimum 4 znaki
               </span>
             </div>
@@ -617,11 +662,22 @@ export default function ProposePage() {
           {/* Dla kogo jest ten projekt */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="field-odbiorcy" className="text-sm font-bold text-stone-900 flex items-center gap-2">
+              <label
+                htmlFor="field-odbiorcy"
+                className="text-sm font-bold text-stone-900 flex items-center gap-2"
+              >
                 <Users className="w-4 h-4 text-stone-500" aria-hidden="true" />
-                <span>Dla kogo jest ten projekt? (Grupa docelowa) <span className="text-rose-600" aria-label="wymagane">*</span></span>
+                <span>
+                  Dla kogo jest ten projekt? (Grupa docelowa){" "}
+                  <span className="text-rose-600" aria-label="wymagane">
+                    *
+                  </span>
+                </span>
               </label>
-              <span id="hint-odbiorcy" className="text-[11px] text-stone-600 font-mono">
+              <span
+                id="hint-odbiorcy"
+                className="text-[11px] text-stone-600 font-mono"
+              >
                 minimum 3 znaki
               </span>
             </div>
@@ -683,7 +739,12 @@ export default function ProposePage() {
           <div className="space-y-2">
             <label className="text-sm font-bold text-stone-900 flex items-center gap-2">
               <Layers className="w-4 h-4 text-stone-500" aria-hidden="true" />
-              <span>Etap pomysłu <span className="text-rose-600" aria-label="wymagane">*</span></span>
+              <span>
+                Etap pomysłu{" "}
+                <span className="text-rose-600" aria-label="wymagane">
+                  *
+                </span>
+              </span>
             </label>
             <div
               role="radiogroup"
