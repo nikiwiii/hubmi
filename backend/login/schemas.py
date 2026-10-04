@@ -15,6 +15,11 @@ class AdminLoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+class UpdateUserRequest(BaseModel):
+    full_name: Optional[str] = None
+    role: Optional[str] = None
+    email: Optional[str] = None
+
 class UserProfileResponse(BaseModel):
     id: str
     email: str

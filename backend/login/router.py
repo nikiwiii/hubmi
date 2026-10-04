@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from config import decode_access_token
 from supabase_client import DatabaseRepository
 from login.schemas import (
@@ -8,7 +8,8 @@ from login.schemas import (
     UserLoginRequest,
     AdminLoginRequest,
     UserProfileResponse,
-    TokenResponse
+    TokenResponse,
+    UpdateUserRequest
 )
 from login.service import AuthService
 
@@ -96,3 +97,48 @@ def get_current_profile(user_payload: dict = Depends(get_current_user_payload)):
         role=profile["role"],
         created_at=profile.get("created_at")
     )
+
+@router.get("/users", response_model=List[UserProfileResponse], summary="Pobierz listę wszystkich użytkowników (Admin / Dashboard)")
+def list_users(user_payload: Optional[dict] = Depends(get_optional_user_payload)):
+    """
+    Zwraca listę wszystkich użytkowników systemu do zarządzania w panelu administracyjnym.
+    """
+    profiles = DatabaseRepository.get_all_profiles()
+    return [
+        UserProfileResponse(
+            id=p["id"],
+            email=p["email"],
+            full_name=p.get("full_name") or p.get("name") or "Użytkownik",
+            role=p.get("role") or "user",
+            created_at=p.get("created_at")
+        )
+        for p in profiles
+    ]
+
+@router.delete("/users/{user_id}", summary="Usuń użytkownika (Admin)")
+def delete_user(user_id: str, user_payload: Optional[dict] = Depends(get_optional_user_payload)):
+    if user_payload and user_payload.get("role") not in ("admin", "user", None):
+        raise HTTPException(status_code=403, detail="Brak uprawnień.")
+    success = DatabaseRepository.delete_profile(user_id)
+    return {"message": "Użytkownik został pomyślnie usunięty.", "id": user_id, "success": success}
+
+@router.patch("/users/{user_id}", response_model=UserProfileResponse, summary="Aktualizuj dane użytkownika (Admin)")
+def update_user(user_id: str, payload: UpdateUserRequest, user_payload: Optional[dict] = Depends(get_optional_user_payload)):
+    updates = {}
+    if payload.full_name is not None:
+        updates["full_name"] = payload.full_name
+    if payload.role is not None:
+        updates["role"] = payload.role
+    if payload.email is not None:
+        updates["email"] = payload.email
+    updated = DatabaseRepository.update_profile(user_id, updates)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Użytkownik nie został znaleziony.")
+    return UserProfileResponse(
+        id=updated["id"],
+        email=updated["email"],
+        full_name=updated.get("full_name") or "Użytkownik",
+        role=updated.get("role") or "user",
+        created_at=updated.get("created_at")
+    )
+

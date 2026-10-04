@@ -18,21 +18,68 @@ export async function computeSha256(message: string): Promise<string> {
   return Math.abs(hash).toString(16).padStart(64, '0');
 }
 
-export const INITIAL_USERS: User[] = [];
+export const INITIAL_USERS: User[] = [
+  {
+    id: "a25b7015-322a-42d5-88f2-153a0ae7e116",
+    name: "Administrator",
+    email: "admin@hubmi.com",
+    role: "admin",
+    avatarBg: "#F5E85A",
+    createdAt: "2026-03-01",
+    status: "active",
+  },
+  {
+    id: "72cd5970-144f-460f-9eff-84ca8dc7c7f8",
+    name: "Jan Tester",
+    email: "tester@gmail.com",
+    role: "tester",
+    avatarBg: "#CAD7CE",
+    createdAt: "2026-03-05",
+    status: "active",
+  },
+  {
+    id: "38c11c1b-c0d7-45dc-af89-50b28a96fc27",
+    name: "Tester ROPS",
+    email: "tester_46fc8d@hubmi.pl",
+    role: "tester",
+    avatarBg: "#CAD7CE",
+    createdAt: "2026-03-10",
+    status: "active",
+  },
+  {
+    id: "f0c40d39-f6ac-402c-b9e7-29e6a68e1233",
+    name: "Jan Kowalski",
+    email: "user@hubmi.com",
+    role: "creator",
+    avatarBg: "#A4B3F6",
+    createdAt: "2026-03-12",
+    status: "active",
+  },
+  {
+    id: "a9f4ba9b-f94f-4f1b-83b7-87f216a1e8c4",
+    name: "Arkadiusz",
+    email: "askupien8@gmail.com",
+    role: "creator",
+    avatarBg: "#A4B3F6",
+    createdAt: "2026-03-15",
+    status: "active",
+  },
+];
 
 const STORAGE_USERS_KEY = 'hubmi_users_v2';
 const STORAGE_CURRENT_USER_KEY = 'hubmi_current_user_v2';
 
 export function getUsers(): User[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') return INITIAL_USERS;
   try {
     const stored = localStorage.getItem(STORAGE_USERS_KEY);
     if (!stored) {
-      return [];
+      return INITIAL_USERS;
     }
-    return JSON.parse(stored);
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_USERS;
   } catch {
-    return [];
+    return INITIAL_USERS;
   }
 }
 

@@ -10,6 +10,10 @@ import { fetchAllCalls } from "../lib/grantsApi";
 import {
   fetchTesterApplications,
   updateTesterApplicationStatus,
+  fetchAllUsers,
+  deleteUserFromBackend,
+  updateUserInBackend,
+  registerUser,
 } from "../lib/api";
 
 import { DashboardHeader } from "../components/dashboard/DashboardHeader";
@@ -102,7 +106,24 @@ function DashboardContent() {
 
   // Ładowanie listy użytkowników
   useEffect(() => {
+    // 1. Natychmiastowe załadowanie z pamięci lokalnej lub predefiniowanych danych
     setUsersList(getUsers());
+
+    // 2. Pobranie zaktualizowanej bazy użytkowników z backendu Supabase
+    let cancelled = false;
+    fetchAllUsers()
+      .then((users) => {
+        if (!cancelled && users && users.length > 0) {
+          setUsersList(users);
+        }
+      })
+      .catch((err) => {
+        console.warn("Błąd pobierania użytkowników z backendu:", err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Ładowanie zgłoszeń testerów
@@ -210,7 +231,7 @@ function DashboardContent() {
     setIsModalOpen(true);
   };
 
-  const handleSaveUser = (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formEmail.trim()) return;
 
@@ -228,6 +249,15 @@ function DashboardContent() {
       });
       setUsersList(updated);
       saveUsers(updated);
+      try {
+        await updateUserInBackend(editingUserId, {
+          full_name: formName.trim(),
+          email: formEmail.trim(),
+          role: formRole === "admin" ? "admin" : formRole === "tester" ? "tester" : "user",
+        });
+      } catch (err) {
+        console.warn("Błąd aktualizacji użytkownika na backendzie:", err);
+      }
       setAdminFeedback(`Zaktualizowano dane użytkownika: ${formName}`);
     } else {
       const newUser: User = {
@@ -248,17 +278,32 @@ function DashboardContent() {
       const updated = [newUser, ...usersList];
       setUsersList(updated);
       saveUsers(updated);
+      try {
+        await registerUser(
+          newUser.email,
+          "TymczasoweHaslo123!",
+          newUser.name,
+          formRole === "admin" ? "admin" : "user"
+        );
+      } catch (err) {
+        console.warn("Rejestracja w tle:", err);
+      }
       setAdminFeedback(`Utworzono konto: ${newUser.name}`);
     }
 
     setIsModalOpen(false);
   };
 
-  const handleDeleteUser = (id: string, name: string) => {
+  const handleDeleteUser = async (id: string, name: string) => {
     if (confirm(`Czy na pewno usunąć użytkownika "${name}"?`)) {
       const updated = usersList.filter((u) => u.id !== id);
       setUsersList(updated);
       saveUsers(updated);
+      try {
+        await deleteUserFromBackend(id);
+      } catch (err) {
+        console.warn("Błąd usuwania użytkownika na backendzie:", err);
+      }
       setAdminFeedback(`Usunięto użytkownika: ${name}`);
     }
   };

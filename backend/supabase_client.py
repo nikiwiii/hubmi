@@ -365,6 +365,55 @@ class DatabaseRepository:
         memory_db.profiles.append(profile_data)
         return profile_data
 
+    @staticmethod
+    def get_all_profiles() -> List[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("users").select("id, email, full_name, role, created_at").order("created_at", desc=True).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data
+            except Exception as e:
+                logger.error(f"Supabase error get_all_profiles: {e}")
+        return [
+            {
+                "id": p["id"],
+                "email": p["email"],
+                "full_name": p.get("full_name", ""),
+                "role": p.get("role", "user"),
+                "created_at": p.get("created_at")
+            }
+            for p in memory_db.profiles
+        ]
+
+    @staticmethod
+    def update_profile(user_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("users").update(updates).eq("id", user_id).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
+            except Exception as e:
+                logger.error(f"Supabase error update_profile: {e}")
+        for p in memory_db.profiles:
+            if p["id"] == user_id:
+                p.update(updates)
+                return p
+        return None
+
+    @staticmethod
+    def delete_profile(user_id: str) -> bool:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("users").delete().eq("id", user_id).execute()
+                return bool(res.data)
+            except Exception as e:
+                logger.error(f"Supabase error delete_profile: {e}")
+        before = len(memory_db.profiles)
+        memory_db.profiles = [p for p in memory_db.profiles if p["id"] != user_id]
+        return len(memory_db.profiles) < before
+
     # --- IDEAS & MODERATION ---
     _idea_statuses: Dict[str, str] = local_get_all_idea_statuses()
 

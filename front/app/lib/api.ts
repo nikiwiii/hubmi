@@ -1,5 +1,6 @@
 import {
   User,
+  UserRole,
   Idea,
   MatchResponse,
   BackendConversation,
@@ -19,7 +20,7 @@ import {
   TesterApplication,
   KnowledgeRagResponse,
 } from "./types";
-import { setCurrentUser } from "./auth";
+import { setCurrentUser, getUsers, saveUsers } from "./auth";
 import { saveStoredInnovations } from "./innovationsStore";
 import {
   getInitialNotifications,
@@ -331,6 +332,90 @@ export async function fetchCurrentProfile(): Promise<User | null> {
     return userObj;
   } catch {
     return null;
+  }
+}
+
+export async function fetchAllUsers(): Promise<User[]> {
+  try {
+    const res = await apiFetch(`${API_BASE}/api/login/users`, {
+      method: "GET",
+      headers: getHeaders(true),
+    });
+    if (!res.ok) {
+      return getUsers();
+    }
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      return getUsers();
+    }
+
+    const mapped: User[] = data.map((u: any) => {
+      const emailLower = (u.email || "").toLowerCase();
+      const rawRole = (u.role || "").toLowerCase();
+      let role: UserRole = "creator";
+      if (rawRole === "admin" || emailLower.includes("admin")) {
+        role = "admin";
+      } else if (rawRole === "tester" || emailLower.includes("tester")) {
+        role = "tester";
+      } else if (rawRole === "expert") {
+        role = "expert";
+      } else {
+        role = "creator";
+      }
+
+      return {
+        id: u.id,
+        email: u.email,
+        name: u.full_name || u.name || u.email?.split("@")[0] || "Użytkownik",
+        role: role,
+        avatarBg:
+          role === "admin"
+            ? "#F5E85A"
+            : role === "tester"
+            ? "#CAD7CE"
+            : role === "expert"
+            ? "#D8B4E2"
+            : "#A4B3F6",
+        createdAt: u.created_at ? u.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+        status: "active" as const,
+      };
+    });
+
+    saveUsers(mapped);
+    return mapped;
+  } catch (err) {
+    console.warn("fetchAllUsers error:", err);
+    return getUsers();
+  }
+}
+
+export async function deleteUserFromBackend(userId: string): Promise<boolean> {
+  try {
+    const res = await apiFetch(`${API_BASE}/api/login/users/${encodeURIComponent(userId)}`, {
+      method: "DELETE",
+      headers: getHeaders(true),
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn("deleteUserFromBackend error:", err);
+    return false;
+  }
+}
+
+export async function updateUserInBackend(
+  userId: string,
+  payload: { full_name?: string; role?: string; email?: string }
+): Promise<boolean> {
+  try {
+    const res = await apiFetch(`${API_BASE}/api/login/users/${encodeURIComponent(userId)}`, {
+      method: "PATCH",
+      headers: getHeaders(true),
+      body: JSON.stringify(payload),
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn("updateUserInBackend error:", err);
+    return false;
   }
 }
 
