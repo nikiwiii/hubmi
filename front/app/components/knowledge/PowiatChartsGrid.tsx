@@ -65,7 +65,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
 
   // Filtrowanie i sortowanie powiatów
   const filteredSeries = useMemo(() => {
-    let list = allSeries.filter((item) => {
+    const list = allSeries.filter((item) => {
       const matchesSearch =
         item.powiatName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.seat.toLowerCase().includes(searchQuery.toLowerCase());

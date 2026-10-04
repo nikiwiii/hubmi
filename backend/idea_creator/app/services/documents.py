@@ -3,10 +3,8 @@ import logging
 import re
 import unicodedata
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from zoneinfo import ZoneInfo
-
 from app.schemas import APPLICATION_STATUS_LABELS, ApplicationOut, CallField, CallOut
 
 logger = logging.getLogger("idea_creator.documents")
@@ -14,7 +12,11 @@ logger = logging.getLogger("idea_creator.documents")
 logging.getLogger("fontTools").setLevel(logging.WARNING)
 
 FONTS_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
-LOCAL_TZ = ZoneInfo("Europe/Warsaw")
+try:
+    from zoneinfo import ZoneInfo
+    LOCAL_TZ = ZoneInfo("Europe/Warsaw")
+except Exception:
+    LOCAL_TZ = timezone(timedelta(hours=2), name="Europe/Warsaw")
 PDF_MAGIC = b"%PDF-"
 
 

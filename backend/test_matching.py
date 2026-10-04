@@ -2,7 +2,8 @@ import sys
 import io
 
 # Wymuszenie kodowania UTF-8 dla Windows cmd/powershell
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+if sys.platform.startswith("win") and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 from fastapi.testclient import TestClient
 from main import app

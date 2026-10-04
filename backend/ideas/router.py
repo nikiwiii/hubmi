@@ -290,3 +290,13 @@ def update_tester_application_status(
         admin_name=admin_name
     )
 
+
+@router.get("/{idea_id}", response_model=IdeaResponse, summary="Pobierz pojedynczy pomysł po ID")
+def get_idea(
+    idea_id: str,
+    user_payload: Optional[dict] = Depends(get_optional_user_payload)
+):
+    """Pobiera pojedynczy pomysł wraz ze statystykami i reakcjami użytkownika."""
+    user_id = user_payload.get("sub") if user_payload else None
+    return IdeaService.get_idea(idea_id=idea_id, current_user_id=user_id)
+
