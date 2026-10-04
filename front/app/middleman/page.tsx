@@ -12,7 +12,7 @@ import {
   RefreshCw,
   RotateCcw,
   Send,
-  Sparkles,
+  FileText,
   Users2,
   ExternalLink,
   Video,
@@ -47,7 +47,7 @@ const STEPS: { id: Step; label: string }[] = [
   { id: "pick", label: "Wybierz innowację" },
   { id: "view", label: "Szczegóły innowacji" },
   { id: "profile", label: "Opisz instytucję" },
-  { id: "result", label: "Karta usługi" },
+  { id: "result", label: "Dostosowana usługa" },
 ];
 
 const REFINE_EXAMPLES = [
@@ -97,8 +97,8 @@ function StepIndicator({
                 clickable
                   ? "cursor-pointer opacity-90 hover:opacity-100 hover:text-stone-900"
                   : active
-                  ? "cursor-default font-semibold text-stone-900"
-                  : "cursor-not-allowed opacity-50 text-stone-400"
+                    ? "cursor-default font-semibold text-stone-900"
+                    : "cursor-not-allowed opacity-50 text-stone-400"
               }`}
             >
               <span
@@ -106,8 +106,8 @@ function StepIndicator({
                   active
                     ? "bg-stone-900 text-white shadow-2xs"
                     : done
-                    ? "bg-emerald-600 text-white"
-                    : "bg-stone-200 text-stone-500"
+                      ? "bg-emerald-600 text-white"
+                      : "bg-stone-200 text-stone-500"
                 } ${clickable ? "group-hover:scale-105" : ""}`}
               >
                 {done ? <Check className="w-3.5 h-3.5" /> : idx + 1}
@@ -117,14 +117,16 @@ function StepIndicator({
                   active
                     ? "font-semibold text-stone-900"
                     : done
-                    ? "font-medium text-stone-700 group-hover:underline underline-offset-4"
-                    : "text-stone-500"
+                      ? "font-medium text-stone-700 group-hover:underline underline-offset-4"
+                      : "text-stone-500"
                 }`}
               >
                 {s.label}
               </span>
             </button>
-            {idx < STEPS.length - 1 && <span className="w-4 sm:w-6 h-px bg-stone-300 mx-1" />}
+            {idx < STEPS.length - 1 && (
+              <span className="w-4 sm:w-6 h-px bg-stone-300 mx-1" />
+            )}
           </li>
         );
       })}
@@ -135,11 +137,9 @@ function StepIndicator({
 function SelectedInnovation({
   innovation,
   onChange,
-  onViewDetails,
 }: {
   innovation: InnovationRecord;
   onChange?: () => void;
-  onViewDetails?: () => void;
 }) {
   return (
     <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[#FAF4E5] border border-[#E7DAC0]">
@@ -154,51 +154,29 @@ function SelectedInnovation({
             {innovation.target_group}
           </p>
         )}
-        {(innovation.video_url || innovation.url) && (
+        {innovation.video_url && (
           <div className="flex flex-wrap items-center gap-2 pt-1.5">
-            {innovation.video_url && (
-              <a
-                href={innovation.video_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200 transition-colors"
-              >
-                <Video className="w-3.5 h-3.5" />
-                <span>Obejrzyj wideo (YouTube)</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-            {innovation.url && (
-              <a
-                href={innovation.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-2.5 py-1 rounded-lg border border-black/5 transition-colors"
-              >
-                <span>Karta ROPS</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
+            <a
+              href={innovation.video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200 transition-colors"
+            >
+              <Video className="w-3.5 h-3.5" />
+              <span>Wideo innowacji (YouTube)</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
         )}
       </div>
       <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-        {onViewDetails && (
-          <button
-            type="button"
-            onClick={onViewDetails}
-            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs"
-          >
-            Szczegóły & wideo
-          </button>
-        )}
         {onChange && (
           <button
             type="button"
             onClick={onChange}
             className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs"
           >
-            Zmień
+            Zmień innowację
           </button>
         )}
       </div>
@@ -227,7 +205,9 @@ function MiddlemanContent() {
   } = useApp();
 
   const [isLoadingInnovation, setIsLoadingInnovation] = useState(
-    Boolean(innovationFromUrl && (!innovation || innovation.id !== innovationFromUrl))
+    Boolean(
+      innovationFromUrl && (!innovation || innovation.id !== innovationFromUrl),
+    ),
   );
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -261,7 +241,8 @@ function MiddlemanContent() {
         setStep("view");
       })
       .catch((err) => {
-        if (!cancelled) setError(errorMessage(err, "Nie znaleziono wybranej innowacji."));
+        if (!cancelled)
+          setError(errorMessage(err, "Nie znaleziono wybranej innowacji."));
       })
       .finally(() => {
         if (!cancelled) setIsLoadingInnovation(false);
@@ -269,7 +250,14 @@ function MiddlemanContent() {
     return () => {
       cancelled = true;
     };
-  }, [innovationFromUrl, innovation?.id, innovations, setInnovation, setResult, setStep]);
+  }, [
+    innovationFromUrl,
+    innovation?.id,
+    innovations,
+    setInnovation,
+    setResult,
+    setStep,
+  ]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -315,7 +303,12 @@ function MiddlemanContent() {
       setResult(res);
       setStep("result");
     } catch (err) {
-      setError(errorMessage(err, "Nie udało się przygotować karty usługi."));
+      setError(
+        errorMessage(
+          err,
+          "Nie udało się dostosować innowacji do formy usługi.",
+        ),
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -327,11 +320,16 @@ function MiddlemanContent() {
     setIsRefining(true);
     setError(null);
     try {
-      const res = await refineServiceCard(innovation.id, profile, result.card, text);
+      const res = await refineServiceCard(
+        innovation.id,
+        profile,
+        result.card,
+        text,
+      );
       setResult(res);
       setRefineText("");
     } catch (err) {
-      setError(errorMessage(err, "Nie udało się poprawić karty usługi."));
+      setError(errorMessage(err, "Nie udało się zaktualizować formy usługi."));
     } finally {
       setIsRefining(false);
     }
@@ -344,31 +342,39 @@ function MiddlemanContent() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError("Nie udało się skopiować. Zaznacz tekst ręcznie lub użyj „Drukuj”.");
+      setError(
+        "Nie udało się skopiować. Zaznacz tekst ręcznie lub użyj „Drukuj”.",
+      );
     }
   };
 
   const handleConsultExpert = async () => {
     if (!result) return;
     if (!currentUser) {
-      setConsultMessage("Aby napisać do eksperta ROPS, zaloguj się. Kartę możesz wcześniej skopiować lub zapisać jako PDF.");
+      setConsultMessage(
+        "Aby napisać do eksperta ROPS, zaloguj się. Opracowaną usługę możesz wcześniej skopiować lub zapisać jako PDF.",
+      );
       return;
     }
     setIsConsulting(true);
     setConsultMessage(null);
     try {
-      const budgetLabel = BUDGET_OPTIONS.find((b) => b.value === profile.budget_range)?.label;
+      const budgetLabel = BUDGET_OPTIONS.find(
+        (b) => b.value === profile.budget_range,
+      )?.label;
       const conversation = await startExpertConversation({
         topic: `Innowacje: ${result.innovation_title}`,
         initial_message:
           `Dzień dobry, piszę w imieniu: ${institutionDisplayName(profile)}. ` +
           `Chcemy wdrożyć innowację „${result.innovation_title}” jako usługę „${result.card.service_name}” ` +
           `(budżet: ${budgetLabel}, horyzont: ${profile.time_horizon_months} mies.). ` +
-          `Prosimy o konsultację przygotowanej karty usługi.`,
+          `Prosimy o konsultację przygotowanej formy usługi.`,
       });
       router.push(`/chat?recipient=${encodeURIComponent(conversation.id)}`);
     } catch (err) {
-      setConsultMessage(errorMessage(err, "Nie udało się otworzyć czatu z ekspertem."));
+      setConsultMessage(
+        errorMessage(err, "Nie udało się otworzyć czatu z ekspertem."),
+      );
       setIsConsulting(false);
     }
   };
@@ -385,23 +391,16 @@ function MiddlemanContent() {
       <div className="print:hidden flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
         <div>
           <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
-            <span className="block text-stone-900">Innowacje</span>
-            <span className="block text-stone-300">Innowacja → Usługa</span>
+            <span className="block text-stone-900">Middleman Innowacji</span>
+            <span className="block text-stone-400">
+              Adaptacja dla instytucji
+            </span>
           </div>
           <p className="mt-2 text-stone-500 text-xs sm:text-sm font-medium max-w-2xl leading-relaxed">
-            Wybierz innowację społeczną z bazy ROPS Kraków i opisz swoją instytucję. Asystent AI
-            przygotuje z niej konkretną kartę usługi: zakres, zasoby, harmonogram, budżet i wskaźniki.
+            Dostosuj sprawdzoną innowację społeczną do budżetu, kadry i potrzeb
+            mieszkańców w Twojej gminie.
           </p>
         </div>
-        {step !== "pick" && (
-          <button
-            onClick={handleStartOver}
-            className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-stone-50 text-stone-700 border border-black/5 rounded-xl text-xs font-semibold shadow-2xs cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-stone-400" />
-            Zacznij od nowa
-          </button>
-        )}
       </div>
 
       <StepIndicator
@@ -416,7 +415,10 @@ function MiddlemanContent() {
       />
 
       {error && (
-        <div role="alert" className="print:hidden text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <div
+          role="alert"
+          className="print:hidden text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3"
+        >
           {error}
         </div>
       )}
@@ -444,38 +446,62 @@ function MiddlemanContent() {
 
       {step === "profile" && innovation && (
         <div className="space-y-5">
+          {/* Pasek akcji u góry */}
+          <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+            <button
+              type="button"
+              onClick={handleBackToView}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white border border-black/10 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Wróć do opisu innowacji</span>
+            </button>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {innovation.url && (
+                <a
+                  href={innovation.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white border border-black/10 hover:bg-stone-50 transition-colors shadow-2xs"
+                >
+                  <span>Karta w bazie ROPS</span>
+                  <ExternalLink className="w-3 h-3 text-stone-400" />
+                </a>
+              )}
+            </div>
+          </div>
+
           <SelectedInnovation
             innovation={innovation}
             onChange={handleBackToPick}
-            onViewDetails={handleBackToView}
           />
-          <div className="bg-white rounded-[28px] border border-black/5 p-5 sm:p-8 shadow-2xs">
-            <InstitutionForm
-              profile={profile}
-              onChange={setProfile}
-              isLoading={isGenerating}
-              onBack={handleBackToView}
-              onSubmit={handleGenerate}
-            />
-          </div>
+          <InstitutionForm
+            profile={profile}
+            onChange={setProfile}
+            isLoading={isGenerating}
+            onSubmit={handleGenerate}
+          />
         </div>
       )}
 
-      {((step === "view" || step === "profile") && !innovation && !isLoadingInnovation) && (
-        <div className="text-center py-12 bg-white rounded-2xl border border-black/5 p-8 space-y-4">
-          <p className="text-base font-semibold text-stone-800">
-            Nie wybrano jeszcze innowacji społecznej.
-          </p>
-          <button
-            type="button"
-            onClick={handleBackToPick}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold cursor-pointer"
-          >
-            <span>Przejdź do katalogu innowacji</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      {(step === "view" || step === "profile") &&
+        !innovation &&
+        !isLoadingInnovation && (
+          <div className="text-center py-12 bg-white rounded-2xl border border-black/5 p-8 space-y-4">
+            <p className="text-base font-semibold text-stone-800">
+              Nie wybrano jeszcze innowacji społecznej.
+            </p>
+            <button
+              type="button"
+              onClick={handleBackToPick}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold cursor-pointer"
+            >
+              <span>Przejdź do katalogu innowacji</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
       {step === "result" && result && (
         <div className="space-y-5">
@@ -496,9 +522,11 @@ function MiddlemanContent() {
                 {innovation.video_url ? (
                   <Video className="w-4 h-4 text-red-600" />
                 ) : (
-                  <Sparkles className="w-4 h-4 text-stone-600" />
+                  <FileText className="w-4 h-4 text-stone-600" />
                 )}
-                <span>Oryginalna innowacja {innovation.video_url ? "& wideo" : ""}</span>
+                <span>
+                  Oryginalna innowacja {innovation.video_url ? "& wideo" : ""}
+                </span>
               </button>
             )}
             <button
@@ -512,12 +540,29 @@ function MiddlemanContent() {
               onClick={handleCopy}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+              {copied ? (
+                <Check className="w-4 h-4 text-emerald-600" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
               {copied ? "Skopiowano" : "Kopiuj"}
+            </button>
+            <button
+              onClick={handleStartOver}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4 text-stone-400" />
+              <span>Nowa innowacja</span>
             </button>
           </div>
 
-          <div className={isRefining ? "opacity-50 pointer-events-none transition-opacity" : "transition-opacity"}>
+          <div
+            className={
+              isRefining
+                ? "opacity-50 pointer-events-none transition-opacity"
+                : "transition-opacity"
+            }
+          >
             <ServiceCardView
               response={result}
               profile={profile}
@@ -547,9 +592,12 @@ function MiddlemanContent() {
             }}
             className="print:hidden bg-white rounded-2xl border border-black/10 p-4 sm:p-5 shadow-2xs space-y-3"
           >
-            <label htmlFor="mm-refine" className="flex items-center gap-2 text-sm font-semibold text-stone-900">
+            <label
+              htmlFor="mm-refine"
+              className="flex items-center gap-2 text-sm font-semibold text-stone-900"
+            >
               <Pencil className="w-4 h-4" />
-              Dopytaj / popraw kartę
+              Dopytaj / doprecyzuj usługę
             </label>
             <div className="flex flex-wrap gap-2">
               {REFINE_EXAMPLES.map((ex) => (
@@ -572,7 +620,7 @@ function MiddlemanContent() {
                 rows={2}
                 maxLength={2000}
                 disabled={isRefining}
-                placeholder="Napisz, co zmienić, np. „mamy tylko 15 tys. zł” albo „dodaj współpracę ze szkołą”"
+                placeholder="Napisz, co zmienić w usłudze, np. „mamy tylko 15 tys. zł” albo „dodaj współpracę ze szkołą”"
                 className="flex-1 px-4 py-3 bg-white border border-black/10 rounded-xl text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/15 resize-y disabled:opacity-60"
               />
               <button
@@ -580,8 +628,12 @@ function MiddlemanContent() {
                 disabled={isRefining || refineText.trim().length < 2}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-stone-900 hover:bg-stone-800 text-white disabled:opacity-40 cursor-pointer"
               >
-                {isRefining ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {isRefining ? "Poprawiam..." : "Popraw kartę"}
+                {isRefining ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                {isRefining ? "Dostosowuję..." : "Dostosuj usługę"}
               </button>
             </div>
           </form>

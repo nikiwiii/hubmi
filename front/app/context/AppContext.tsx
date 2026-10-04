@@ -249,6 +249,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const loadInnovations = async (forceRefresh = false): Promise<InnovationRecord[]> => {
     if (!forceRefresh && innovations.length > 0) {
+      searchInnovations('').then((data) => {
+        if (data && data.length > 0) {
+          setInnovations(data);
+          saveStoredInnovations(data);
+          setSelectedInnovationState((current) => {
+            if (!current) return current;
+            const fresh = data.find((d) => d.id === current.id);
+            return fresh ? { ...current, ...fresh } : current;
+          });
+        }
+      }).catch(() => {});
       return innovations;
     }
     setIsLoadingInnovations(true);
@@ -258,6 +269,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (data && data.length > 0) {
         setInnovations(data);
         saveStoredInnovations(data);
+        setSelectedInnovationState((current) => {
+          if (!current) return current;
+          const fresh = data.find((d) => d.id === current.id);
+          return fresh ? { ...current, ...fresh } : current;
+        });
         return data;
       }
       return innovations;

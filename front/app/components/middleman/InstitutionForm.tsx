@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowLeft, Sparkles, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { InstitutionProfile } from "../../lib/types";
 import { CustomSelect, SelectOption } from "../shared/CustomSelect";
 import {
@@ -15,29 +15,33 @@ interface InstitutionFormProps {
   profile: InstitutionProfile;
   onChange: (profile: InstitutionProfile) => void;
   isLoading: boolean;
-  onBack: () => void;
+  onBack?: () => void;
+  backLabel?: string;
   onSubmit: (profile: InstitutionProfile) => void;
 }
 
-const POWIAT_SELECT_OPTIONS: SelectOption<string>[] = POWIAT_OPTIONS.map((p) => ({
-  value: p,
-  label: p,
-}));
+const POWIAT_SELECT_OPTIONS: SelectOption<string>[] = POWIAT_OPTIONS.map(
+  (p) => ({
+    value: p,
+    label: p,
+  }),
+);
 
 const inputClass =
-  "w-full px-4 py-3 bg-white border border-black/10 rounded-xl text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900/30";
+  "w-full px-3.5 py-2 bg-white border border-black/10 rounded-xl text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900/30 transition-all";
 
 const Field: React.FC<{
   label: string;
-  hint?: string;
   htmlFor?: string;
   children: React.ReactNode;
-}> = ({ label, hint, htmlFor, children }) => (
-  <div className="space-y-1.5">
-    <label htmlFor={htmlFor} className="block text-sm font-semibold text-stone-800">
+}> = ({ label, htmlFor, children }) => (
+  <div className="space-y-1">
+    <label
+      htmlFor={htmlFor}
+      className="block text-xs sm:text-sm font-semibold text-stone-800"
+    >
       {label}
     </label>
-    {hint && <p className="text-xs text-stone-500">{hint}</p>}
     {children}
   </div>
 );
@@ -54,7 +58,7 @@ function ChoiceChips<T extends string | number>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div role="radiogroup" aria-label={name} className="flex flex-wrap gap-2">
+    <div role="radiogroup" aria-label={name} className="flex flex-wrap gap-1.5">
       {options.map((opt) => {
         const active = opt.value === value;
         return (
@@ -64,10 +68,11 @@ function ChoiceChips<T extends string | number>({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(opt.value)}
-            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${active
-              ? "bg-stone-900 text-white border-stone-900"
-              : "bg-white text-stone-700 border-black/10 hover:border-black/25"
-              }`}
+            className={`px-3 py-1.5 rounded-lg border text-xs sm:text-sm transition-all cursor-pointer ${
+              active
+                ? "bg-stone-900 text-white border-stone-900 font-semibold shadow-2xs"
+                : "bg-white text-stone-700 border-black/10 hover:border-black/25 font-normal"
+            }`}
           >
             {opt.label}
           </button>
@@ -81,12 +86,14 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
   profile,
   onChange,
   isLoading,
-  onBack,
   onSubmit,
 }) => {
   const [showErrors, setShowErrors] = useState(false);
 
-  const update = <K extends keyof InstitutionProfile>(key: K, value: InstitutionProfile[K]) => {
+  const update = <K extends keyof InstitutionProfile>(
+    key: K,
+    value: InstitutionProfile[K],
+  ) => {
     onChange({ ...profile, [key]: value });
   };
 
@@ -113,159 +120,175 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
   };
 
   const errorText = (show: boolean, text: string) =>
-    showErrors && show ? <p className="text-xs font-semibold text-red-700">{text}</p> : null;
+    showErrors && show ? (
+      <p className="text-xs font-semibold text-red-700">{text}</p>
+    ) : null;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Field label="1. Jaką instytucję reprezentujesz?" htmlFor="mm-type">
-        <CustomSelect
-          id="mm-type"
-          value={profile.institution_type}
-          onChange={(val) => update("institution_type", val as InstitutionProfile["institution_type"])}
-          options={INSTITUTION_TYPE_OPTIONS}
-          fullWidth
-          size="md"
-        />
-      </Field>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="bg-white rounded-[24px] border border-black/5 p-5 sm:p-6 shadow-2xs space-y-4">
+        {/* 1. Typ instytucji & Powiat */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
+          <Field label="Typ instytucji" htmlFor="mm-type">
+            <CustomSelect
+              id="mm-type"
+              value={profile.institution_type}
+              onChange={(val) =>
+                update(
+                  "institution_type",
+                  val as InstitutionProfile["institution_type"],
+                )
+              }
+              options={INSTITUTION_TYPE_OPTIONS}
+              fullWidth
+              size="md"
+            />
+          </Field>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="2. Powiat w Małopolsce" htmlFor="mm-powiat">
-          <CustomSelect
-            id="mm-powiat"
-            value={profile.powiat}
-            onChange={(val) => update("powiat", val)}
-            options={POWIAT_SELECT_OPTIONS}
-            placeholder="– wybierz powiat –"
-            error={showErrors && missing.powiat}
-            fullWidth
-            size="md"
-          />
-          {errorText(missing.powiat, "Wybierz powiat.")}
-        </Field>
-        <Field label="Nazwa gminy lub instytucji (opcjonalnie)" htmlFor="mm-name">
-          <input
-            id="mm-name"
-            type="text"
-            value={profile.institution_name ?? ""}
-            onChange={(e) => update("institution_name", e.target.value)}
-            placeholder="np. GOPS w Dobrej"
-            maxLength={200}
-            className={inputClass}
-          />
-        </Field>
-      </div>
+          <Field label="Powiat" htmlFor="mm-powiat">
+            <CustomSelect
+              id="mm-powiat"
+              value={profile.powiat}
+              onChange={(val) => update("powiat", val)}
+              options={POWIAT_SELECT_OPTIONS}
+              placeholder="– wybierz powiat –"
+              error={showErrors && missing.powiat}
+              fullWidth
+              size="md"
+            />
+            {errorText(missing.powiat, "Wybierz powiat.")}
+          </Field>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
-        <Field label="3. Dla kogo ma być usługa?" htmlFor="mm-target">
-          <input
-            id="mm-target"
-            type="text"
-            value={profile.target_group}
-            onChange={(e) => update("target_group", e.target.value)}
-            placeholder="np. samotni seniorzy 65+"
-            maxLength={500}
-            className={inputClass}
-          />
-          {errorText(missing.target_group, "Napisz, dla kogo jest usługa.")}
-        </Field>
-        <Field label="Ilu odbiorców (około)?" htmlFor="mm-count">
-          <input
-            id="mm-count"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            value={profile.recipients_count ?? ""}
-            onChange={(e) => {
-              const n = parseInt(e.target.value, 10);
-              update("recipients_count", Number.isFinite(n) && n > 0 ? n : null);
-            }}
-            placeholder="np. 40"
-            className={inputClass}
-          />
-        </Field>
-      </div>
+        {/* 2. Nazwa jednostki & Grupa docelowa */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
+          <Field
+            label="Nazwa gminy lub instytucji (opcjonalnie)"
+            htmlFor="mm-name"
+          >
+            <input
+              id="mm-name"
+              type="text"
+              value={profile.institution_name ?? ""}
+              onChange={(e) => update("institution_name", e.target.value)}
+              placeholder="np. GOPS w Dobrej"
+              maxLength={200}
+              className={inputClass}
+            />
+          </Field>
 
-      <Field label="4. Jaki budżet macie do dyspozycji?">
-        <ChoiceChips
-          name="Budżet"
-          value={profile.budget_range}
-          options={BUDGET_OPTIONS}
-          onChange={(v) => update("budget_range", v)}
-        />
-      </Field>
+          <Field label="Grupa docelowa (dla kogo)" htmlFor="mm-target">
+            <input
+              id="mm-target"
+              type="text"
+              value={profile.target_group}
+              onChange={(e) => update("target_group", e.target.value)}
+              placeholder="np. samotni seniorzy 65+"
+              maxLength={500}
+              className={inputClass}
+            />
+            {errorText(missing.target_group, "Wskaż grupę docelową.")}
+          </Field>
+        </div>
 
-      <Field
-        label="5. Kto z Waszego obecnego zespołu może się zająć usługą?"
-        hint="Opisz swoimi słowami, np. „1 pracownik socjalny na pół etatu i 2 wolontariuszy”. Ich pensji nie wliczamy do budżetu usługi."
-        htmlFor="mm-staff"
-      >
-        <input
-          id="mm-staff"
-          type="text"
-          value={profile.staff_resources}
-          onChange={(e) => update("staff_resources", e.target.value)}
-          placeholder="np. 1 pracownik socjalny na pół etatu"
-          maxLength={500}
-          className={inputClass}
-        />
-        {errorText(missing.staff_resources, "Opisz krótko, kto zajmie się usługą.")}
-      </Field>
+        {/* 3. Liczba odbiorców & Zespół / kadra */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
+          <Field label="Szacowana liczba odbiorców" htmlFor="mm-count">
+            <input
+              id="mm-count"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={profile.recipients_count ?? ""}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10);
+                update(
+                  "recipients_count",
+                  Number.isFinite(n) && n > 0 ? n : null,
+                );
+              }}
+              placeholder="np. 40"
+              className={inputClass}
+            />
+          </Field>
 
-      <Field label="6. W jakim czasie chcecie uruchomić usługę?">
-        <ChoiceChips
-          name="Horyzont czasowy"
-          value={profile.time_horizon_months}
-          options={HORIZON_OPTIONS}
-          onChange={(v) => update("time_horizon_months", v)}
-        />
-      </Field>
+          <Field label="Dedykowany zespół / kadra" htmlFor="mm-staff">
+            <input
+              id="mm-staff"
+              type="text"
+              value={profile.staff_resources}
+              onChange={(e) => update("staff_resources", e.target.value)}
+              placeholder="np. 1 pracownik socjalny, 2 wolontariuszy"
+              maxLength={500}
+              className={inputClass}
+            />
+            {errorText(
+              missing.staff_resources,
+              "Opisz krótko zespół do realizacji.",
+            )}
+          </Field>
+        </div>
 
-      <Field
-        label="7. Lokalny problem lub dodatkowe uwagi (opcjonalnie)"
-        hint="Co jest u Was szczególne? Np. słaby transport, brak świetlicy, aktywne Koło Gospodyń Wiejskich."
-        htmlFor="mm-context"
-      >
-        <textarea
-          id="mm-context"
-          value={profile.local_context ?? ""}
-          onChange={(e) => update("local_context", e.target.value)}
-          rows={3}
-          maxLength={2000}
-          className={`${inputClass} resize-y`}
-        />
-      </Field>
+        {/* 4. Dostępny budżet & Czas uruchomienia */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 pt-1">
+          <Field label="Dostępny budżet">
+            <ChoiceChips
+              name="Budżet"
+              value={profile.budget_range}
+              options={BUDGET_OPTIONS}
+              onChange={(v) => update("budget_range", v)}
+            />
+          </Field>
 
-      {showErrors && !isValid && (
-        <p role="alert" className="text-sm font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-          Uzupełnij pola zaznaczone na czerwono powyżej.
-        </p>
-      )}
+          <Field label="Czas na uruchomienie">
+            <ChoiceChips
+              name="Horyzont czasowy"
+              value={profile.time_horizon_months}
+              options={HORIZON_OPTIONS}
+              onChange={(v) => update("time_horizon_months", v)}
+            />
+          </Field>
+        </div>
 
-      <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-black/5">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={isLoading}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-sm font-semibold text-stone-700 hover:text-stone-900 bg-white border border-black/10 hover:bg-stone-50 transition-all cursor-pointer disabled:opacity-50"
+        {/* 5. Kontekst lokalny */}
+        <Field
+          label="Lokalny kontekst lub specyfika (opcjonalnie)"
+          htmlFor="mm-context"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Zmień innowację
-        </button>
+          <textarea
+            id="mm-context"
+            value={profile.local_context ?? ""}
+            onChange={(e) => update("local_context", e.target.value)}
+            rows={2}
+            maxLength={2000}
+            placeholder="np. słaby transport publiczny, brak świetlicy, aktywne KGW..."
+            className={`${inputClass} resize-y`}
+          />
+        </Field>
+
+        {showErrors && !isValid && (
+          <p
+            role="alert"
+            className="text-xs sm:text-sm font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5"
+          >
+            Uzupełnij pola zaznaczone na czerwono powyżej.
+          </p>
+        )}
+      </div>
+
+      <div className="flex justify-end pt-1">
         <button
           type="submit"
           disabled={isLoading}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-base font-semibold bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-all cursor-pointer disabled:opacity-60"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl text-sm sm:text-base font-semibold bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-all cursor-pointer disabled:opacity-60"
         >
           {isLoading ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
-              Przygotowuję kartę usługi...
+              Dostosowuję innowację do usługi...
             </>
           ) : (
-            <>
-              <Sparkles className="w-4 h-4 text-[#EFE5C6]" />
-              Przygotuj kartę usługi
-            </>
+            <>Dostosuj innowację do potrzeb mieszkańców</>
           )}
         </button>
       </div>

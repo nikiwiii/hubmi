@@ -54,15 +54,15 @@ const SUBPAGE_CARDS: SubpageCardItem[] = [
   },
   {
     id: 'middleman',
-    title: 'Generator Usług Społecznych (Middleman)',
-    badge: 'Standard CUS',
+    title: 'Middleman Innowacji',
+    badge: 'Standard CUS / OPS',
     badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
     icon: Handshake,
     description:
-      'Przekształcaj innowacyjne idee w ustandaryzowaną Kartę Usługi Społecznej dla CUS i OPS z kalkulacją budżetu oraz harmonogramem.',
+      'Dostosuj innowację społeczną do formy gotowej usługi według unikalnych potrzeb i możliwości Twojej instytucji przy wsparciu Asystenta AI.',
     href: '/middleman',
-    tags: ['Karta Usługi CUS', 'Kalkulator kosztów', 'Gotowe do druku'],
-    ctaLabel: 'Generuj kartę usługi',
+    tags: ['Dostosowanie do formy usługi', 'Zasoby i harmonogram', 'Gotowe do druku'],
+    ctaLabel: 'Dostosuj innowację do usługi',
   },
   {
     id: 'knowledge',

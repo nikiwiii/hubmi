@@ -200,7 +200,7 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({
                         title="Przejdź od razu do formularza adaptacji dla tej innowacji"
                         className="px-2.5 py-1 rounded-lg text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer shrink-0"
                       >
-                        Formularz usługi
+                        Dostosuj do usługi
                       </span>
                     )}
                   </div>

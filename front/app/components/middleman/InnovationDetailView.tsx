@@ -1,22 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   ExternalLink,
   Video,
   Users2,
-  Sparkles,
   Target,
   Coins,
   FileText,
-  Layers,
   HeartHandshake,
-  CheckCircle2,
 } from "lucide-react";
 import { InnovationRecord } from "../../lib/types";
 import { getYoutubeEmbedUrl } from "../../lib/middleman";
+import { fetchInnovationById } from "../../lib/api";
 
 interface InnovationDetailViewProps {
   innovation: InnovationRecord;
@@ -29,18 +27,34 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
   onBack,
   onProceed,
 }) => {
-  const embedUrl = innovation.video_url
-    ? getYoutubeEmbedUrl(innovation.video_url)
-    : null;
+  const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(
+    innovation.video_url || null,
+  );
+
+  useEffect(() => {
+    if (innovation.video_url) {
+      setActiveVideoUrl(innovation.video_url);
+    } else if (innovation.id) {
+      fetchInnovationById(innovation.id)
+        .then((fresh) => {
+          if (fresh?.video_url) {
+            setActiveVideoUrl(fresh.video_url);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [innovation.id, innovation.video_url]);
+
+  const embedUrl = getYoutubeEmbedUrl(activeVideoUrl);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="space-y-5 animate-in fade-in duration-200">
       {/* Pasek nawigacji górnej */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <button
           type="button"
           onClick={onBack}
-          className="self-start inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white border border-black/10 hover:bg-stone-50 transition-colors cursor-pointer shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white border border-black/10 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Wróć do listy innowacji</span>
@@ -58,82 +72,51 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
               <ExternalLink className="w-3 h-3 text-stone-400" />
             </a>
           )}
-          {innovation.video_url && (
-            <a
-              href={innovation.video_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors shadow-2xs"
-            >
-              <Video className="w-3.5 h-3.5" />
-              <span>Otwórz w YouTube</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+        </div>
+      </div>
+
+      {/* Karta: Wybrana innowacja */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-[#FAF4E5] border border-[#E7DAC0]">
+        <div className="space-y-0.5">
+          <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+            Wybrana innowacja
+          </span>
+          <h1 className="text-base sm:text-lg font-bold text-stone-900">
+            {innovation.title}
+          </h1>
+          {innovation.target_group && (
+            <p className="text-xs text-stone-600 flex items-center gap-1.5 pt-0.5">
+              <Users2 className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+              <span>{innovation.target_group}</span>
+            </p>
           )}
+        </div>
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           <button
             type="button"
-            onClick={onProceed}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-stone-900 hover:bg-stone-800 text-white transition-all shadow-2xs cursor-pointer"
+            onClick={onBack}
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs transition-colors"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#EFE5C6]" />
-            <span>Dostosuj do formy usługi</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            Zmień innowację
           </button>
         </div>
       </div>
 
-      {/* Nagłówek innowacji (Hero) */}
-      <div
-        className="rounded-[28px] p-6 sm:p-8 border border-black/5 shadow-2xs space-y-4"
-        style={{
-          background:
-            "radial-gradient(circle at 14% 14%, #FAF4E5 0%, #FFFFFF 48%, #FAFAF8 80%, #F5F5F0 100%)",
-        }}
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-block px-3 py-1 bg-stone-900 text-white rounded-xl text-[10px] font-extrabold uppercase tracking-wider">
-            {innovation.category || "Innowacja społeczna ROPS"}
-          </span>
-          {innovation.video_url && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 border border-red-200 rounded-xl text-[10px] font-bold uppercase tracking-wider">
-              <Video className="w-3 h-3 text-red-600" />
-              <span>Wideo YouTube</span>
-            </span>
-          )}
-        </div>
-
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-900 tracking-tight leading-tight">
-          {innovation.title}
-        </h1>
-
-        {innovation.target_group && (
-          <div className="flex items-center gap-2 text-stone-700 text-sm font-medium">
-            <span className="w-7 h-7 rounded-lg bg-stone-100 border border-black/5 flex items-center justify-center shrink-0">
-              <Users2 className="w-4 h-4 text-stone-600" />
-            </span>
-            <span>
-              <strong className="text-stone-900">Grupa docelowa: </strong>
-              {innovation.target_group}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Jedna spójna karta ze wszystkimi sekcjami merytorycznymi innowacji */}
-      <article className="bg-white rounded-[28px] border border-black/5 p-6 sm:p-10 shadow-2xs space-y-8">
-        {/* Wideo z YouTube (jeśli video_url nie jest null) */}
-        {innovation.video_url && (
+      {/* Spójna karta ze wszystkimi sekcjami merytorycznymi innowacji */}
+      <article className="bg-white rounded-[24px] border border-black/5 p-5 sm:p-7 shadow-2xs space-y-6">
+        {/* Wideo z YouTube (jeśli istnieje) */}
+        {activeVideoUrl && (
           <>
-            <section className="space-y-3">
+            <section className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-bold text-stone-900">
-                  <span className="w-8 h-8 rounded-xl bg-red-50 border border-red-200/60 flex items-center justify-center text-red-600 shrink-0">
-                    <Video className="w-4 h-4" />
+                <h2 className="flex items-center gap-2 text-xs sm:text-sm font-bold text-stone-900">
+                  <span className="w-6 h-6 rounded-lg bg-red-50 border border-red-200/60 flex items-center justify-center text-red-600 shrink-0">
+                    <Video className="w-3.5 h-3.5" />
                   </span>
                   <span>Prezentacja wideo innowacji</span>
                 </h2>
                 <a
-                  href={innovation.video_url}
+                  href={activeVideoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-stone-500 hover:text-stone-900 inline-flex items-center gap-1 transition-colors"
@@ -144,25 +127,25 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
               </div>
 
               {embedUrl ? (
-                <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-inner border border-black/10">
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-inner border border-black/10">
                   <iframe
                     src={embedUrl}
-                    title={`Prezentacja innowacji wideo: ${innovation.title}`}
+                    title={`Prezentacja wideo innowacji: ${innovation.title}`}
                     className="w-full h-full border-0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-stone-50 border border-black/5 flex items-center justify-between gap-3">
-                  <span className="text-sm text-stone-600">
+                <div className="p-3.5 rounded-xl bg-stone-50 border border-black/5 flex items-center justify-between gap-3">
+                  <span className="text-xs text-stone-600">
                     Obejrzyj oficjalną prezentację wideo innowacji
                   </span>
                   <a
-                    href={innovation.video_url}
+                    href={activeVideoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors"
                   >
                     <Video className="w-3.5 h-3.5" />
                     <span>Otwórz wideo</span>
@@ -177,14 +160,14 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
 
         {/* Rozwiązywane problemy */}
         {innovation.addressed_problems && (
-          <section className="space-y-2.5">
-            <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-bold text-stone-900">
-              <span className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700 shrink-0">
-                <Target className="w-4 h-4" />
+          <section className="space-y-2">
+            <h2 className="flex items-center gap-2 text-xs sm:text-sm font-bold text-stone-900">
+              <span className="w-6 h-6 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700 shrink-0">
+                <Target className="w-3.5 h-3.5" />
               </span>
               <span>Rozwiązywane problemy społeczne i diagnoza</span>
             </h2>
-            <div className="text-sm sm:text-base text-stone-700 leading-relaxed whitespace-pre-line pl-0 sm:pl-10.5">
+            <div className="text-xs sm:text-sm text-stone-600 leading-relaxed whitespace-pre-line pl-0 sm:pl-8">
               {innovation.addressed_problems}
             </div>
           </section>
@@ -197,14 +180,14 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
 
         {/* Opis innowacji */}
         {innovation.description && (
-          <section className="space-y-2.5">
-            <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-bold text-stone-900">
-              <span className="w-8 h-8 rounded-xl bg-stone-100 border border-black/5 flex items-center justify-center text-stone-800 shrink-0">
-                <FileText className="w-4 h-4" />
+          <section className="space-y-2">
+            <h2 className="flex items-center gap-2 text-xs sm:text-sm font-bold text-stone-900">
+              <span className="w-6 h-6 rounded-lg bg-stone-100 border border-black/5 flex items-center justify-center text-stone-800 shrink-0">
+                <FileText className="w-3.5 h-3.5" />
               </span>
               <span>Opis innowacji i mechanizm działania</span>
             </h2>
-            <div className="text-sm sm:text-base text-stone-700 leading-relaxed whitespace-pre-line pl-0 sm:pl-10.5">
+            <div className="text-xs sm:text-sm text-stone-600 leading-relaxed whitespace-pre-line pl-0 sm:pl-8">
               {innovation.description}
             </div>
           </section>
@@ -218,30 +201,30 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
 
         {/* Odbiorcy i Beneficjenci */}
         {(innovation.target_group || innovation.beneficiaries) && (
-          <section className="space-y-3">
-            <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-bold text-stone-900">
-              <span className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-700 shrink-0">
-                <HeartHandshake className="w-4 h-4" />
+          <section className="space-y-2.5">
+            <h2 className="flex items-center gap-2 text-xs sm:text-sm font-bold text-stone-900">
+              <span className="w-6 h-6 rounded-lg bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-700 shrink-0">
+                <HeartHandshake className="w-3.5 h-3.5" />
               </span>
               <span>Odbiorcy i beneficjenci</span>
             </h2>
-            <div className="space-y-4 pl-0 sm:pl-10.5">
+            <div className="space-y-3 pl-0 sm:pl-8">
               {innovation.target_group && (
                 <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+                  <h3 className="text-xs sm:text-sm font-semibold text-stone-800">
                     Bezpośrednia grupa docelowa
                   </h3>
-                  <p className="text-sm sm:text-base text-stone-700 leading-relaxed mt-1">
+                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed mt-0.5">
                     {innovation.target_group}
                   </p>
                 </div>
               )}
               {innovation.beneficiaries && (
                 <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-stone-900">
+                  <h3 className="text-xs sm:text-sm font-semibold text-stone-800">
                     Ostateczni beneficjenci
                   </h3>
-                  <p className="text-sm sm:text-base text-stone-700 leading-relaxed mt-1">
+                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed mt-0.5">
                     {innovation.beneficiaries}
                   </p>
                 </div>
@@ -250,41 +233,19 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
           </section>
         )}
 
-        {/* Divider */}
-        {(innovation.funding_info || innovation.url) && (
+        {/* Finansowanie (jeśli dostępne) */}
+        {innovation.funding_info && (
           <>
             <hr className="border-t border-black/5" />
-            <section className="space-y-2.5">
-              <h2 className="flex items-center gap-2.5 text-base sm:text-lg font-bold text-stone-900">
-                <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200/60 flex items-center justify-center text-blue-700 shrink-0">
-                  <Coins className="w-4 h-4" />
+            <section className="space-y-2">
+              <h2 className="flex items-center gap-2 text-xs sm:text-sm font-bold text-stone-900">
+                <span className="w-6 h-6 rounded-lg bg-blue-50 border border-blue-200/60 flex items-center justify-center text-blue-700 shrink-0">
+                  <Coins className="w-3.5 h-3.5" />
                 </span>
-                <span>Finansowanie i materiały źródłowe</span>
+                <span>Finansowanie</span>
               </h2>
-              <div className="space-y-2 text-sm sm:text-base text-stone-700 pl-0 sm:pl-10.5 leading-relaxed">
-                {innovation.funding_info ? (
-                  <p>{innovation.funding_info}</p>
-                ) : (
-                  <p className="text-stone-500 text-sm">
-                    Innowacja sfinansowana i przetestowana w ramach programu
-                    inkubacji ROPS Kraków.
-                  </p>
-                )}
-                {innovation.url && (
-                  <div className="pt-1">
-                    <a
-                      href={innovation.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 font-semibold text-sm text-stone-900 underline underline-offset-4 hover:text-stone-600 transition-colors"
-                    >
-                      <span>
-                        Zobacz oryginalną kartę innowacji w bazie ROPS
-                      </span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                )}
+              <div className="text-xs sm:text-sm text-stone-600 pl-0 sm:pl-8 leading-relaxed">
+                <p>{innovation.funding_info}</p>
               </div>
             </section>
           </>
@@ -296,10 +257,9 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
         <button
           type="button"
           onClick={onProceed}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl text-sm sm:text-base font-semibold bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-all cursor-pointer"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-all cursor-pointer"
         >
-          <Sparkles className="w-4 h-4 text-[#EFE5C6]" />
-          <span>Stwórz kartę usługi</span>
+          <span>Uzupełnij formularz</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

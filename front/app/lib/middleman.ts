@@ -143,11 +143,6 @@ export function extractYoutubeVideoId(url: string | null | undefined): string | 
     const vMatch = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
     if (vMatch && vMatch[1]) return vMatch[1];
 
-    // 4. Dowolny 11-znakowy identyfikator, jeśli w adresie pojawia się youtube/youtu
-    if (trimmed.includes("youtube.com") || trimmed.includes("youtu.be")) {
-      const generalMatch = trimmed.match(/([a-zA-Z0-9_-]{11})/);
-      if (generalMatch && generalMatch[1]) return generalMatch[1];
-    }
   } catch {
     return null;
   }

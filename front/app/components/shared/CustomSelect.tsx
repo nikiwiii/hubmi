@@ -110,30 +110,34 @@ export function CustomSelect<T extends string = string>({
         aria-label={labelPrefix ? `${labelPrefix} ${displayText}` : displayText}
         className={`${
           isMd
-            ? `w-full min-h-[44px] px-4 py-3 bg-white hover:bg-stone-50 border rounded-xl text-base flex items-center justify-between transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900 ${
+            ? `w-full min-h-[38px] px-3.5 py-2 bg-white hover:bg-stone-50 border rounded-xl text-sm flex items-center justify-between transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900 ${
                 error
                   ? "border-red-500 focus:border-red-600"
                   : isOpen
-                  ? "border-stone-900 ring-2 ring-stone-900/20"
-                  : "border-stone-300 hover:border-stone-400"
+                    ? "border-stone-900 ring-2 ring-stone-900/15"
+                    : "border-black/10 hover:border-black/25"
               }`
             : "min-h-[32px] px-3 py-1.5 bg-white hover:bg-stone-50 active:bg-stone-100 border border-stone-300 hover:border-stone-400 rounded-xl text-xs font-semibold text-stone-900 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900"
         }`}
       >
         <div className="flex items-center gap-2 overflow-hidden text-left">
           {labelPrefix && (
-            <span className="text-stone-600 font-medium shrink-0">{labelPrefix}</span>
+            <span className="text-stone-600 font-medium shrink-0">
+              {labelPrefix}
+            </span>
           )}
           {selectedOption?.icon && (
-            <span className="text-stone-700 shrink-0" aria-hidden="true">{selectedOption.icon}</span>
+            <span className="text-stone-700 shrink-0" aria-hidden="true">
+              {selectedOption.icon}
+            </span>
           )}
           <span
             className={`truncate ${
               !hasSelection && placeholder
                 ? "text-stone-600 font-medium"
                 : isMd
-                ? "font-medium text-stone-950"
-                : "font-semibold text-stone-900"
+                  ? "font-medium text-stone-950"
+                  : "font-semibold text-stone-900"
             }`}
           >
             {displayText}
