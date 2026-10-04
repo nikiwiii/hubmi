@@ -90,9 +90,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   // Derive active screen from route pathname if not explicitly passed
-  const detectedScreen: ScreenId | "home" = (() => {
-    if (!pathname || pathname === "/") return "home";
-    if (pathname.startsWith("/discover")) return "discover";
+  const detectedScreen: ScreenId = (() => {
+    if (!pathname || pathname === "/" || pathname.startsWith("/discover")) return "discover";
     if (pathname.startsWith("/matching")) return "matching";
     if (pathname.startsWith("/middleman")) return "middleman";
     if (pathname.startsWith("/knowledge")) return "knowledge";
@@ -109,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const activeScreen = currentScreen || detectedScreen;
 
   const navigateTo = (screen: ScreenId | "home") => {
-    if (screen === "home") {
+    if (screen === "home" || screen === "discover") {
       router.push("/");
       return;
     }
@@ -492,7 +491,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       >
         <div className="max-w-md mx-auto flex items-center justify-around">
           {[
-            { id: "home" as const, label: "Start", icon: Home },
             { id: "discover" as ScreenId, label: "Odkrywaj", icon: Compass },
             { id: "matching" as ScreenId, label: "Asystent", icon: Search },
             { id: "knowledge" as ScreenId, label: "Raporty", icon: BookOpen },
