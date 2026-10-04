@@ -169,7 +169,7 @@ export function getCategoryThemeAndShape(category: string): {
 } {
   const cat = (category || "").toLowerCase();
   if (cat.includes("ogród") || cat.includes("dom")) {
-    return { theme: "sage", shape: "v-shape" }; // Nature/garden green
+    return { theme: "sage", shape: "donut" }; // Nature/garden green
   }
   if (
     cat.includes("zdrowie") ||
@@ -177,7 +177,7 @@ export function getCategoryThemeAndShape(category: string): {
     cat.includes("bezpieczeństwo") ||
     cat.includes("szpital")
   ) {
-    return { theme: "lavender", shape: "cloud" }; // Peaceful misty periwinkle
+    return { theme: "lavender", shape: "donut" }; // Peaceful misty periwinkle
   }
   if (
     cat.includes("społecz") ||
@@ -193,7 +193,7 @@ export function getCategoryThemeAndShape(category: string): {
     cat.includes("demograf") ||
     cat.includes("ludność")
   ) {
-    return { theme: "cyan", shape: "wave" }; // Sea glass cyan
+    return { theme: "cyan", shape: "donut" }; // Sea glass cyan
   }
   if (
     cat.includes("rzemiosł") ||
@@ -202,7 +202,7 @@ export function getCategoryThemeAndShape(category: string): {
     cat.includes("piecz") ||
     cat.includes("rodzin")
   ) {
-    return { theme: "lilac", shape: "crescent" }; // Heather lilac
+    return { theme: "lilac", shape: "donut" }; // Heather lilac
   }
   if (
     cat.includes("prac") ||
@@ -211,9 +211,9 @@ export function getCategoryThemeAndShape(category: string): {
     cat.includes("księg") ||
     cat.includes("bezrobot")
   ) {
-    return { theme: "pink", shape: "diamond" }; // Soft rose
+    return { theme: "pink", shape: "donut" }; // Soft rose
   }
-  return { theme: "slate", shape: "v-shape" }; // Neutral stone slate
+  return { theme: "slate", shape: "donut" }; // Neutral stone slate
 }
 
 export interface InnovationMatchItem {
