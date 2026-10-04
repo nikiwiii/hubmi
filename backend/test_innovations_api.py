@@ -30,7 +30,13 @@ print(f"  - Beneficjenci: {sample.get('beneficiaries')}")
 print(f"  - Walidacja: {sample.get('validation')}")
 print(f"  - Autorzy: {sample.get('authors')}")
 print(f"  - URL: {sample.get('url')}")
+print(f"  - Video URL (YouTube): {sample.get('video_url')}")
 print(f"  - Dofinansowanie: {sample.get('funding_info')}")
+
+# Weryfikacja, że video_url jest kluczem w każdym rekordzie innowacji
+assert "video_url" in sample, "Pole 'video_url' musi być obecne w zwracanym obiekcie innowacji"
+items_with_video = [x for x in data1 if x.get("video_url")]
+print(f"Liczba innowacji z linkiem do filmiku YouTube: {len(items_with_video)}")
 
 print("\n=== 2. Test GET /api/innovations/{innovation_id} ===")
 item_id = sample["id"]
@@ -39,6 +45,8 @@ assert res2.status_code == 200
 data2 = res2.json()
 print("Status:", res2.status_code)
 print(f"Pobrano innowację: {data2.get('title')} (ID: {data2.get('id')})")
+print(f"Pole video_url: {data2.get('video_url')}")
+assert "video_url" in data2, "Pole 'video_url' musi być obecne w pojedynczej innowacji"
 
 print("\n=== 3. Test GET /api/innovations?search=Merkury ===")
 res3 = client.get("/api/innovations?search=Merkury")
@@ -46,7 +54,8 @@ assert res3.status_code == 200
 data3 = res3.json()
 print("Znaleziono dla 'Merkury':", len(data3))
 for d in data3:
-    print(f"  - {d.get('title')}")
+    print(f"  - {d.get('title')} (video_url: {d.get('video_url')})")
+    assert "video_url" in d
 
 print("\n=== 4. Test GET /api/innovations/all (z pełnym embeddingiem) ===")
 res4 = client.get("/api/innovations/all")
@@ -55,10 +64,44 @@ data4 = res4.json()
 print("Status:", res4.status_code)
 print("Liczba:", len(data4))
 print("Czy zawiera pole embedding:", "embedding" in data4[0])
+assert "video_url" in data4[0], "Pole video_url musi być w /api/innovations/all"
 
 print("\n=== 5. Test GET /api/matching/innovations ===")
 res5 = client.get("/api/matching/innovations")
 assert res5.status_code == 200
 print("Status:", res5.status_code, "Liczba:", len(res5.json()))
+assert "video_url" in res5.json()[0]
+
+print("\n=== 6. Test POST /api/innovations z polem video_url ===")
+sample_new_inn = {
+    "title": "Cyfrowy Asystent Seniora z wideoporadnikiem",
+    "description": "Pilotażowy program wideo-szkoleń i aplikacji dla seniorów w małych gminach wiejskich.",
+    "addressed_problems": "Wykluczenie cyfrowe seniorów i brak dostępu do stacjonarnych kursów komputerowych.",
+    "target_group": "Seniorzy 60+ z terenów wiejskich",
+    "beneficiaries": "Mieszkańcy gmin wiejskich Małopolski",
+    "funding_info": "Grant FERS 50 000 PLN",
+    "url": "https://rops.krakow.pl/innowacje/cyfrowy-asystent",
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "file_source": "Cyfrowy_Asystent_2026.pdf"
+}
+res6 = client.post("/api/innovations", json=sample_new_inn)
+assert res6.status_code == 201, f"POST error: {res6.status_code} - {res6.text}"
+data6 = res6.json()
+print("Utworzono innowację:")
+print(f"  - ID: {data6.get('id')}")
+print(f"  - Tytuł: {data6.get('title')}")
+print(f"  - Video URL: {data6.get('video_url')}")
+assert data6.get("video_url") == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+print("\n=== 7. Test PUT /api/innovations/{id} aktualizacja video_url ===")
+created_id = data6["id"]
+res7 = client.put(f"/api/innovations/{created_id}", json={
+    "video_url": "https://www.youtube.com/watch?v=UpdatedVideo123"
+})
+assert res7.status_code == 200, f"PUT error: {res7.status_code} - {res7.text}"
+data7 = res7.json()
+print("Zaktualizowano innowację:")
+print(f"  - Nowy video_url: {data7.get('video_url')}")
+assert data7.get("video_url") == "https://www.youtube.com/watch?v=UpdatedVideo123"
 
 print("\nWSZYSTKIE TESTY ENDPOINTÓW INNOWACJI PRZESZŁY POMYŚLNIE!")

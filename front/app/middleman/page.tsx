@@ -12,6 +12,8 @@ import {
   RotateCcw,
   Send,
   Users2,
+  ExternalLink,
+  Video,
 } from "lucide-react";
 import {
   adaptInnovation,
@@ -99,6 +101,33 @@ function SelectedInnovation({
             <Users2 className="w-3.5 h-3.5" />
             {innovation.target_group}
           </p>
+        )}
+        {(innovation.video_url || innovation.url) && (
+          <div className="flex flex-wrap items-center gap-2 pt-1.5">
+            {innovation.video_url && (
+              <a
+                href={innovation.video_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200 transition-colors"
+              >
+                <Video className="w-3.5 h-3.5" />
+                <span>Obejrzyj wideo (YouTube)</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+            {innovation.url && (
+              <a
+                href={innovation.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-2.5 py-1 rounded-lg border border-black/5 transition-colors"
+              >
+                <span>Karta ROPS</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
         )}
       </div>
       {onChange && (

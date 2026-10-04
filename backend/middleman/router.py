@@ -11,6 +11,7 @@ def _response(innovation: dict, card) -> ServiceCardResponse:
         innovation_id=str(innovation.get("id")),
         innovation_title=innovation.get("title") or "Innowacja społeczna",
         innovation_url=innovation.get("url"),
+        innovation_video_url=innovation.get("video_url"),
         card=card,
     )
 

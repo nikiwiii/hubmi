@@ -609,10 +609,14 @@ class MatchingService:
                     f"- URL: {top_solution.url or 'Dostępne w katalogu ROPS Kraków'}"
                 ]
 
+                if top_solution.video_url:
+                    context_blocks.append(f"- Wideo YouTube: {top_solution.video_url}")
+
                 if close_solutions:
                     context_blocks.append("\nINNE ZBLIŻONE INNOWACJE SPOŁECZNE:")
                     for idx, c in enumerate(close_solutions, 1):
-                        context_blocks.append(f"{idx}. {c.title} ({c.similarity_percentage}) - {c.solution[:140]}...")
+                        v_note = f" [Wideo: {c.video_url}]" if c.video_url else ""
+                        context_blocks.append(f"{idx}. {c.title} ({c.similarity_percentage}){v_note} - {c.solution[:140]}...")
 
                 if community_ideas:
                     context_blocks.append("\nPOWIĄZANE POMYSŁY MIESZKAŃCÓW Z PLATFORMY:")
@@ -638,7 +642,8 @@ class MatchingService:
                     "3. BEZWZGLĘDNY ZAKAZ tabel Markdown oraz znaczników HTML (żadnych `<table>`, `<ul>`, `<li>`, `<div>`). Używaj przejrzystych akapitów i punktorów z myślnikami (`- `).\n"
                     "4. Przedstaw rekomendowaną innowację i prosto wytłumacz, jak konkretnie pomoże w opisanym problemie.\n"
                     "5. Wskaż opcje sfinansowania lub wdrożenia (np. dotacje z ROPS / PFRON / środki gminy).\n"
-                    "6. Zaoferuj pomoc dedykowanego eksperta ROPS Kraków (" + matched_expert.name + ") oraz zachęć do rozwinięcia pomysłu w Kreatorze Pomysłów.\n\n"
+                    "6. Jeśli innowacja posiada link do wideo (YouTube), wspomnij o tym i zachęć do obejrzenia materiału wideo.\n"
+                    "7. Zaoferuj pomoc dedykowanego eksperta ROPS Kraków (" + matched_expert.name + ") oraz zachęć do rozwinięcia pomysłu w Kreatorze Pomysłów.\n\n"
                     f"DANE Z BAZY ROPS KRAKÓW:\n{''.join(context_blocks)}"
                 )
 
@@ -669,6 +674,7 @@ class MatchingService:
 
         # Fallback generowania odpowiedzi
         link_str = f" [Przejdź do materiałów]({top_solution.url})" if top_solution.url else ""
+        video_str = f"\n- 🎥 **Wideo z prezentacją (YouTube):** [{top_solution.title}]({top_solution.video_url})" if top_solution.video_url else ""
         return (
             f"Znalazłem w bazie innowacji ROPS Kraków sprawdzone rozwiązanie, które idealnie odpowiada na Twoje potrzeby:\n\n"
             f"### 🏆 Rekomendowane rozwiązanie: **{top_solution.title}**\n\n"
@@ -678,7 +684,7 @@ class MatchingService:
             f"{explainability.summary}\n\n"
             f"- 👥 **Dla kogo:** {top_solution.target_group or 'Mieszkańcy i seniorzy'}\n"
             f"- 💰 **Możliwości sfinansowania:** {top_solution.funding_info or 'Dostępne dotacje z funduszy regionalnych i samorządowych'}\n"
-            f"- 📄 **Materiały źródłowe:** `{explainability.source_file}`{link_str}\n\n"
+            f"- 📄 **Materiały źródłowe:** `{explainability.source_file}`{link_str}{video_str}\n\n"
             f"Możesz również porozmawiać o wdrożeniu tego projektu z naszym doradcą: **{matched_expert.name}** ({matched_expert.title})."
         )
 

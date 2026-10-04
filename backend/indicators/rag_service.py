@@ -693,6 +693,9 @@ class KnowledgeRagService:
             raw_url = inn.get("url")
             clean_url = raw_url if (raw_url and raw_url.startswith("http")) else None
 
+            raw_video_url = inn.get("video_url")
+            clean_video_url = raw_video_url if (raw_video_url and raw_video_url.startswith("http")) else None
+
             scored.append({
                 "id": str(inn.get("id")),
                 "title": inn.get("title", ""),
@@ -700,6 +703,7 @@ class KnowledgeRagService:
                 "addressed_problems": inn.get("addressed_problems", ""),
                 "funding_info": inn.get("funding_info"),
                 "url": clean_url,
+                "video_url": clean_video_url,
                 "score": round(final_sim * 100, 1)
             })
 
