@@ -515,6 +515,13 @@ export async function updateIdeaStatusBackend(
   return mapBackendIdeaToFrontend(updated);
 }
 
+let cachedTesterApps: Record<string, TesterApplication[] | undefined> = {};
+let pendingTesterAppsPromise: Record<string, Promise<TesterApplication[]> | undefined> = {};
+
+export function invalidateTesterAppsCache(): void {
+  cachedTesterApps = {};
+}
+
 export async function applyAsTester(
   ideaId: string,
   motivation?: string
@@ -530,28 +537,50 @@ export async function applyAsTester(
     throw new Error(err.detail || "Nie udało się złożyć zgłoszenia testera.");
   }
 
+  invalidateTesterAppsCache();
   return await res.json();
 }
 
 export async function fetchTesterApplications(
   ideaId?: string,
-  statusFilter?: string
+  statusFilter?: string,
+  forceRefresh = false
 ): Promise<TesterApplication[]> {
+  const cacheKey = `${ideaId || ""}_${statusFilter || ""}`;
+  const existing = cachedTesterApps[cacheKey];
+  if (!forceRefresh && existing !== undefined) {
+    return existing;
+  }
+  const pending = pendingTesterAppsPromise[cacheKey];
+  if (pending) {
+    return pending;
+  }
+
   const params = new URLSearchParams();
   if (ideaId) params.append("idea_id", ideaId);
   if (statusFilter) params.append("status_filter", statusFilter);
   const q = params.toString() ? `?${params.toString()}` : "";
 
-  const res = await apiFetch(`${API_BASE}/api/ideas/tester-applications${q}`, {
-    method: "GET",
-    headers: getHeaders(true),
-  });
+  pendingTesterAppsPromise[cacheKey] = (async () => {
+    try {
+      const res = await apiFetch(`${API_BASE}/api/ideas/tester-applications${q}`, {
+        method: "GET",
+        headers: getHeaders(true),
+      });
 
-  if (!res.ok) {
-    return [];
-  }
+      if (!res.ok) {
+        return [];
+      }
 
-  return await res.json();
+      const data = await res.json();
+      cachedTesterApps[cacheKey] = data;
+      return data;
+    } finally {
+      delete pendingTesterAppsPromise[cacheKey];
+    }
+  })();
+
+  return pendingTesterAppsPromise[cacheKey];
 }
 
 export async function updateTesterApplicationStatus(
@@ -572,6 +601,7 @@ export async function updateTesterApplicationStatus(
     throw new Error(err.detail || "Nie udało się zaktualizować statusu zgłoszenia testera.");
   }
 
+  invalidateTesterAppsCache();
   return await res.json();
 }
 
@@ -945,15 +975,35 @@ export async function fetchSimulatedEmail(notificationId: string): Promise<Simul
 // ==========================================
 // 6. EXPERTS & MENTORSHIP API (/api/chat/experts, /api/ideas)
 // ==========================================
-export async function fetchExpertsDirectory(): Promise<RopsExpert[]> {
-  const res = await apiFetch(`${API_BASE}/api/chat/experts`, {
-    method: "GET",
-    headers: getHeaders(false),
-  });
-  if (!res.ok) {
-    throw new Error("Błąd pobierania katalogu ekspertów.");
+let cachedExperts: RopsExpert[] | null = null;
+let pendingExpertsPromise: Promise<RopsExpert[]> | null = null;
+
+export async function fetchExpertsDirectory(forceRefresh = false): Promise<RopsExpert[]> {
+  if (!forceRefresh && cachedExperts !== null) {
+    return cachedExperts;
   }
-  return await res.json();
+  if (pendingExpertsPromise) {
+    return pendingExpertsPromise;
+  }
+
+  pendingExpertsPromise = (async () => {
+    try {
+      const res = await apiFetch(`${API_BASE}/api/chat/experts`, {
+        method: "GET",
+        headers: getHeaders(false),
+      });
+      if (!res.ok) {
+        throw new Error("Błąd pobierania katalogu ekspertów.");
+      }
+      const data = await res.json();
+      cachedExperts = data;
+      return data;
+    } finally {
+      pendingExpertsPromise = null;
+    }
+  })();
+
+  return pendingExpertsPromise;
 }
 
 export async function assignExpertToIdea(

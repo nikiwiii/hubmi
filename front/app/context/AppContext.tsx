@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   User,
@@ -251,19 +251,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     middlemanRefineText,
   ]);
 
-  const loadInnovations = async (forceRefresh = false): Promise<InnovationRecord[]> => {
+  const loadInnovations = useCallback(async (forceRefresh = false): Promise<InnovationRecord[]> => {
     if (!forceRefresh && innovations.length > 0) {
-      searchInnovations('').then((data) => {
-        if (data && data.length > 0) {
-          setInnovations(data);
-          saveStoredInnovations(data);
-          setSelectedInnovationState((current) => {
-            if (!current) return current;
-            const fresh = data.find((d) => d.id === current.id);
-            return fresh ? { ...current, ...fresh } : current;
-          });
-        }
-      }).catch(() => {});
       return innovations;
     }
     setIsLoadingInnovations(true);
@@ -288,11 +277,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } finally {
       setIsLoadingInnovations(false);
     }
-  };
+  }, [innovations]);
 
-  const searchLocalInnovations = (query: string): InnovationRecord[] => {
+  const searchLocalInnovations = useCallback((query: string): InnovationRecord[] => {
     return filterInnovations(innovations, query);
-  };
+  }, [innovations]);
 
   const resetMiddleman = () => {
     setMiddlemanStepState('pick');

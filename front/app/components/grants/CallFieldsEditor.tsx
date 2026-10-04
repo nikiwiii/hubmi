@@ -6,7 +6,7 @@ import { CustomSelect } from "../shared/CustomSelect";
 import { CallField, FieldType, FIELD_TYPE_LABELS } from "../../lib/grantsApi";
 
 const inputClass =
-  "w-full px-2.5 py-1.5 rounded-lg border border-stone-200 focus:border-stone-900 focus:outline-none text-xs text-stone-900";
+  "w-full px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-white/15 focus:border-stone-900 dark:focus:border-white focus:outline-none text-xs text-stone-900 dark:text-white bg-transparent";
 
 function slug(label: string): string {
   return (
@@ -57,12 +57,12 @@ export function CallFieldsEditor({ fields, onChange }: Props) {
   return (
     <div className="space-y-2">
       {fields.map((field, i) => (
-        <div key={field.id} className="p-3 rounded-xl border border-stone-200 space-y-2 bg-stone-50/40">
+        <div key={field.id} className="p-3 rounded-xl border border-stone-200 dark:border-white/10 space-y-2 bg-stone-50/50 dark:bg-white/5">
           <div className="flex items-start gap-2">
             <span className="text-[10px] font-semibold text-stone-400 mt-2 w-5 shrink-0">{i + 1}.</span>
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] font-semibold text-stone-500 mb-0.5">Etykieta pola</label>
+                <label className="block text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-0.5">Etykieta pola</label>
                 <input
                   value={field.label}
                   onChange={(e) => update(i, { label: e.target.value })}
@@ -75,11 +75,11 @@ export function CallFieldsEditor({ fields, onChange }: Props) {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-stone-500 mb-0.5">Sekcja</label>
+                <label className="block text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-0.5">Sekcja</label>
                 <input value={field.section} onChange={(e) => update(i, { section: e.target.value })} className={inputClass} />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-[10px] font-semibold text-stone-500 mb-0.5">Instrukcja dla wnioskodawcy</label>
+                <label className="block text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-0.5">Instrukcja dla wnioskodawcy</label>
                 <textarea
                   value={field.help}
                   rows={2}
@@ -89,7 +89,7 @@ export function CallFieldsEditor({ fields, onChange }: Props) {
               </div>
               <div className="flex flex-wrap items-end gap-3 sm:col-span-2">
                 <div>
-                  <label className="block text-[10px] font-semibold text-stone-500 mb-0.5">Typ</label>
+                  <label className="block text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-0.5">Typ</label>
                   <CustomSelect<FieldType>
                     value={field.type}
                     onChange={(v) => update(i, { type: v })}
@@ -97,7 +97,7 @@ export function CallFieldsEditor({ fields, onChange }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-semibold text-stone-500 mb-0.5">Limit znaków</label>
+                  <label className="block text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-0.5">Limit znaków</label>
                   <input
                     type="number"
                     min={1}
@@ -107,7 +107,7 @@ export function CallFieldsEditor({ fields, onChange }: Props) {
                     className={`${inputClass} w-24`}
                   />
                 </div>
-                <label className="flex items-center gap-1.5 text-xs text-stone-700 pb-1.5 cursor-pointer">
+                <label className="flex items-center gap-1.5 text-xs text-stone-700 dark:text-stone-300 pb-1.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={field.required}
@@ -118,13 +118,13 @@ export function CallFieldsEditor({ fields, onChange }: Props) {
               </div>
             </div>
             <div className="flex flex-col gap-1 shrink-0">
-              <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1 rounded hover:bg-stone-200 text-stone-500 disabled:opacity-30 cursor-pointer">
+              <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1 rounded hover:bg-stone-200 dark:hover:bg-white/10 text-stone-500 dark:text-stone-400 disabled:opacity-30 cursor-pointer">
                 <ArrowUp className="w-3.5 h-3.5" />
               </button>
-              <button onClick={() => move(i, 1)} disabled={i === fields.length - 1} className="p-1 rounded hover:bg-stone-200 text-stone-500 disabled:opacity-30 cursor-pointer">
+              <button onClick={() => move(i, 1)} disabled={i === fields.length - 1} className="p-1 rounded hover:bg-stone-200 dark:hover:bg-white/10 text-stone-500 dark:text-stone-400 disabled:opacity-30 cursor-pointer">
                 <ArrowDown className="w-3.5 h-3.5" />
               </button>
-              <button onClick={() => onChange(fields.filter((_, j) => j !== i))} className="p-1 rounded hover:bg-rose-50 text-rose-600 cursor-pointer">
+              <button onClick={() => onChange(fields.filter((_, j) => j !== i))} className="p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 cursor-pointer">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -134,7 +134,7 @@ export function CallFieldsEditor({ fields, onChange }: Props) {
 
       <button
         onClick={add}
-        className="w-full py-2 rounded-xl border border-dashed border-stone-300 text-xs font-semibold text-stone-600 hover:border-stone-900 hover:text-stone-900 flex items-center justify-center gap-1.5 cursor-pointer"
+        className="w-full py-2 rounded-xl border border-dashed border-stone-300 dark:border-white/20 text-xs font-semibold text-stone-600 dark:text-stone-400 hover:border-stone-900 dark:hover:border-white hover:text-stone-900 dark:hover:text-white flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
       >
         <Plus className="w-3.5 h-3.5" />
         Dodaj pole
