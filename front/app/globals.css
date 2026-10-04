@@ -442,24 +442,3 @@ html:not(.dark):not(.high-contrast) body:not(.dark):not(.high-contrast) .text-st
       text-decoration: none;
     }
   }
-
-  animation: none !important;
-}
-
-.mm-print-root * {
-  box-shadow: none !important;
-}
-
-.mm-print-section {
-  break-inside: avoid;
-  border-color: #d6d3d1 !important;
-  background: #fff !important;
-  border-radius: 8px !important;
-  padding: 10px 14px !important;
-}
-
-.mm-print-root a {
-  color: inherit;
-  text-decoration: none;
-}
-}
