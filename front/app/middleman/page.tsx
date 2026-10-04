@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   Check,
   Copy,
   Pencil,
@@ -11,6 +12,7 @@ import {
   RefreshCw,
   RotateCcw,
   Send,
+  Sparkles,
   Users2,
   ExternalLink,
   Video,
@@ -35,13 +37,15 @@ import {
 } from "../lib/middleman";
 import { useApp } from "../context/AppContext";
 import { InnovationPicker } from "../components/middleman/InnovationPicker";
+import { InnovationDetailView } from "../components/middleman/InnovationDetailView";
 import { InstitutionForm } from "../components/middleman/InstitutionForm";
 import { ServiceCardView } from "../components/middleman/ServiceCardView";
 
-type Step = "pick" | "profile" | "result";
+type Step = "pick" | "view" | "profile" | "result";
 
 const STEPS: { id: Step; label: string }[] = [
   { id: "pick", label: "Wybierz innowację" },
+  { id: "view", label: "Szczegóły innowacji" },
   { id: "profile", label: "Opisz instytucję" },
   { id: "result", label: "Karta usługi" },
 ];
@@ -52,29 +56,75 @@ const REFINE_EXAMPLES = [
   "Chcemy zacząć od jednej miejscowości",
 ];
 
-function StepIndicator({ current }: { current: Step }) {
+function StepIndicator({
+  current,
+  onSelectStep,
+  canGoToView,
+  canGoToProfile,
+  canGoToResult,
+}: {
+  current: Step;
+  onSelectStep: (step: Step) => void;
+  canGoToView: boolean;
+  canGoToProfile: boolean;
+  canGoToResult: boolean;
+}) {
   const currentIdx = STEPS.findIndex((s) => s.id === current);
+
+  const isStepClickable = (stepId: Step) => {
+    if (stepId === current) return false;
+    if (stepId === "pick") return true;
+    if (stepId === "view") return canGoToView;
+    if (stepId === "profile") return canGoToProfile;
+    if (stepId === "result") return canGoToResult;
+    return false;
+  };
+
   return (
     <ol className="print:hidden flex flex-wrap items-center gap-2 text-sm">
       {STEPS.map((s, idx) => {
         const done = idx < currentIdx;
         const active = idx === currentIdx;
+        const clickable = isStepClickable(s.id);
+
         return (
           <li key={s.id} className="flex items-center gap-2">
-            <span
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${active
-                ? "bg-stone-900 text-white"
-                : done
-                  ? "bg-emerald-600 text-white"
-                  : "bg-stone-200 text-stone-500"
-                }`}
+            <button
+              type="button"
+              disabled={!clickable}
+              onClick={() => clickable && onSelectStep(s.id)}
+              className={`flex items-center gap-2 transition-all text-left group ${
+                clickable
+                  ? "cursor-pointer opacity-90 hover:opacity-100 hover:text-stone-900"
+                  : active
+                  ? "cursor-default font-semibold text-stone-900"
+                  : "cursor-not-allowed opacity-50 text-stone-400"
+              }`}
             >
-              {done ? <Check className="w-3.5 h-3.5" /> : idx + 1}
-            </span>
-            <span className={active ? "font-semibold text-stone-900" : "text-stone-500"}>
-              {s.label}
-            </span>
-            {idx < STEPS.length - 1 && <span className="w-6 h-px bg-stone-300 mx-1" />}
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  active
+                    ? "bg-stone-900 text-white shadow-2xs"
+                    : done
+                    ? "bg-emerald-600 text-white"
+                    : "bg-stone-200 text-stone-500"
+                } ${clickable ? "group-hover:scale-105" : ""}`}
+              >
+                {done ? <Check className="w-3.5 h-3.5" /> : idx + 1}
+              </span>
+              <span
+                className={`text-xs sm:text-sm ${
+                  active
+                    ? "font-semibold text-stone-900"
+                    : done
+                    ? "font-medium text-stone-700 group-hover:underline underline-offset-4"
+                    : "text-stone-500"
+                }`}
+              >
+                {s.label}
+              </span>
+            </button>
+            {idx < STEPS.length - 1 && <span className="w-4 sm:w-6 h-px bg-stone-300 mx-1" />}
           </li>
         );
       })}
@@ -85,9 +135,11 @@ function StepIndicator({ current }: { current: Step }) {
 function SelectedInnovation({
   innovation,
   onChange,
+  onViewDetails,
 }: {
   innovation: InnovationRecord;
   onChange?: () => void;
+  onViewDetails?: () => void;
 }) {
   return (
     <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[#FAF4E5] border border-[#E7DAC0]">
@@ -130,14 +182,26 @@ function SelectedInnovation({
           </div>
         )}
       </div>
-      {onChange && (
-        <button
-          onClick={onChange}
-          className="self-start sm:self-auto px-3.5 py-2 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
-        >
-          Zmień
-        </button>
-      )}
+      <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+        {onViewDetails && (
+          <button
+            type="button"
+            onClick={onViewDetails}
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs"
+          >
+            Szczegóły & wideo
+          </button>
+        )}
+        {onChange && (
+          <button
+            type="button"
+            onClick={onChange}
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs"
+          >
+            Zmień
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -182,7 +246,7 @@ function MiddlemanContent() {
       setInnovation(found);
       setResult(null);
       setError(null);
-      setStep("profile");
+      setStep("view");
       return;
     }
 
@@ -194,7 +258,7 @@ function MiddlemanContent() {
         setInnovation(inn);
         setResult(null);
         setError(null);
-        setStep("profile");
+        setStep("view");
       })
       .catch((err) => {
         if (!cancelled) setError(errorMessage(err, "Nie znaleziono wybranej innowacji."));
@@ -215,6 +279,13 @@ function MiddlemanContent() {
     setInnovation(inn);
     setResult(null);
     setError(null);
+    setStep("view");
+  };
+
+  const handleQuickCreate = (inn: InnovationRecord) => {
+    setInnovation(inn);
+    setResult(null);
+    setError(null);
     setStep("profile");
   };
 
@@ -222,6 +293,16 @@ function MiddlemanContent() {
     setStep("pick");
     setError(null);
     if (innovationFromUrl) router.replace("/middleman");
+  };
+
+  const handleGoToProfile = () => {
+    setStep("profile");
+    setError(null);
+  };
+
+  const handleBackToView = () => {
+    setStep("view");
+    setError(null);
   };
 
   const handleGenerate = async (newProfile: InstitutionProfile) => {
@@ -323,7 +404,16 @@ function MiddlemanContent() {
         )}
       </div>
 
-      <StepIndicator current={step} />
+      <StepIndicator
+        current={step}
+        onSelectStep={(targetStep) => {
+          setStep(targetStep);
+          setError(null);
+        }}
+        canGoToView={Boolean(innovation)}
+        canGoToProfile={Boolean(innovation)}
+        canGoToResult={Boolean(result)}
+      />
 
       {error && (
         <div role="alert" className="print:hidden text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
@@ -338,21 +428,52 @@ function MiddlemanContent() {
             Wczytuję wybraną innowację...
           </div>
         ) : (
-          <InnovationPicker onSelect={handleSelectInnovation} />
+          <InnovationPicker
+            onSelect={handleSelectInnovation}
+            onQuickCreate={handleQuickCreate}
+          />
         ))}
+
+      {step === "view" && innovation && (
+        <InnovationDetailView
+          innovation={innovation}
+          onBack={handleBackToPick}
+          onProceed={handleGoToProfile}
+        />
+      )}
 
       {step === "profile" && innovation && (
         <div className="space-y-5">
-          <SelectedInnovation innovation={innovation} onChange={handleBackToPick} />
+          <SelectedInnovation
+            innovation={innovation}
+            onChange={handleBackToPick}
+            onViewDetails={handleBackToView}
+          />
           <div className="bg-white rounded-[28px] border border-black/5 p-5 sm:p-8 shadow-2xs">
             <InstitutionForm
               profile={profile}
               onChange={setProfile}
               isLoading={isGenerating}
-              onBack={handleBackToPick}
+              onBack={handleBackToView}
               onSubmit={handleGenerate}
             />
           </div>
+        </div>
+      )}
+
+      {((step === "view" || step === "profile") && !innovation && !isLoadingInnovation) && (
+        <div className="text-center py-12 bg-white rounded-2xl border border-black/5 p-8 space-y-4">
+          <p className="text-base font-semibold text-stone-800">
+            Nie wybrano jeszcze innowacji społecznej.
+          </p>
+          <button
+            type="button"
+            onClick={handleBackToPick}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold cursor-pointer"
+          >
+            <span>Przejdź do katalogu innowacji</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -366,6 +487,20 @@ function MiddlemanContent() {
               <ArrowLeft className="w-4 h-4" />
               Zmień dane instytucji
             </button>
+            {innovation && (
+              <button
+                type="button"
+                onClick={handleBackToView}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
+              >
+                {innovation.video_url ? (
+                  <Video className="w-4 h-4 text-red-600" />
+                ) : (
+                  <Sparkles className="w-4 h-4 text-stone-600" />
+                )}
+                <span>Oryginalna innowacja {innovation.video_url ? "& wideo" : ""}</span>
+              </button>
+            )}
             <button
               onClick={() => window.print()}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"

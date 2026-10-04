@@ -121,3 +121,45 @@ export function serviceCardToText(
     bulletList(c.next_steps),
   ].join("\n");
 }
+
+/**
+ * Wyciąga 11-znakowy identyfikator filmu YouTube z różnych formatów adresów URL.
+ */
+export function extractYoutubeVideoId(url: string | null | undefined): string | null {
+  if (!url || typeof url !== "string") return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  try {
+    // 1. Krótki link youtu.be/<id>
+    const shortMatch = trimmed.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch && shortMatch[1]) return shortMatch[1];
+
+    // 2. Linki embed/<id> lub shorts/<id> lub v/<id>
+    const embedMatch = trimmed.match(/youtube(?:-nocookie)?\.com\/(?:embed|shorts|v)\/([a-zA-Z0-9_-]{11})/);
+    if (embedMatch && embedMatch[1]) return embedMatch[1];
+
+    // 3. Standardowy link watch?v=<id> lub &v=<id>
+    const vMatch = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (vMatch && vMatch[1]) return vMatch[1];
+
+    // 4. Dowolny 11-znakowy identyfikator, jeśli w adresie pojawia się youtube/youtu
+    if (trimmed.includes("youtube.com") || trimmed.includes("youtu.be")) {
+      const generalMatch = trimmed.match(/([a-zA-Z0-9_-]{11})/);
+      if (generalMatch && generalMatch[1]) return generalMatch[1];
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+/**
+ * Zwraca bezpieczny adres osadzenia YouTube (youtube-nocookie) dla iframe.
+ */
+export function getYoutubeEmbedUrl(url: string | null | undefined): string | null {
+  const id = extractYoutubeVideoId(url);
+  if (!id) return null;
+  return `https://www.youtube-nocookie.com/embed/${id}?rel=0`;
+}
+

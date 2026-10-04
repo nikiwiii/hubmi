@@ -38,7 +38,7 @@ import {
   searchInnovations,
 } from '../lib/api';
 
-export type MiddlemanStep = 'pick' | 'profile' | 'result';
+export type MiddlemanStep = 'pick' | 'view' | 'profile' | 'result';
 
 interface AppContextType {
   currentUser: User | null;

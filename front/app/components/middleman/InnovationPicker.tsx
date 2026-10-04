@@ -16,6 +16,7 @@ import { useApp } from "../../context/AppContext";
 
 interface InnovationPickerProps {
   onSelect: (innovation: InnovationRecord) => void;
+  onQuickCreate?: (innovation: InnovationRecord) => void;
 }
 
 const PAGE_SIZE = 15;
@@ -33,7 +34,10 @@ function getPageNumbers(current: number, total: number): (number | "...")[] {
   return [1, "...", current - 1, current, current + 1, "...", total];
 }
 
-export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) => {
+export const InnovationPicker: React.FC<InnovationPickerProps> = ({
+  onSelect,
+  onQuickCreate,
+}) => {
   const {
     innovations,
     isLoadingInnovations,
@@ -110,12 +114,17 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
           <div className="flex items-center gap-1.5 font-medium">
             <Layers className="w-3.5 h-3.5 text-stone-400" />
             <span>
-              Znaleziono <strong className="text-stone-800">{totalItems}</strong> innowacji w bazie ROPS Kraków
+              Znaleziono{" "}
+              <strong className="text-stone-800">{totalItems}</strong> innowacji
+              w bazie ROPS Kraków
             </span>
           </div>
           <div>
-            Wyświetlam <strong className="text-stone-800">{startIndex + 1}–{endIndex}</strong> z{" "}
-            <strong className="text-stone-800">{totalItems}</strong> (strona{" "}
+            Wyświetlam{" "}
+            <strong className="text-stone-800">
+              {startIndex + 1}–{endIndex}
+            </strong>{" "}
+            z <strong className="text-stone-800">{totalItems}</strong> (strona{" "}
             <strong className="text-stone-800">{validCurrentPage}</strong> z{" "}
             <strong className="text-stone-800">{totalPages}</strong>)
           </div>
@@ -129,7 +138,8 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
         </div>
       ) : totalItems === 0 ? (
         <p className="text-sm text-stone-500 py-12 text-center bg-stone-50 rounded-2xl border border-stone-100">
-          Nie znaleziono innowacji dla podanej frazy. Spróbuj innego słowa kluczowego.
+          Nie znaleziono innowacji dla podanej frazy. Spróbuj innego słowa
+          kluczowego.
         </p>
       ) : (
         <>
@@ -166,10 +176,34 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
                       <span className="line-clamp-1">{inn.target_group}</span>
                     </span>
                   )}
-                  <span className="mt-2 pt-2 border-t border-black/5 inline-flex items-center gap-1 text-sm font-semibold text-stone-900 group-hover:underline underline-offset-4">
-                    Wybierz tę innowację
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </span>
+                  <div className="mt-2 pt-2 border-t border-black/5 flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-stone-900 group-hover:underline underline-offset-4">
+                      <span>
+                        Zobacz innowację {inn.video_url ? "& wideo" : ""}
+                      </span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </span>
+                    {onQuickCreate && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onQuickCreate(inn);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                            onQuickCreate(inn);
+                          }
+                        }}
+                        title="Przejdź od razu do formularza adaptacji dla tej innowacji"
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer shrink-0"
+                      >
+                        Formularz usługi
+                      </span>
+                    )}
+                  </div>
                 </button>
               </li>
             ))}
@@ -179,11 +213,15 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
           {totalPages > 1 && (
             <div className="pt-6 pb-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-black/5">
               <span className="text-xs text-stone-500">
-                Strona <strong className="text-stone-800">{validCurrentPage}</strong> z{" "}
-                <strong className="text-stone-800">{totalPages}</strong> (po 15 na stronę)
+                Strona{" "}
+                <strong className="text-stone-800">{validCurrentPage}</strong> z{" "}
+                <strong className="text-stone-800">{totalPages}</strong>
               </span>
 
-              <nav aria-label="Paginacja innowacji" className="flex items-center gap-1.5 flex-wrap justify-center">
+              <nav
+                aria-label="Paginacja innowacji"
+                className="flex items-center gap-1.5 flex-wrap justify-center"
+              >
                 {/* Poprzednia strona */}
                 <button
                   type="button"

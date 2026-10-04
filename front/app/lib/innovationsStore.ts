@@ -69,7 +69,7 @@ export function filterInnovations(
 }
 
 export interface MiddlemanStoredDraft {
-  step: "pick" | "profile" | "result";
+  step: "pick" | "view" | "profile" | "result";
   selectedInnovation: InnovationRecord | null;
   profile: InstitutionProfile;
   result: ServiceCardResponse | null;
