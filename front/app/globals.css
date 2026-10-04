@@ -48,23 +48,100 @@ body {
 :focus-visible {
   outline: 2.5px solid #1c1917 !important;
   outline-offset: 2.5px !important;
+  border-radius: 4px;
 }
 
-/* WCAG 2.2 2.5.8 Target Size Minimum: interactive elements minimum 24x24 px */
+/* WCAG 2.2 - Skip link do przeskakiwania nawigacji dla czytników ekranu i klawiatury */
+.skip-to-content {
+  position: absolute;
+  top: -120px;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1.25rem;
+  background-color: #1C1917;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+  transition: top 0.2s ease-in-out;
+}
+.skip-to-content:focus {
+  top: 1rem;
+}
+
+/* WCAG 2.2 Criterion 2.5.8 - Minimalny rozmiar celu dotykowego / kliknięcia (Target Size: min 24x24px) */
 button,
-[role="button"],
 input[type="button"],
 input[type="submit"],
-input[type="reset"] {
-  min-width: 24px;
+input[type="reset"],
+[role="button"],
+[role="tab"],
+[role="checkbox"],
+[role="radio"],
+[role="switch"] {
   min-height: 24px;
+  min-width: 24px;
+}
+
+/* Wygodny rozmiar kliknięcia dla urządzeń dotykowych (Smartfony / Tablety) */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  [role="tab"],
+  [role="checkbox"] {
+    min-height: 36px;
+    min-width: 36px;
+  }
 }
 
 /* Accessible placeholders: minimum 4.5:1 contrast against light backgrounds */
 input::placeholder,
-textarea::placeholder {
-  color: #57534e; /* stone-600 */
+textarea::placeholder,
+::placeholder {
+  color: #57534e !important;
   opacity: 1;
+}
+
+/* Kontrast tekstu na jasnym tle */
+body:not(.dark) .text-stone-400:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #57534E;
+}
+body:not(.dark) .text-stone-500:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #44403C;
+}
+body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #57534E;
+}
+
+/* Zachowanie wysokiego kontrastu w ciemnych kontenerach */
+.bg-stone-900 .text-stone-400,
+.bg-stone-950 .text-stone-400,
+.bg-black .text-stone-400,
+[class*="from-stone-900"] .text-stone-400,
+[role="dialog"] .text-stone-400 {
+  color: #D6D3CD;
+}
+.bg-stone-900 .text-stone-300,
+.bg-stone-950 .text-stone-300,
+.bg-black .text-stone-300,
+[class*="from-stone-900"] .text-stone-300,
+[role="dialog"] .text-stone-300 {
+  color: #E7E5E0;
+}
+
+/* Utility dla czytników ekranu */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* WCAG 1.4.4 Font Scaling (up to 200% scalable) */
@@ -163,7 +240,7 @@ textarea::placeholder {
 .high-contrast .text-stone-400,
 .high-contrast .text-stone-500,
 .high-contrast .text-stone-600 {
-  color: #fef08a !important; /* bright light yellow */
+  color: #fef08a !important;
 }
 
 .high-contrast button {
@@ -181,6 +258,7 @@ textarea::placeholder {
   background-color: #000000 !important;
   color: #ffffff !important;
   border-color: #facc15 !important;
+}
 }
 
 /* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */

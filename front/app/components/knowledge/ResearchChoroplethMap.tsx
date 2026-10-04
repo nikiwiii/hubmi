@@ -293,6 +293,8 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
         <div className="relative bg-stone-50/70 rounded-2xl p-4 sm:p-8 border border-stone-200/70 flex flex-col items-center justify-center min-h-[380px] overflow-hidden">
           <div className="relative w-full max-w-2xl aspect-[315/211.134]">
             <svg
+              role="img"
+              aria-label={`Interaktywna mapa choropletowa powiatów województwa małopolskiego: ${research.titlePl} za rok ${selectedYear}`}
               viewBox="0 0 315 211.13402"
               className="w-full h-full drop-shadow-sm select-none"
               onMouseMove={(e) => {

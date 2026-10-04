@@ -351,6 +351,8 @@ export const MalopolskaMap: React.FC<MalopolskaMapProps> = ({
           <div className="bg-stone-50/70 rounded-2xl p-4 sm:p-6 border border-stone-200/60 relative flex flex-col items-center justify-center min-h-[340px] overflow-hidden">
             <div className="relative w-full max-w-2xl aspect-[315/211.134]">
               <svg
+                role="img"
+                aria-label="Interaktywna mapa 22 powiatów województwa małopolskiego z analizą innowacyjności"
                 viewBox="0 0 315 211.13402"
                 className="w-full h-full drop-shadow-sm select-none"
                 onMouseMove={handleMouseMove}

@@ -97,6 +97,8 @@ export const AllYearsMapGallery: React.FC<AllYearsMapGalleryProps> = ({
               {/* Mini mapa SVG dla tego roku */}
               <div className="aspect-[315/211.134] w-full my-1 relative">
                 <svg
+                  role="img"
+                  aria-label={`Miniaturowa mapa powiatów Małopolski za rok ${yData.year}`}
                   viewBox="0 0 315 211.13402"
                   className="w-full h-full select-none"
                 >

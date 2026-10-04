@@ -117,30 +117,33 @@ export default function DiscoverIdeaDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => router.push("/discover")}
-            className="p-2 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 transition-colors cursor-pointer inline-flex items-center gap-1.5 text-xs font-medium"
-            title="Powrót do listy"
+            className="min-h-[38px] px-3 py-2 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold"
+            aria-label="Wróć do listy pomysłów"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Wróć</span>
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Wróć do listy</span>
           </button>
         </div>
 
         {/* Carousel Prev/Next */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={handlePrev}
-            aria-label="Poprzedni"
-            className="p-2.5 rounded-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer"
+            aria-label="Poprzedni pomysł"
+            className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 rounded-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-800 transition-colors cursor-pointer"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={handleNext}
-            aria-label="Następny"
-            className="p-2.5 rounded-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer"
+            aria-label="Następny pomysł"
+            className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 rounded-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-800 transition-colors cursor-pointer"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -182,25 +185,27 @@ export default function DiscoverIdeaDetailPage() {
 
           {currentIdea.visualMockupUrl ? (
             <div className="space-y-2 shrink-0 w-full md:w-96">
-              <div
+              <button
+                type="button"
                 onClick={() => setIsImageModalOpen(true)}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/60 bg-white/40 shadow-xs transition-all duration-300 hover:shadow-md hover:scale-[1.01]"
+                aria-label={`Powiększ wizualizację prototypu: ${currentIdea.title}`}
+                className="w-full text-left group relative cursor-pointer overflow-hidden rounded-2xl border border-white/60 bg-white/40 shadow-xs transition-all duration-300 hover:shadow-md hover:scale-[1.01] block"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
                 <img
                   src={currentIdea.visualMockupUrl}
-                  alt={`Wizualizacja: ${currentIdea.title}`}
+                  alt={`Wizualizacja prototypu innowacji: ${currentIdea.title}`}
                   className="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-105"
                 />
 
                 {/* Hover overlay with button */}
                 <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/95 text-stone-900 text-xs font-semibold shadow-md">
-                    <Maximize2 className="w-3.5 h-3.5" />
+                    <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>Powiększ zdjęcie</span>
                   </span>
                 </div>
-              </div>
+              </button>
             </div>
           ) : (
             <div className="shrink-0 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xs rounded-2xl border border-white/50">
@@ -214,28 +219,32 @@ export default function DiscoverIdeaDetailPage() {
           {/* Like / Dislike */}
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => vote(currentIdea.id, "like")}
-              title="Polub"
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "like"
+              aria-label={`Polub pomysł (${currentIdea.likes} polubień)`}
+              className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "like"
                 ? "bg-stone-900 text-white"
                 : "bg-stone-100 hover:bg-stone-200 text-stone-800"
                 }`}
             >
               <ThumbsUp
+                aria-hidden="true"
                 className={`w-4 h-4 ${currentIdea.userVote === "like" ? "fill-white" : ""}`}
               />
               <span>{currentIdea.likes}</span>
             </button>
 
             <button
+              type="button"
               onClick={() => vote(currentIdea.id, "dislike")}
-              title="Nie podoba mi się"
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "dislike"
+              aria-label={`Nie podoba mi się (${currentIdea.dislikes} ocen)`}
+              className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "dislike"
                 ? "bg-stone-800 text-white"
-                : "bg-stone-100 hover:bg-stone-200 text-stone-600"
+                : "bg-stone-100 hover:bg-stone-200 text-stone-700"
                 }`}
             >
               <ThumbsDown
+                aria-hidden="true"
                 className={`w-4 h-4 ${currentIdea.userVote === "dislike" ? "fill-white" : ""}`}
               />
               <span>{currentIdea.dislikes}</span>
@@ -309,20 +318,20 @@ export default function DiscoverIdeaDetailPage() {
         {/* Details & Description - Always visible */}
         <div className="p-6 sm:p-8 space-y-6">
           <div className="space-y-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-stone-400">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-stone-600">
               Opis pomysłu
             </h2>
-            <p className="text-stone-700 text-base leading-relaxed whitespace-pre-line">
+            <p className="text-stone-800 text-base leading-relaxed whitespace-pre-line">
               {currentIdea.description}
             </p>
           </div>
 
           {currentIdea.targetAudience && (
             <div className="pt-4 border-t border-stone-100">
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-600 mb-1">
                 Dla kogo
               </p>
-              <p className="text-sm font-medium text-stone-800">
+              <p className="text-sm font-semibold text-stone-900">
                 {currentIdea.targetAudience}
               </p>
             </div>
@@ -330,7 +339,7 @@ export default function DiscoverIdeaDetailPage() {
 
           {currentIdea.keyBenefits && currentIdea.keyBenefits.length > 0 && (
             <div className="pt-4 border-t border-stone-100">
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
                 Kluczowe korzyści
               </p>
               <div className="flex flex-wrap gap-2">
@@ -339,7 +348,7 @@ export default function DiscoverIdeaDetailPage() {
                     key={idx}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200/80 text-xs font-medium text-stone-700"
                   >
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
                     {benefit}
                   </span>
                 ))}
@@ -393,10 +402,10 @@ export default function DiscoverIdeaDetailPage() {
                 <button
                   type="button"
                   onClick={() => setIsImageModalOpen(false)}
-                  className="p-2 text-stone-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
-                  title="Zamknij (Esc)"
+                  aria-label="Zamknij podgląd zdjęcia"
+                  className="min-h-[36px] min-w-[36px] flex items-center justify-center p-2 text-stone-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -406,7 +415,7 @@ export default function DiscoverIdeaDetailPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentIdea.visualMockupUrl}
-                alt={currentIdea.title}
+                alt={`Powiększona wizualizacja prototypu innowacji: ${currentIdea.title}`}
                 className="max-h-[72vh] w-auto max-w-full rounded-2xl object-contain shadow-lg"
               />
             </div>

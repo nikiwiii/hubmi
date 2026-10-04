@@ -99,10 +99,11 @@ export default function ResearchDetailPage() {
             return (
               <button
                 key={r.id}
+                type="button"
                 onClick={() => router.push(`/knowledge/${r.id}`)}
-                className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${isCurrent
-                    ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-                    : 'bg-white text-stone-600 hover:bg-stone-100 border-stone-200/80'
+                className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${isCurrent
+                    ? 'bg-stone-900 text-white border-stone-900 shadow-2xs font-bold'
+                    : 'bg-white text-stone-700 hover:bg-stone-100 border-stone-200/80'
                   }`}
                 title={r.titlePl}
               >
@@ -129,7 +130,7 @@ export default function ResearchDetailPage() {
           <h1 className="text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight leading-tight">
             {research.titlePl}
           </h1>
-          <p className="text-stone-600 text-sm sm:text-base mt-2 max-w-4xl leading-relaxed font-medium">
+          <p className="text-stone-700 text-sm sm:text-base mt-2 max-w-4xl leading-relaxed font-medium">
             {research.descriptionPl}
           </p>
         </div>
@@ -137,7 +138,7 @@ export default function ResearchDetailPage() {
         {/* Kafelki z kluczowymi metrykami regionalnymi */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/5 shadow-2xs flex flex-col justify-between">
-            <span className="text-xs font-semibold text-stone-400 block uppercase tracking-wider truncate">
+            <span className="text-xs font-bold text-stone-600 block uppercase tracking-wider truncate">
               Średnia {research.summary.startYear}
             </span>
             <div className="h-8 flex items-center mt-1.5">
@@ -148,7 +149,7 @@ export default function ResearchDetailPage() {
           </div>
 
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/5 shadow-2xs flex flex-col justify-between">
-            <span className="text-xs font-semibold text-stone-400 block uppercase tracking-wider truncate">
+            <span className="text-xs font-bold text-stone-600 block uppercase tracking-wider truncate">
               Średnia {research.summary.endYear}
             </span>
             <div className="h-8 flex items-center mt-1.5">
@@ -159,7 +160,7 @@ export default function ResearchDetailPage() {
           </div>
 
           <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/5 shadow-2xs flex flex-col justify-between">
-            <span className="text-xs font-semibold text-stone-400 block uppercase tracking-wider truncate">
+            <span className="text-xs font-bold text-stone-600 block uppercase tracking-wider truncate">
               Zmiana (11 lat)
             </span>
             <div className="h-8 flex items-center gap-1.5 mt-1.5">

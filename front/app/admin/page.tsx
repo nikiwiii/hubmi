@@ -303,24 +303,34 @@ export default function AdminPage() {
           </button>
 
           {/* Tab Switcher */}
-          <div className="flex flex-wrap bg-stone-200/50 p-1 rounded-xl self-start sm:self-auto gap-1">
+          <div
+            role="tablist"
+            aria-label="Widoki panelu administratora"
+            className="flex flex-wrap bg-stone-200/50 p-1 rounded-xl self-start sm:self-auto gap-1"
+          >
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "users"}
             onClick={() => setActiveTab("users")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "users"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-600 hover:text-stone-900"
+                ? "bg-white text-stone-900 shadow-2xs font-bold"
+                : "text-stone-700 hover:text-stone-900"
             }`}
           >
             Użytkownicy ({usersList.length})
           </button>
 
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "ideas"}
             onClick={() => setActiveTab("ideas")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "ideas"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-600 hover:text-stone-900"
+                ? "bg-white text-stone-900 shadow-2xs font-bold"
+                : "text-stone-700 hover:text-stone-900"
             }`}
           >
             <span>Pomysły & Moderacja</span>
@@ -329,16 +339,19 @@ export default function AdminPage() {
                 {pendingIdeasCount} do akceptacji
               </span>
             ) : (
-              <span className="text-[11px] text-stone-400">({ideas.length})</span>
+              <span className="text-[11px] text-stone-500 font-mono">({ideas.length})</span>
             )}
           </button>
 
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "testers"}
             onClick={() => setActiveTab("testers")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "testers"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-600 hover:text-stone-900"
+                ? "bg-white text-stone-900 shadow-2xs font-bold"
+                : "text-stone-700 hover:text-stone-900"
             }`}
           >
             <span>Zgłoszenia Testerów</span>
@@ -347,7 +360,7 @@ export default function AdminPage() {
                 {pendingTesterAppsCount} do weryfikacji
               </span>
             ) : (
-              <span className="text-[11px] text-stone-400">({testerApps.length})</span>
+              <span className="text-[11px] text-stone-500 font-mono">({testerApps.length})</span>
             )}
           </button>
         </div>
@@ -361,8 +374,10 @@ export default function AdminPage() {
             <span>{adminFeedback}</span>
           </div>
           <button
+            type="button"
             onClick={() => setAdminFeedback("")}
-            className="text-emerald-700 font-semibold text-xs"
+            aria-label="Zamknij powiadomienie"
+            className="p-1 min-h-[28px] min-w-[28px] flex items-center justify-center text-emerald-800 hover:text-emerald-950 font-bold text-xs rounded-lg cursor-pointer"
           >
             ✕
           </button>
@@ -446,16 +461,20 @@ export default function AdminPage() {
                     <td className="py-3 px-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
+                          type="button"
                           onClick={() => openEditModal(u)}
-                          className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-600 cursor-pointer"
+                          aria-label={`Edytuj użytkownika ${u.name}`}
+                          className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-600 hover:text-stone-900 cursor-pointer"
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
+                          <Edit2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDeleteUser(u.id, u.name)}
-                          className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer"
+                          aria-label={`Usuń użytkownika ${u.name}`}
+                          className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg hover:bg-rose-50 text-rose-600 hover:text-rose-800 cursor-pointer"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
                       </div>
                     </td>
@@ -574,11 +593,13 @@ export default function AdminPage() {
                         <h4 className="text-sm sm:text-base font-bold text-stone-900 flex items-center gap-2">
                           <span>{idea.title}</span>
                           <button
+                            type="button"
                             onClick={() => router.push(`/discover/${idea.id}`)}
-                            className="text-stone-400 hover:text-stone-700 p-0.5 cursor-pointer"
+                            aria-label={`Zobacz podgląd pomysłu ${idea.title}`}
+                            className="text-stone-500 hover:text-stone-900 p-1 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg cursor-pointer transition-colors"
                             title="Zobacz podgląd pomysłu"
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
+                            <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                           </button>
                         </h4>
 
@@ -625,16 +646,18 @@ export default function AdminPage() {
                         />
 
                         <button
+                          type="button"
                           onClick={() => {
                             if (confirm(`Usunąć pomysł "${idea.title}"?`)) {
                               deleteIdea(idea.id);
                               setAdminFeedback("Usunięto pomysł.");
                             }
                           }}
-                          className="p-2 hover:bg-rose-50 text-rose-600 rounded-xl cursor-pointer transition-colors"
+                          aria-label={`Usuń całkowicie pomysł ${idea.title}`}
+                          className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center hover:bg-rose-50 text-rose-600 rounded-xl cursor-pointer transition-colors"
                           title="Usuń całkowicie"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                         </button>
                       </div>
                     </div>

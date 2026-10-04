@@ -103,6 +103,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
+  const [isLoadingUser, setIsLoadingUser] = useState(false);
   // Accessibility states
   const [fontSizeLevel, setFontSizeLevelState] = useState<'normal' | 'large' | 'huge'>(() => {
     if (typeof window !== 'undefined') {

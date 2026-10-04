@@ -79,9 +79,9 @@ function KnowledgeContent() {
         <div>
           <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
             <span className="block text-stone-900">Katalog Badań</span>
-            <span className="block text-stone-400">i Raportów Społecznych</span>
+            <span className="block text-stone-600">i Raportów Społecznych</span>
           </div>
-          <p className="mt-2.5 text-stone-500 text-xs sm:text-sm font-medium max-w-2xl leading-relaxed">
+          <p className="mt-2.5 text-stone-600 text-xs sm:text-sm font-medium max-w-2xl leading-relaxed">
             Oficjalne dane i wskaźniki ROPS Kraków – inteligentny RAG analityczny, interaktywne kartogramy oraz szeregi czasowe 2014–2024 dla 22 powiatów Małopolski.
           </p>
         </div>
@@ -97,43 +97,55 @@ function KnowledgeContent() {
             <h3 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
               Katalog Diagnoz i Kartogramów
             </h3>
-            <p className="text-xs sm:text-sm text-stone-500 font-medium mt-0.5">
+            <p className="text-xs sm:text-sm text-stone-600 font-medium mt-0.5">
               Przeglądaj wszystkie {researches.length} diagnoz z podziałem na dziedziny polityki społecznej.
             </p>
           </div>
 
           {/* Szybki filtr tekstowy kart katalogu */}
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+            <label htmlFor="catalog-search-input" className="sr-only">
+              Filtruj karty katalogu
+            </label>
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" aria-hidden="true" />
             <input
+              id="catalog-search-input"
               type="text"
               value={catalogSearch}
               onChange={(e) => setCatalogSearch(e.target.value)}
               placeholder="Filtruj karty katalogu..."
-              className="w-full pl-9 pr-8 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+              className="w-full pl-9 pr-8 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
             />
             {catalogSearch && (
               <button
                 type="button"
                 onClick={() => setCatalogSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 cursor-pointer"
+                aria-label="Wyczyść filtr katalogu"
+                className="min-h-[28px] min-w-[28px] flex items-center justify-center absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-900 cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
             )}
           </div>
         </div>
 
         {/* PILLS KATEGORII */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div
+          role="tablist"
+          aria-label="Dziedziny polityki społecznej"
+          className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none"
+        >
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
+              type="button"
+              role="tab"
+              aria-selected={selectedCategory === cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              className={`min-h-[34px] px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat
-                  ? "bg-stone-900 text-white shadow-2xs"
-                  : "bg-stone-100 text-stone-600 hover:text-stone-900 hover:bg-stone-200"
+                  ? "bg-stone-900 text-white shadow-2xs font-bold"
+                  : "bg-stone-100 text-stone-700 hover:text-stone-900 hover:bg-stone-200"
               }`}
             >
               {cat}
@@ -143,8 +155,12 @@ function KnowledgeContent() {
 
         {/* SIATKA KART DIAGNOZ REGIONALNYCH */}
         {filteredResearches.length === 0 ? (
-          <p className="text-sm text-stone-500 py-12 text-center bg-stone-50 rounded-2xl border border-stone-100">
-            Nie znaleziono badań odpowiadających wybranym kryteriom.
+          <p className="text-sm text-stone-600 py-12 text-center bg-stone-50 rounded-2xl border border-stone-100">
+            {catalogSearch ? (
+              <>Nie znaleziono badań odpowiadających frazie &bdquo;{catalogSearch}&rdquo;.</>
+            ) : (
+              <>Nie znaleziono badań odpowiadających wybranym kryteriom.</>
+            )}
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -154,8 +170,17 @@ function KnowledgeContent() {
               return (
                 <div
                   key={research.id}
+                  role="article"
+                  tabIndex={0}
+                  aria-label={`Raport z badań społecznych: ${research.titlePl}`}
                   onClick={() => router.push(`/knowledge/${research.id}`)}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-black/4 select-none min-h-70"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/knowledge/${research.id}`);
+                    }
+                  }}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-black/4 select-none min-h-70 focus-visible:ring-2 focus-visible:ring-stone-900"
                   style={{
                     background: `linear-gradient(145deg, ${research.theme.pastelBg} 0%, ${research.theme.colorScale[0]} 100%)`,
                   }}
