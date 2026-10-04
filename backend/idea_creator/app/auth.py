@@ -13,6 +13,11 @@ bearer_scheme = HTTPBearer(auto_error=False)
 class CurrentUser(BaseModel):
     id: str
     full_name: str
+    role: str = "user"
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == "admin"
 
 
 def decode_access_token(token: str, settings: Settings) -> Optional[dict]:
@@ -40,4 +45,18 @@ def get_current_user(
             detail="Token jest nieprawidłowy lub wygasł.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return CurrentUser(id=str(payload["sub"]), full_name=payload.get("name") or "Anonim")
+    return CurrentUser(
+        id=str(payload["sub"]),
+        full_name=payload.get("name") or "Anonim",
+        role=payload.get("role") or "user",
+    )
+
+
+def get_current_admin(user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
+    """Mirrors backend/login/router.py::get_current_admin_payload."""
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Brak uprawnień administratora. Tylko administratorzy mogą wykonywać tę operację.",
+        )
+    return user

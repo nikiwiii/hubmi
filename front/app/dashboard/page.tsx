@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { IdeaCard } from "../components/shared/IdeaCard";
+import { GrantCallsPanel } from "../components/grants/GrantCallsPanel";
 import { Lightbulb, Users, Plus, RefreshCw, LogOut } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
@@ -112,6 +113,8 @@ export default function DashboardPage() {
             <span>Moje Pomysły ({myCreatedIdeas.length})</span>
           </h2>
         </div>
+
+        <GrantCallsPanel myIdeas={myCreatedIdeas} />
 
         {myCreatedIdeas.length === 0 ? (
           <div className="bg-white rounded-2xl p-6 border border-stone-200 text-center text-xs text-stone-500">

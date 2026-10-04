@@ -229,3 +229,63 @@ AS $$
   LIMIT match_count;
 $$;
 
+
+-- ============================================================
+-- TABELA 8: Nabory wniosków grantowych (Kreator pomysłów)
+-- `fields` = lista pól wniosku [{id, label, section, help, type, required, max_chars}],
+-- wyciągnięta przez AI z PDF-a wzoru i zatwierdzona przez admina.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.grant_calls (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    starts_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    ends_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'closed')),
+    template_url TEXT,
+    template_filename TEXT,
+    template_text TEXT,
+    fields JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_by UUID,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    CONSTRAINT grant_calls_window CHECK (ends_at > starts_at)
+);
+CREATE INDEX IF NOT EXISTS idx_grant_calls_status ON public.grant_calls(status);
+ALTER TABLE public.grant_calls DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- TABELA 9: Wnioski w naborach (jeden wniosek na pomysł w danym naborze)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.grant_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    call_id UUID NOT NULL REFERENCES public.grant_calls(id) ON DELETE CASCADE,
+    idea_id UUID REFERENCES public.ideas(id) ON DELETE SET NULL,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    author_name TEXT,
+    idea_title TEXT,
+    answers JSONB NOT NULL DEFAULT '{}'::jsonb,
+    ai_filled JSONB NOT NULL DEFAULT '[]'::jsonb,
+    status TEXT NOT NULL DEFAULT 'draft'
+        CHECK (status IN ('draft', 'submitted', 'under_review', 'accepted', 'rejected')),
+    admin_comment TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    submitted_at TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT unique_call_idea_application UNIQUE (call_id, idea_id)
+);
+CREATE INDEX IF NOT EXISTS idx_grant_applications_call ON public.grant_applications(call_id);
+CREATE INDEX IF NOT EXISTS idx_grant_applications_user ON public.grant_applications(user_id);
+ALTER TABLE public.grant_applications DISABLE ROW LEVEL SECURITY;
+
+-- Publiczny bucket na wzory wniosków (PDF, limit 10 MB); backend (rola anon) może tylko dodawać pliki
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('grant-templates', 'grant-templates', true, 10485760, ARRAY['application/pdf'])
+ON CONFLICT (id) DO UPDATE
+SET public = EXCLUDED.public,
+    file_size_limit = EXCLUDED.file_size_limit,
+    allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS "grant_templates_insert" ON storage.objects;
+CREATE POLICY "grant_templates_insert" ON storage.objects
+    FOR INSERT TO anon, authenticated
+    WITH CHECK (bucket_id = 'grant-templates');

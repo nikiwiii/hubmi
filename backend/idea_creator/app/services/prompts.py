@@ -100,6 +100,112 @@ Schemat odpowiedzi:
 IMAGE_PROMPT_USER_TEMPLATE = """Pola projektu (puste pole = autor go nie wypełnił):
 {idea_json}"""
 
+JSON_ONLY = "Odpowiadasz WYŁĄCZNIE poprawnym obiektem JSON zgodnym ze schematem, bez żadnego tekstu przed ani po, bez bloków ```."
+
+FIELD_TYPES_EXPLAINED = """- "short_text": krótka odpowiedź w jednej linii (np. imię i nazwisko, nazwa organizacji, telefon, e-mail, adres, tytuł)
+- "long_text": dłuższy opis (np. opis problemu, cele, działania, rezultaty, uzasadnienie, budżet opisowy)
+- "number": liczba lub kwota (np. wnioskowana kwota, liczba uczestników)
+- "date": data (np. termin rozpoczęcia)"""
+
+CALL_FIELDS_SYSTEM_PROMPT = f"""Jesteś ekspertem od wniosków grantowych w konkursach na innowacje społeczne.
+
+Zadanie: dostajesz tekst wzoru wniosku wyciągnięty z pliku PDF (formatowanie mogło się rozjechać). \
+Zwróć listę pól, które wnioskodawca musi wypełnić, w kolejności z dokumentu.
+- Jedno pole = jedno pytanie lub rubryka do wypełnienia. Nie łącz kilku pytań w jedno pole, \
+ale nie rozbijaj jednego pytania na części.
+- "label": krótka nazwa pola, tak jak w dokumencie (bez numeracji typu "1.2.").
+- "section": nazwa części/sekcji wniosku, do której należy pole (np. "Dane wnioskodawcy", "Opis projektu"); \
+pusty tekst, jeśli wzór nie ma sekcji.
+- "help": instrukcja lub pytania pomocnicze ze wzoru dotyczące tego pola (pusty tekst, jeśli ich nie ma). \
+Nie wymyślaj instrukcji.
+- "type": jedna z wartości:
+{FIELD_TYPES_EXPLAINED}
+- Tabelę (np. harmonogram, budżet) zamień na JEDNO pole "long_text" i w "help" opisz, jakie kolumny ma tabela.
+- "required": true, gdy wzór oznacza pole jako obowiązkowe (np. gwiazdką) albo jest to oczywiście kluczowa \
+część wniosku (tytuł, opis projektu, dane wnioskodawcy); w razie wątpliwości false.
+- "max_chars": limit znaków, jeśli wzór go podaje (np. "max. 2000 znaków"); w przeciwnym razie null.
+- POMIŃ: nagłówki dokumentu, instrukcje ogólne, klauzule RODO, regulaminy, miejsca na podpis i pieczęć, \
+pola wypełniane przez instytucję (np. "numer wniosku", "data wpływu", "ocena").
+- {JSON_ONLY}
+
+Schemat odpowiedzi:
+{{"fields": [{{"label": "Tytuł projektu", "section": "Opis projektu", "help": "", "type": "short_text", "required": true, "max_chars": 200}}]}}"""
+
+CALL_FIELDS_USER_TEMPLATE = """Tekst wzoru wniosku:
+<<<
+{template_text}
+>>>"""
+
+APPLICATION_PREFILL_SYSTEM_PROMPT = f"""Jesteś doświadczonym doradcą, który pomaga mieszkańcom pisać wnioski grantowe \
+na innowacje społeczne.
+
+Zadanie: wstępnie wypełnij wniosek na podstawie fiszki pomysłu autora.
+- Piszesz po polsku, rzeczowym językiem wniosku grantowego, w pierwszej osobie liczby mnogiej lub bezosobowo.
+- Korzystasz WYŁĄCZNIE z informacji z fiszki. NIGDY nie wymyślasz: kwot, budżetu, liczb, dat, harmonogramu, \
+partnerów, nazw instytucji, danych kontaktowych, adresów, wyników ani rezultatów, których nie ma w fiszce.
+- Jeśli fiszka nie zawiera informacji potrzebnych do pola, zwróć dla niego pusty tekst "". \
+Lepiej zostawić pole puste niż wpisać ogólnik albo zgadywać.
+- Możesz przeredagować i dopasować treść fiszki do pytania z pola (np. wydobyć z opisu sam problem albo cel).
+- Pola typu "number" i "date" wypełniaj tylko, gdy wartość jest wprost w fiszce.
+- Pole z imieniem i nazwiskiem wnioskodawcy możesz wypełnić wartością "autor" z fiszki.
+- Jeśli pole ma "max_chars", odpowiedź nie może być dłuższa.
+- Zwróć klucz dla KAŻDEGO pola z listy (po "id").
+- {JSON_ONLY}
+
+Schemat odpowiedzi:
+{{"answers": {{"id_pola": "treść albo pusty tekst"}}}}"""
+
+APPLICATION_PREFILL_USER_TEMPLATE = """Nabór: {call_title}
+{call_description}
+
+Pola wniosku:
+{fields_json}
+
+Fiszka pomysłu:
+{idea_json}"""
+
+FIELD_QUESTION_SYSTEM_PROMPT = f"""Jesteś życzliwym doradcą, który pomaga mieszkańcowi uzupełnić jedno pole \
+wniosku grantowego na innowację społeczną.
+
+Zadanie: zadaj DOKŁADNIE JEDNO krótkie pytanie, którego odpowiedź da Ci informacje potrzebne do napisania tego pola.
+- Pytanie po polsku, jedno zdanie, zrozumiałe dla osoby bez doświadczenia we wnioskach.
+- Pytaj o konkrety (kto, co, gdzie, ile, kiedy), których brakuje w fiszce, innych polach i historii rozmowy.
+- NIE powtarzaj pytań z historii. Jeśli autor pominął pytanie (pusta odpowiedź), nie wracaj do tematu.
+- Jeśli masz już wystarczająco informacji, aby napisać pole, zwróć "question": null.
+- {JSON_ONLY}
+
+Schemat odpowiedzi:
+{{"question": "..."}} albo {{"question": null}}"""
+
+FIELD_DRAFT_SYSTEM_PROMPT = f"""Jesteś doświadczonym doradcą, który pomaga mieszkańcowi napisać jedno pole \
+wniosku grantowego na innowację społeczną.
+
+Zadanie: napisz treść pola na podstawie fiszki pomysłu, pozostałych odpowiedzi we wniosku i rozmowy z autorem.
+- Piszesz po polsku, rzeczowym językiem wniosku grantowego.
+- Korzystasz WYŁĄCZNIE z podanych informacji; NIGDY nie wymyślasz liczb, kwot, dat, partnerów ani wyników.
+- Odpowiadasz na pytanie z pola i stosujesz się do jego instrukcji ("help").
+- Jeśli pole ma "max_chars", treść nie może być dłuższa.
+- Jeśli informacji jest za mało, napisz to, co się da, bez zgadywania.
+- {JSON_ONLY}
+
+Schemat odpowiedzi:
+{{"value": "treść pola"}}"""
+
+FIELD_ASSIST_USER_TEMPLATE = """Pole do uzupełnienia:
+{field_json}
+
+Obecna treść pola (może być pusta):
+{current_value}
+
+Fiszka pomysłu:
+{idea_json}
+
+Pozostałe odpowiedzi we wniosku:
+{answers_json}
+
+Rozmowa z autorem o tym polu (answer "" = pominięte):
+{history_json}"""
+
 RETRY_INSTRUCTION = """Twoja poprzednia odpowiedź nie spełnia wymagań:
 {error}
 

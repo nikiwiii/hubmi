@@ -76,6 +76,31 @@ The LLM and the repository are faked; tests make no network calls.
 | GET | `/projects` | no | List of projects (newest first) |
 | GET | `/projects/{id}` | no | Single project |
 
+### Grant calls and applications (nabory i generator wniosków)
+
+Migration: the "TABELA 8/9" block in `backend/supabase_schema.sql` (tables `grant_calls`, `grant_applications`
+and the public Storage bucket `grant-templates`).
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/calls` | admin | Multipart (`title`, `description`, `starts_at`, `ends_at`, `template` = PDF). Creates a **draft** call; the PDF text is extracted (`pypdf`) and Groq turns it into `fields`. If that fails (scanned PDF, LLM error) the call is still created with `fields: []` and `extraction_error` |
+| POST | `/calls/{id}/extract-fields` | admin | Re-run the AI extraction (draft only) |
+| PATCH | `/calls/{id}` | admin | Edit title/description/dates/`fields`; `status`: `published` (needs fields) / `closed`. Fields are locked after publishing |
+| GET | `/calls` | admin | All calls with `applications_count` (submitted, without drafts) |
+| GET | `/calls/open` | no | Published calls within `starts_at`–`ends_at` (`is_open`) |
+| GET | `/calls/{id}` | Bearer | Single call (drafts admin only) |
+| GET | `/calls/{id}/applications` | admin | Submitted applications of a call |
+| POST | `/applications` | Bearer | `{call_id, idea_id}` (own idea, open call). Groq prefills `answers` from the idea card; unknown data stays empty; filled fields are listed in `ai_filled`. Returns the existing application (200) if there already is one for this idea and call |
+| GET | `/applications/mine` | Bearer | My applications with their call |
+| GET / PATCH | `/applications/{id}` | owner (GET: also admin) | Read / save `answers` (draft + open call only); editing a field removes it from `ai_filled` |
+| POST | `/applications/{id}/assist/question` | owner | `{field_id, history}` -> one question that helps fill the field, or `done` |
+| POST | `/applications/{id}/assist/draft` | owner | `{field_id, history}` -> proposed field value (nothing is saved) |
+| POST | `/applications/{id}/submit` | owner | Validates required fields and `max_chars`, sets `submitted` |
+| PATCH | `/applications/{id}/status` | admin | `submitted` / `under_review` / `accepted` / `rejected` + optional `admin_comment` |
+| GET | `/applications/{id}/pdf` | owner or admin | The original template with answers written on each field's line, in the template's body size. Calibri forms use bundled Carlito (metric-compatible; Calibri cannot be redistributed). Answers that do not fit are listed on a final page in the same typeface |
+
+`/applications` (create) and `/applications/{id}/assist/*` are rate limited to 30 requests/min per IP.
+
 `/assistant/*` is rate limited to 60 requests/min per IP and `/generate_image` to 10 requests/min per IP
 (in memory, per process).
 
@@ -103,10 +128,11 @@ app/
   main.py            app, CORS, router registration
   config.py          pydantic-settings
   auth.py            get_current_user (JWT)
-  repository.py      IdeasRepository: the only place with the table name and column mapping
+  repository.py      IdeasRepository / GrantsRepository: the only place with table names and column mapping
   schemas.py         Stage enum + all Pydantic models
   rate_limit.py      in-memory limiter for /assistant/*
-  routers/           assistant.py, projects.py, visualize.py (future: applications.py)
+  routers/           assistant.py, projects.py, visualize.py, calls.py, applications.py
+  services/documents.py PDF template text extraction + application PDF rendering
   services/llm.py    Groq client + generate_json (validate -> retry once -> 502)
   services/images.py Pollinations image client
   services/storage.py Supabase Storage upload of published images

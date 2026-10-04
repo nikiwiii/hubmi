@@ -15,6 +15,7 @@ import {
   Lock,
 } from "lucide-react";
 import { CustomSelect } from "../components/shared/CustomSelect";
+import { AdminCallsTab } from "../components/grants/AdminCallsTab";
 import { useApp } from "../context/AppContext";
 
 export default function AdminPage() {
@@ -30,7 +31,7 @@ export default function AdminPage() {
 
   const [usersList, setUsersList] = useState<User[]>(getUsers());
   const [searchUserQuery, setSearchUserQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"users" | "ideas">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "ideas" | "calls">("users");
 
   // Modal / Form states for Create/Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -226,6 +227,16 @@ export default function AdminPage() {
           >
             Pomysły ({ideas.length})
           </button>
+          <button
+            onClick={() => setActiveTab("calls")}
+            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === "calls"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-600 hover:text-stone-900"
+            }`}
+          >
+            Nabory
+          </button>
         </div>
       </div>
 
@@ -393,6 +404,9 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* TAB 3: GRANT CALLS */}
+      {activeTab === "calls" && <AdminCallsTab onFeedback={setAdminFeedback} />}
 
       {/* CREATE / EDIT MODAL */}
       {isModalOpen && (

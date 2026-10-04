@@ -58,11 +58,6 @@ class IdeaService:
             "category": data.category or "general",
             "user_id": user_id,
             "author_name": author_name,
-            "looking_for_partner": bool(data.looking_for_partner),
-            "partner_types": data.partner_types or [],
-            "assigned_expert_id": data.assigned_expert_id,
-            "assigned_expert_name": data.assigned_expert_name,
-            "assigned_expert_specialization": data.assigned_expert_specialization
         }
         created = DatabaseRepository.create_idea(new_data)
 

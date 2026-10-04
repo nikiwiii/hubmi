@@ -9,12 +9,13 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings, get_settings
 from app.main import app
-from app.repository import IdeasRepository, get_repository
+from app.repository import GrantsRepository, IdeasRepository, get_grants_repository, get_repository
+from app.routers.applications import grants_rate_limiter
 from app.routers.assistant import assistant_rate_limiter
 from app.routers.visualize import image_rate_limiter
 from app.services.images import ImageGenerationError, get_image_generator
 from app.services.llm import get_llm
-from app.services.storage import StorageError, get_image_storage
+from app.services.storage import StorageError, get_image_storage, get_template_storage
 
 TEST_SETTINGS = Settings(
     _env_file=None,
@@ -48,6 +49,39 @@ class FakeIdeasRepository(IdeasRepository):
     def _select_row(self, project_id) -> Optional[dict]:
         self.calls += 1
         return next((r for r in self.rows if r["id"] == project_id), None)
+
+
+class FakeGrantsRepository(GrantsRepository):
+    """In-memory tables; mapping logic is inherited from the real repository."""
+
+    def __init__(self):
+        super().__init__(client=None)
+        self.tables: dict[str, list[dict[str, Any]]] = {}
+
+    def _insert(self, table, row):
+        stored = {**row, "id": str(uuid.uuid4()), "created_at": datetime.now(timezone.utc).isoformat()}
+        self.tables.setdefault(table, []).append(stored)
+        return stored
+
+    def _update(self, table, row_id, values):
+        for row in self.tables.get(table, []):
+            if row["id"] == row_id:
+                row.update(values)
+                return dict(row)
+        return None
+
+    def _select(self, table, filters):
+        rows = [r for r in self.tables.get(table, []) if all(r.get(k) == v for k, v in filters.items())]
+        return [dict(r) for r in rows[::-1]]
+
+
+class FakeTemplateStorage:
+    def __init__(self):
+        self.uploads: list[bytes] = []
+
+    def upload(self, data):
+        self.uploads.append(data)
+        return f"https://storage.test/grant-templates/{len(self.uploads)}.pdf"
 
 
 class FakeLLM:
@@ -115,19 +149,31 @@ def images():
 
 
 @pytest.fixture
-def client(repo, llm, images, storage):
+def grants():
+    return FakeGrantsRepository()
+
+
+@pytest.fixture
+def template_storage():
+    return FakeTemplateStorage()
+
+
+@pytest.fixture
+def client(repo, llm, images, storage, grants, template_storage):
     app.dependency_overrides[get_settings] = lambda: TEST_SETTINGS
     app.dependency_overrides[get_repository] = lambda: repo
     app.dependency_overrides[get_image_storage] = lambda: storage
     app.dependency_overrides[get_llm] = lambda: llm
     app.dependency_overrides[get_image_generator] = lambda: images
-    assistant_rate_limiter.reset()
-    image_rate_limiter.reset()
+    app.dependency_overrides[get_grants_repository] = lambda: grants
+    app.dependency_overrides[get_template_storage] = lambda: template_storage
+    for limiter in (assistant_rate_limiter, image_rate_limiter, grants_rate_limiter):
+        limiter.reset()
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
-    assistant_rate_limiter.reset()
-    image_rate_limiter.reset()
+    for limiter in (assistant_rate_limiter, image_rate_limiter, grants_rate_limiter):
+        limiter.reset()
 
 
 def make_token(sub: str = None, name: str = "Jan Kowalski", **extra) -> str:

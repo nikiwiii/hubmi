@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     supabase_key: str = ""
     # Public Supabase Storage bucket for published visualizations (see README migration).
     supabase_image_bucket: str = "idea-images"
+    # Public bucket for grant call templates (PDF) uploaded by admins.
+    supabase_template_bucket: str = "grant-templates"
+    template_max_bytes: int = 10 * 1024 * 1024
+    # Template text sent to the LLM is cut to this length (Groq TPM limits).
+    template_max_chars: int = 15000
 
     groq_api_key: str = ""
     groq_model: str = "openai/gpt-oss-120b"
@@ -44,6 +49,8 @@ class Settings(BaseSettings):
     assistant_rate_limit_per_minute: int = 60
     # Every image generation costs pollen.
     image_rate_limit_per_minute: int = 10
+    # Prefill + field assistant of grant applications.
+    grants_rate_limit_per_minute: int = 30
 
     @field_validator("supabase_url")
     @classmethod

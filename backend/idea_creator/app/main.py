@@ -5,14 +5,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import assistant, projects, visualize
+from app.routers import applications, assistant, calls, projects, visualize
 
 logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(
     title="Hubmi Idea Creator API",
     description="Kreator pomysłów: asystent AI (Groq) do dopracowania pomysłu, wizualizacja pomysłu "
-    "(Pollinations) oraz publikacja projektów w katalogu.",
+    "(Pollinations), publikacja projektów w katalogu oraz nabory i generator wniosków grantowych.",
     version="0.1.0",
 )
 
@@ -24,10 +24,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Future: routers/applications.py
 app.include_router(assistant.router)
 app.include_router(projects.router)
 app.include_router(visualize.router)
+app.include_router(calls.router)
+app.include_router(applications.router)
 
 
 @app.get("/", tags=["Status"])
