@@ -231,11 +231,19 @@ export function isUserIdeaAuthor(idea: Idea, user: any): boolean {
   ) {
     return true;
   }
+  if (
+    user.name &&
+    idea.authorName &&
+    user.name.trim().toLowerCase() === idea.authorName.trim().toLowerCase()
+  ) {
+    return true;
+  }
   return false;
 }
 
 export function isUserAdmin(user: any): boolean {
-  return Boolean(user && user.role === 'admin');
+  if (!user) return false;
+  return Boolean(user.role === 'admin' || user.isAdmin === true || user.role === 'administrator');
 }
 
 export function canUserDeleteIdea(idea: Idea, user: any): boolean {

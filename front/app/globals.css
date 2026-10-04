@@ -250,23 +250,40 @@ body.dark,
   color: #E5E7EB;
 }
 
-.dark .text-stone-900,
-.dark .text-stone-950,
-.dark .text-stone-800 {
+/* Dark mode font color mappings - ensure we don't override explicit dark:text dark-colored classes on light buttons/chips */
+.dark .text-stone-900:not([class*="dark:text-stone-9"]):not([class*="dark:text-stone-8"]):not([class*="dark:text-black"]):not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *):not(.dark\:bg-white *),
+.dark .text-stone-950:not([class*="dark:text-stone-9"]):not([class*="dark:text-stone-8"]):not([class*="dark:text-black"]):not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *):not(.dark\:bg-white *),
+.dark .text-stone-800:not([class*="dark:text-stone-9"]):not([class*="dark:text-stone-8"]):not([class*="dark:text-black"]):not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *):not(.dark\:bg-white *) {
   color: #F9FAFB !important;
 }
 
-.dark .text-stone-700 {
+.dark .text-stone-700:not([class*="dark:text-stone-9"]):not([class*="dark:text-stone-8"]):not([class*="dark:text-black"]):not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *):not(.dark\:bg-white *) {
   color: #E5E7EB !important;
 }
 
-.dark .text-stone-600,
-.dark .text-stone-500 {
+.dark .text-stone-600:not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *),
+.dark .text-stone-500:not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *) {
   color: #D1D5DB !important;
 }
 
-.dark .text-stone-400 {
+.dark .text-stone-400:not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *) {
   color: #9CA3AF !important;
+}
+
+.dark .text-stone-300:not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *) {
+  color: #CBD5E1 !important;
+}
+
+/* Explicit high-contrast dark text on light elements in dark mode */
+.dark [class*="dark:bg-white"] [class*="dark:text-stone-9"],
+.dark [class*="dark:bg-white"] [class*="dark:text-black"],
+.dark [class*="dark:bg-amber-300"] *,
+.dark [class*="dark:bg-amber-400"] *,
+.dark [class*="dark:bg-yellow-400"] *,
+.dark .dark\:text-stone-950,
+.dark .dark\:text-stone-900,
+.dark .dark\:text-black {
+  color: #111827 !important;
 }
 
 .dark .border-stone-100,

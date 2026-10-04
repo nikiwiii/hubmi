@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Idea, ColorTheme, User, getCategoryThemeAndShape } from "../../lib/types";
 import { GeometricIllustration } from "./GeometricIllustration";
 import {
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { canUserDeleteIdea, isUserAdmin, isUserIdeaAuthor } from "../../lib/ideasStore";
 import { useApp } from "../../context/AppContext";
+import { DeleteIdeaModal } from "./DeleteIdeaModal";
 
 interface IdeaCardProps {
   idea: Idea;
@@ -112,6 +113,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const { theme, shape } = getCategoryThemeAndShape(idea.category);
   const styles = getThemeStyles(theme);
 
+  const [isInternalDeleteOpen, setIsInternalDeleteOpen] = useState(false);
   const canDelete = Boolean(effectiveUser && canUserDeleteIdea(idea, effectiveUser));
   const isAuthor = isUserIdeaAuthor(idea, effectiveUser);
   const isAdmin = isUserAdmin(effectiveUser);
@@ -296,12 +298,16 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}
 
           {/* Dedykowany, spójny przycisk usunięcia dla Autora lub Administratora */}
-          {canDelete && onDelete && (
+          {canDelete && (
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(idea);
+                if (onDelete) {
+                  onDelete(idea);
+                } else if (Boolean(appContext)) {
+                  setIsInternalDeleteOpen(true);
+                }
               }}
               title={
                 isAdmin && !isAuthor
@@ -317,6 +323,19 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}
         </div>
       </div>
+
+      {isInternalDeleteOpen && (
+        <DeleteIdeaModal
+          idea={idea}
+          isOpen={isInternalDeleteOpen}
+          onClose={() => setIsInternalDeleteOpen(false)}
+          currentUser={effectiveUser}
+          onConfirm={async (item) => {
+            await appContext?.deleteIdea(item.id);
+            setIsInternalDeleteOpen(false);
+          }}
+        />
+      )}
     </article>
   );
 };

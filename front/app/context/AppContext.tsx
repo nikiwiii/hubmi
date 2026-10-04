@@ -534,7 +534,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const handleDeleteIdea = async (id: string) => {
     const targetIdea = ideas.find((i) => i.id === id);
-    if (targetIdea && currentUser && !canUserDeleteIdea(targetIdea, currentUser)) {
+    if (!currentUser || (targetIdea && !canUserDeleteIdea(targetIdea, currentUser))) {
       throw new Error("Brak uprawnień. Tylko autor lub administrator może usunąć tę propozycję.");
     }
     try {
