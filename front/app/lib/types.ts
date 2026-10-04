@@ -137,7 +137,8 @@ export type ScreenId =
   | "knowledge"
   | "matching"
   | "middleman"
-  | "testing";
+  | "testing"
+  | "showcase";
 
 export type KnowledgeType = "challenge" | "innovation" | "education";
 

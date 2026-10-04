@@ -99,6 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     if (pathname.startsWith("/testing")) return "admin";
     if (pathname.startsWith("/propose")) return "propose";
     if (pathname.startsWith("/chat")) return "chat";
+    if (pathname.startsWith("/showcase")) return "showcase";
     if (pathname.startsWith("/dashboard")) return "dashboard";
     if (pathname.startsWith("/admin")) return "admin";
     if (pathname.startsWith("/auth")) return "auth";
@@ -170,6 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               { id: "knowledge" as ScreenId, label: "Raporty" },
               { id: "propose" as ScreenId, label: "Zaproponuj" },
               { id: "chat" as ScreenId, label: "Czat" },
+              { id: "showcase" as ScreenId, label: "Showcase" },
             ].map((link) => {
               const isActive = activeScreen === link.id;
               return (
