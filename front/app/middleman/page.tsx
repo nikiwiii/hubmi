@@ -32,6 +32,7 @@ import {
   BUDGET_OPTIONS,
   EMPTY_PROFILE,
   errorMessage,
+  getInnovationCategoryStyle,
   institutionDisplayName,
   serviceCardToText,
 } from "../lib/middleman";
