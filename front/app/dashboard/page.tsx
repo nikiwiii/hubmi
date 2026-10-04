@@ -210,18 +210,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Logout Action Bar */}
-      <div className="pt-6 border-t border-stone-200/80 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3">
-        <button
-          type="button"
-          onClick={handleLogout}
-          aria-label="Wyloguj się z platformy"
-          className="min-h-[40px] flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/50 text-red-700 dark:text-rose-300 border border-red-300 dark:border-rose-900/60 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-        >
-          <LogOut className="w-4 h-4" aria-hidden="true" />
-          <span>Wyloguj się</span>
-        </button>
-      </div>
+
 
       {/* Modal potwierdzenia usunięcia propozycji */}
       <DeleteIdeaModal
