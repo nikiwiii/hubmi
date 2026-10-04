@@ -79,19 +79,19 @@ const TEXT_FIELDS: {
   placeholder: string;
   rows: number;
 }[] = [
-  { key: "tytul", placeholder: "np. Sąsiedzka lodówka", rows: 1 },
-  {
-    key: "opis",
-    placeholder: "Jaki problem rozwiązuje projekt i jak działa?",
-    rows: 4,
-  },
-  {
-    key: "innowacyjnosc",
-    placeholder: "Czym różni się od istniejących rozwiązań?",
-    rows: 3,
-  },
-  { key: "odbiorcy", placeholder: "Kto skorzysta z projektu?", rows: 2 },
-];
+    { key: "tytul", placeholder: "np. Sąsiedzka lodówka", rows: 1 },
+    {
+      key: "opis",
+      placeholder: "Jaki problem rozwiązuje projekt i jak działa?",
+      rows: 4,
+    },
+    {
+      key: "innowacyjnosc",
+      placeholder: "Czym różni się od istniejących rozwiązań?",
+      rows: 3,
+    },
+    { key: "odbiorcy", placeholder: "Kto skorzysta z projektu?", rows: 2 },
+  ];
 
 function fieldValueLabel(field: IdeaField, fields: IdeaFields): string {
   return field === "etap"
@@ -128,13 +128,12 @@ function StepIndicator({
         const content = (
           <div className="flex items-center gap-2">
             <span
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                active
-                  ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
-                  : done
-                    ? "bg-emerald-600 text-white"
-                    : "bg-stone-200 dark:bg-white/10 text-stone-500 dark:text-stone-400"
-              }`}
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${active
+                ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
+                : done
+                  ? "bg-emerald-600 text-white"
+                  : "bg-stone-200 dark:bg-white/10 text-stone-500 dark:text-stone-400"
+                }`}
             >
               {done ? <Check className="w-3.5 h-3.5" /> : idx + 1}
             </span>
@@ -487,7 +486,7 @@ export default function ProposePage() {
       {/* KROK 1: TYTUŁ I OPIS POMYSŁU */}
       {/* ========================================================================= */}
       {step === 1 && (
-        <div className="bg-white rounded-[28px] p-6 sm:p-9 border border-black/5 shadow-2xs space-y-6">
+        <div className="rounded-[28px] bg-[#d8e2f2] dark:bg-[#0b1524]/20 p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
           <div className="border-b border-black/5 pb-4">
             <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
               Podstawowe informacje o pomyśle
@@ -610,7 +609,7 @@ export default function ProposePage() {
       {/* KROK 2: NA CZYM POLEGA & DLA KOGO (WARTOŚĆ I ODBIORCY) */}
       {/* ========================================================================= */}
       {step === 2 && (
-        <div className="bg-white rounded-[28px] p-6 sm:p-9 border border-black/5 shadow-2xs space-y-6">
+        <div className="bg-[#d8e2f2] dark:bg-[#0b1524]/20 rounded-[28px] p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
           <div className="border-b border-black/5 pb-4">
             <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
               Innowacyjność i odbiorcy
@@ -724,7 +723,7 @@ export default function ProposePage() {
       {/* KROK 3: KATEGORIA I ETAP ROZWOJU */}
       {/* ========================================================================= */}
       {step === 3 && (
-        <div className="bg-white rounded-[28px] p-6 sm:p-9 border border-black/5 shadow-2xs space-y-6">
+        <div className="bg-[#d8e2f2] dark:bg-[#0b1524]/20 rounded-[28px] p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
           <div className="border-b border-black/5 pb-4">
             <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
               Etap rozwoju i kategoria
@@ -766,19 +765,17 @@ export default function ProposePage() {
                         updateField("etap", s.value);
                       }
                     }}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 select-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${
-                      isSelected
-                        ? "border-stone-900 bg-stone-900/[0.03] ring-2 ring-stone-900/10 shadow-2xs"
-                        : "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/50"
-                    }`}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 select-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${isSelected
+                      ? "border-stone-900 bg-stone-900/[0.03] ring-2 ring-stone-900/10 shadow-2xs"
+                      : "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50/50"
+                      }`}
                   >
                     <div
                       aria-hidden="true"
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 transition-all ${
-                        isSelected
-                          ? "border-stone-900 bg-stone-900 text-white"
-                          : "border-stone-300 bg-white"
-                      }`}
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 transition-all ${isSelected
+                        ? "border-stone-900 bg-stone-900 text-white"
+                        : "border-stone-300 bg-white"
+                        }`}
                     >
                       {isSelected && (
                         <div className="w-2 h-2 rounded-full bg-white" />
@@ -819,11 +816,10 @@ export default function ProposePage() {
                     aria-checked={isSelected}
                     aria-label={`Kategoria: ${cat}`}
                     onClick={() => setCategory(cat)}
-                    className={`min-h-[36px] px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-stone-900 text-white font-bold shadow-2xs"
-                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                    }`}
+                    className={`min-h-[36px] px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${isSelected
+                      ? "bg-stone-900 text-white font-bold shadow-2xs"
+                      : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                      }`}
                   >
                     {cat}
                   </button>
@@ -864,7 +860,7 @@ export default function ProposePage() {
       {step === 4 && (
         <div className="space-y-6">
           {/* Podsumowanie wprowadzonych treści z kroków 1, 2 i 3 */}
-          <div className="bg-white rounded-[28px] p-6 sm:p-8 border border-black/5 shadow-2xs space-y-4">
+          <div className="bg-[#d8e2f2] dark:bg-[#0b1524]/20 rounded-[28px] p-6 sm:p-8 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-4 transition-all">
             <div className="flex items-center justify-between border-b border-black/5 pb-3">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-stone-700" />
@@ -957,7 +953,7 @@ export default function ProposePage() {
           {/* Opcje AI: Wizualizacja oraz Asystent doszlifowania */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Opcja 1: Wizualizacja AI */}
-            <div className="bg-white rounded-[28px] p-6 border border-black/5 shadow-2xs flex flex-col justify-between space-y-4">
+            <div className="bg-[radial-gradient(circle_at_14%_14%,#EBF5FF_0%,#FFFFFF_48%,#F0F7FF_80%,#F8FAFC_100%)] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] rounded-[28px] p-6 border border-stone-200/80 dark:border-white/10 shadow-2xs flex flex-col justify-between space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center">
@@ -1010,7 +1006,7 @@ export default function ProposePage() {
             </div>
 
             {/* Opcja 2: Asystent AI do doszlifowania treści */}
-            <div className="bg-white rounded-[28px] p-6 border border-black/5 shadow-2xs flex flex-col justify-between space-y-4">
+            <div className="bg-[radial-gradient(circle_at_14%_14%,#EBF5FF_0%,#FFFFFF_48%,#F0F7FF_80%,#F8FAFC_100%)] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] rounded-[28px] p-6 border border-stone-200/80 dark:border-white/10 shadow-2xs flex flex-col justify-between space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-stone-900 text-white flex items-center justify-center font-ubuntu font-bold text-xs">
@@ -1053,7 +1049,7 @@ export default function ProposePage() {
           {(loopActive || notice || error || (showAiAssistant && question)) && (
             <div
               ref={assistantPanelRef}
-              className="bg-white rounded-[28px] p-6 sm:p-8 border border-black/5 shadow-2xs space-y-4 scroll-mt-24"
+              className="bg-[radial-gradient(circle_at_14%_14%,#EBF5FF_0%,#FFFFFF_48%,#F0F7FF_80%,#F8FAFC_100%)] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] rounded-[28px] p-6 sm:p-8 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-4 scroll-mt-24 transition-all"
             >
               <div className="flex items-center justify-between pb-3 border-b border-stone-100">
                 <span className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
@@ -1198,7 +1194,7 @@ export default function ProposePage() {
           )}
 
           {/* PODGLĄD KARTY (FISZKI) */}
-          <div className="bg-white rounded-[28px] p-6 sm:p-8 border border-black/5 shadow-2xs space-y-4">
+          <div className="bg-[radial-gradient(circle_at_14%_14%,#EBF5FF_0%,#FFFFFF_48%,#F0F7FF_80%,#F8FAFC_100%)] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] rounded-[28px] p-6 sm:p-8 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-4 transition-all">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100">
               <span className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
                 <Eye className="w-3.5 h-3.5 text-stone-500" />
@@ -1229,7 +1225,7 @@ export default function ProposePage() {
           </div>
 
           {/* PASEK AKCJI KOŃCOWEJ */}
-          <div className="bg-white rounded-[28px] p-6 sm:p-8 border border-black/5 shadow-2xs space-y-4">
+          <div className="bg-[radial-gradient(circle_at_14%_14%,#EBF5FF_0%,#FFFFFF_48%,#F0F7FF_80%,#F8FAFC_100%)] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] rounded-[28px] p-6 sm:p-8 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-4 transition-all">
             {publishError && (
               <p className="text-xs text-red-600 bg-red-50 p-3 rounded-xl border border-red-100">
                 {publishError}
