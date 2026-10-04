@@ -211,7 +211,7 @@ export default function DiscoverPage() {
           type="button"
           onClick={() => navigate("propose")}
           aria-label="Zaproponuj nowy pomysł innowacji"
-          className="self-start sm:self-auto min-h-[40px] flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer shadow-2xs"
+          className="self-start sm:self-auto min-h-[40px] flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-white dark:bg-white dark:hover:bg-stone-100 dark:text-stone-950 rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
         >
           <Plus className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Zaproponuj pomysł</span>
@@ -219,12 +219,12 @@ export default function DiscoverPage() {
       </div>
 
       {/* Minimal Search Bar */}
-      <div className="bg-white rounded-2xl p-2 shadow-2xs border border-black/4">
+      <div className="bg-white dark:bg-[#1C1E23] rounded-2xl p-2 shadow-2xs border border-black/4 dark:border-white/10">
         <div className="relative flex items-center">
           <label htmlFor="search-ideas-input" className="sr-only">
             Szukaj pomysłów, autorów lub wyzwań
           </label>
-          <Search className="absolute left-3.5 w-4 h-4 text-stone-500" aria-hidden="true" />
+          <Search className="absolute left-3.5 w-4 h-4 text-stone-500 dark:text-stone-400" aria-hidden="true" />
           <input
             id="search-ideas-input"
             type="text"
@@ -232,14 +232,14 @@ export default function DiscoverPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Szukaj pomysłów, autorów lub wyzwań..."
             aria-label="Szukaj pomysłów, autorów lub wyzwań"
-            className="w-full pl-10 pr-8 py-2 text-base font-medium text-stone-900 placeholder:text-stone-500 rounded-xl focus:outline-none"
+            className="w-full pl-10 pr-8 py-2 text-base font-medium text-stone-900 dark:text-white placeholder:text-stone-500 dark:placeholder:text-stone-400 bg-transparent rounded-xl focus:outline-none"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
               aria-label="Wyczyść pole wyszukiwania"
-              className="min-h-[28px] min-w-[28px] flex items-center justify-center absolute right-3 p-1 text-stone-500 hover:text-stone-900 cursor-pointer"
+              className="min-h-[28px] min-w-[28px] flex items-center justify-center absolute right-3 p-1 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -266,8 +266,8 @@ export default function DiscoverPage() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? "bg-stone-900 text-white font-bold"
-                    : "bg-white text-stone-700 hover:bg-stone-100 border border-stone-200/80"
+                    ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 font-bold"
+                    : "bg-white dark:bg-white/5 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-white/10 border border-stone-200/80 dark:border-white/10"
                 }`}
               >
                 {cat}

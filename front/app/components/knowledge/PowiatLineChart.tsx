@@ -50,20 +50,20 @@ interface CustomTooltipProps {
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, unit }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-stone-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl border border-white/10 text-xs space-y-1.5 min-w-[200px]">
-        <div className="font-bold text-amber-400 text-sm border-b border-white/10 pb-1">
+      <div className="bg-white/95 dark:bg-stone-900/95 backdrop-blur-md text-stone-900 dark:text-white p-3 rounded-2xl shadow-xl border border-stone-200 dark:border-white/10 text-xs space-y-1.5 min-w-[200px]">
+        <div className="font-bold text-amber-600 dark:text-amber-400 text-sm border-b border-stone-100 dark:border-white/10 pb-1">
           Rok {label}
         </div>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-1.5 text-stone-300">
+            <span className="flex items-center gap-1.5 text-stone-600 dark:text-stone-300">
               <span
                 className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: entry.color }}
               />
               <span className="truncate max-w-[130px]">{entry.name}:</span>
             </span>
-            <span className="font-bold text-stone-100">
+            <span className="font-bold text-stone-900 dark:text-stone-100">
               {formatResearchValue(entry.value)} {unit || ''}
             </span>
           </div>
@@ -172,12 +172,12 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
       : null;
 
   return (
-    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs p-5 sm:p-6 space-y-6">
+    <div className="bg-white dark:bg-[#1C1E23] rounded-[28px] border border-black/5 dark:border-white/10 shadow-2xs p-5 sm:p-6 space-y-6">
       {/* Nagłówek i przełączniki powiatów */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 dark:border-white/10 pb-4">
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5" style={{ color: research.theme.accent }} />
-          <h3 className="text-base font-bold text-stone-900">
+          <h3 className="text-base font-bold text-stone-900 dark:text-white">
             {activeSeries.powiatName}
           </h3>
         </div>

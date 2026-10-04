@@ -52,12 +52,12 @@ export const AllYearsMapGallery: React.FC<AllYearsMapGalleryProps> = ({
   }, [research]);
 
   return (
-    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs p-5 sm:p-6 space-y-4">
-      <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-3">
-        <span className="text-xs font-semibold text-stone-500">
+    <div className="bg-white dark:bg-[#1C1E23] rounded-[28px] border border-black/5 dark:border-white/10 shadow-2xs p-5 sm:p-6 space-y-4">
+      <div className="flex items-center justify-between gap-3 border-b border-stone-100 dark:border-white/10 pb-3">
+        <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">
           Kliknij rok, aby zaktualizować kartogram główny
         </span>
-        <span className="text-xs font-semibold px-2.5 py-0.5 bg-stone-100 text-stone-700 rounded-full">
+        <span className="text-xs font-semibold px-2.5 py-0.5 bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 rounded-full">
           {research.years.length} lat
         </span>
       </div>
@@ -73,8 +73,8 @@ export const AllYearsMapGallery: React.FC<AllYearsMapGalleryProps> = ({
               onClick={() => onSelectYear(yData.year)}
               className={`group flex flex-col justify-between p-3 rounded-2xl border transition-all duration-200 cursor-pointer ${
                 isSelected
-                  ? 'bg-stone-900 text-white border-stone-900 shadow-md ring-2 ring-stone-900 ring-offset-2'
-                  : 'bg-stone-50/80 hover:bg-white text-stone-800 border-stone-200/70 hover:border-stone-400 hover:shadow-xs'
+                  ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-950 border-stone-900 dark:border-white shadow-md ring-2 ring-stone-900 dark:ring-white ring-offset-2 dark:ring-offset-stone-900'
+                  : 'bg-stone-50/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-stone-800 dark:text-stone-200 border-stone-200/70 dark:border-white/10 hover:border-stone-400 dark:hover:border-white/30 hover:shadow-xs'
               }`}
             >
               {/* Górny pasek karty: Rok i wskaźnik aktywnego */}

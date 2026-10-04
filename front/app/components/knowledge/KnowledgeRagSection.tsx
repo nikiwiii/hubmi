@@ -160,24 +160,24 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
   const isPositiveDelta = (primaryReport?.delta || 0) >= 0;
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/90 shadow-xs overflow-hidden transition-all duration-300">
+    <div className="bg-white dark:bg-[#1C1E23] rounded-3xl border border-stone-200/90 dark:border-white/10 shadow-xs overflow-hidden transition-all duration-300">
       {/* NAGŁÓWEK WYSZUKIWARKI RAG */}
-      <div className="p-6 sm:p-8 bg-gradient-to-b from-[#F9F8F5] via-white to-white border-b border-stone-100 space-y-5">
+      <div className="p-6 sm:p-8 bg-gradient-to-b from-[#F9F8F5] via-white to-white dark:from-[#1C1E23] dark:via-[#1C1E23] dark:to-[#1C1E23] border-b border-stone-100 dark:border-white/10 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center shadow-2xs font-bold shrink-0">
-              <Sparkles className="w-6 h-6 text-amber-700 animate-pulse" />
+            <div className="w-11 h-11 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 flex items-center justify-center shadow-2xs font-bold shrink-0">
+              <Sparkles className="w-6 h-6 text-amber-700 dark:text-amber-300 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
+                <h3 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-white tracking-tight">
                   Wyszukiwarka Analityczna RAG
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50">
                   AI Diagnozy ROPS
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
+              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 font-medium mt-1">
                 Zadaj pytanie naturalnym językiem – wyszukaj dane, wykresy i raporty dla dowolnego powiatu Małopolski.
               </p>
             </div>
@@ -186,7 +186,7 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
           {ragResult && (
             <button
               onClick={handleReset}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-xl transition-colors cursor-pointer self-start sm:self-center"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/20 rounded-xl transition-colors cursor-pointer self-start sm:self-center"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Wyczyść analizę</span>
@@ -202,20 +202,20 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
           }}
           className="space-y-3"
         >
-          <div className="relative flex items-center bg-white rounded-2xl border-2 border-stone-200 focus-within:border-stone-900 focus-within:ring-4 focus-within:ring-stone-900/5 shadow-2xs transition-all">
-            <Search className="absolute left-4.5 w-5 h-5 text-stone-400 shrink-0" />
+          <div className="relative flex items-center bg-white dark:bg-[#141518] rounded-2xl border-2 border-stone-200 dark:border-white/15 focus-within:border-stone-900 dark:focus-within:border-white focus-within:ring-4 focus-within:ring-stone-900/5 dark:focus-within:ring-white/5 shadow-2xs transition-all">
+            <Search className="absolute left-4.5 w-5 h-5 text-stone-400 dark:text-stone-500 shrink-0" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="np. szukam czegoś o osobach na wózkach w powiecie krakowskim..."
-              className="w-full pl-12 pr-32 py-4 text-sm sm:text-base font-medium text-stone-900 placeholder:text-stone-400 bg-transparent focus:outline-none"
+              className="w-full pl-12 pr-32 py-4 text-sm sm:text-base font-medium text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 bg-transparent focus:outline-none"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="p-1.5 mr-2 text-stone-400 hover:text-stone-700 cursor-pointer rounded-lg"
+                className="p-1.5 mr-2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -223,16 +223,16 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
             <button
               type="submit"
               disabled={isLoading || !query.trim()}
-              className="mr-2 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs shrink-0"
+              className="mr-2 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white dark:bg-white dark:hover:bg-stone-100 dark:text-stone-950 disabled:opacity-40 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs shrink-0"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/30 dark:border-stone-900/30 border-t-white dark:border-t-stone-900 rounded-full animate-spin" />
                   <span>Analizuję...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <Sparkles className="w-4 h-4 text-amber-300 dark:text-amber-500" />
                   <span>Generuj raport RAG</span>
                 </>
               )}
@@ -459,11 +459,11 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 onClick={() => setActiveTab("analysis")}
                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
                   activeTab === "analysis"
-                    ? "bg-stone-900 text-white shadow-2xs"
-                    : "text-stone-600 hover:text-stone-900 bg-stone-100"
+                    ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                    : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
                 }`}
               >
-                <Sparkles className="w-4 h-4 text-amber-300" />
+                <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                 <span>Synteza Analityczna AI</span>
               </button>
 
@@ -471,11 +471,11 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 onClick={() => setActiveTab("charts")}
                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
                   activeTab === "charts"
-                    ? "bg-stone-900 text-white shadow-2xs"
-                    : "text-stone-600 hover:text-stone-900 bg-stone-100"
+                    ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                    : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
                 }`}
               >
-                <BarChart3 className="w-4 h-4 text-amber-300" />
+                <BarChart3 className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                 <span>Wykresy i Szeregi Czasowe</span>
               </button>
 
@@ -483,11 +483,11 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 onClick={() => setActiveTab("reports")}
                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
                   activeTab === "reports"
-                    ? "bg-stone-900 text-white shadow-2xs"
-                    : "text-stone-600 hover:text-stone-900 bg-stone-100"
+                    ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                    : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
                 }`}
               >
-                <FileText className="w-4 h-4 text-amber-300" />
+                <FileText className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                 <span>Raporty i Kartogramy ({ragResult.matched_reports.length})</span>
               </button>
 
@@ -495,11 +495,11 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 onClick={() => setActiveTab("innovations")}
                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
                   activeTab === "innovations"
-                    ? "bg-stone-900 text-white shadow-2xs"
-                    : "text-stone-600 hover:text-stone-900 bg-stone-100"
+                    ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                    : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
                 }`}
               >
-                <Lightbulb className="w-4 h-4 text-amber-300" />
+                <Lightbulb className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                 <span>Innowacje ROPS ({ragResult.matched_innovations.length})</span>
               </button>
             </div>

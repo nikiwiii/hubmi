@@ -144,8 +144,8 @@ function KnowledgeContent() {
               onClick={() => setSelectedCategory(cat)}
               className={`min-h-[34px] px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat
-                  ? "bg-stone-900 text-white shadow-2xs font-bold"
-                  : "bg-stone-100 text-stone-700 hover:text-stone-900 hover:bg-stone-200"
+                  ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs font-bold"
+                  : "bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200 dark:hover:bg-white/20"
               }`}
             >
               {cat}

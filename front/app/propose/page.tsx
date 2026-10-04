@@ -130,17 +130,17 @@ function StepIndicator({
             <span
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                 active
-                  ? "bg-stone-900 text-white"
+                  ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
                   : done
                     ? "bg-emerald-600 text-white"
-                    : "bg-stone-200 text-stone-500"
+                    : "bg-stone-200 dark:bg-white/10 text-stone-500 dark:text-stone-400"
               }`}
             >
               {done ? <Check className="w-3.5 h-3.5" /> : idx + 1}
             </span>
             <span
               className={
-                active ? "font-semibold text-stone-900" : "text-stone-500"
+                active ? "font-semibold text-stone-900 dark:text-white" : "text-stone-500 dark:text-stone-400"
               }
             >
               {s.label}
