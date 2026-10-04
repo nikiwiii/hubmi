@@ -6,7 +6,6 @@ import { Navbar } from "./Navbar";
 import { useApp } from "../../context/AppContext";
 import { Loader2 } from "lucide-react";
 
-import { PlatformTutorialModal } from "../tutorial/PlatformTutorialModal";
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -108,9 +107,6 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
       >
         {children}
       </main>
-
-      {/* Globalny interaktywny samouczek platformy */}
-      <PlatformTutorialModal />
     </>
   );
 };

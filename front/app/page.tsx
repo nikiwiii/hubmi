@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   Compass,
   Search,
@@ -13,18 +12,8 @@ import {
   MessageCircle,
   User as UserIcon,
   Eye,
-  Sparkles,
   ArrowRight,
-  TrendingUp,
-  MapPin,
-  Calendar,
-  Layers,
-  GraduationCap,
-  ShieldCheck,
-  CheckCircle2,
-  Users
 } from 'lucide-react';
-import { useApp } from './context/AppContext';
 
 interface SubpageCardItem {
   id: string;
@@ -150,9 +139,6 @@ const SUBPAGE_CARDS: SubpageCardItem[] = [
 ];
 
 export default function HomePage() {
-  const router = useRouter();
-  const { openTutorial } = useApp();
-
   return (
     <div className="py-8 sm:py-12 px-4 sm:px-6 max-w-6xl mx-auto space-y-12 animate-in fade-in duration-200">
       {/* =========================================================================
@@ -181,23 +167,13 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-3">
-            {/* Przycisk uruchomienia samouczka */}
-            <button
-              type="button"
-              onClick={openTutorial}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white hover:bg-stone-100 text-stone-950 text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer group"
-            >
-              <Sparkles className="w-4 h-4 text-amber-500 group-hover:rotate-12 transition-transform" aria-hidden="true" />
-              <span>Uruchom interaktywny samouczek</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-            </button>
-
             <Link
               href="/discover"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold border border-white/15 backdrop-blur-md transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white hover:bg-stone-100 text-stone-950 text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer group"
             >
-              <Compass className="w-4 h-4" aria-hidden="true" />
+              <Compass className="w-4 h-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               <span>Przeglądaj innowacje</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Link>
 
             <Link
@@ -307,36 +283,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* =========================================================================
-         SEKCJA SAMOUCZKA: ZACHĘTA DO PRZEJŚCIA PRZEZ KROKI
-         ========================================================================= */}
-      <section
-        aria-label="Samouczek platformy"
-        className="rounded-3xl bg-stone-100/80 dark:bg-[#24272F] border border-stone-200/80 dark:border-white/10 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6"
-      >
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-            <GraduationCap className="w-6 h-6" aria-hidden="true" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-lg font-bold text-stone-900 dark:text-white">
-              Nie wiesz od czego zacząć? Poznaj MiNNO w 5 krokach
-            </h3>
-            <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 max-w-xl">
-              Zobacz interaktywny samouczek z ruchomymi wizualizacjami SVG pisanymi kodem. Przejdź przez proces od diagnozy wskaźników do pozyskania grantu.
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={openTutorial}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white dark:bg-white dark:text-stone-950 dark:hover:bg-stone-100 text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer shrink-0"
-        >
-          <Sparkles className="w-4 h-4 text-amber-400" aria-hidden="true" />
-          <span>Włącz samouczek z animacjami</span>
-        </button>
-      </section>
     </div>
   );
 }
