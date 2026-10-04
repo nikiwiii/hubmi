@@ -154,20 +154,6 @@ function SelectedInnovation({
             {innovation.target_group}
           </p>
         )}
-        {innovation.video_url && (
-          <div className="flex flex-wrap items-center gap-2 pt-1.5">
-            <a
-              href={innovation.video_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200 transition-colors"
-            >
-              <Video className="w-3.5 h-3.5" />
-              <span>Wideo innowacji (YouTube)</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-        )}
       </div>
       <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
         {onChange && (

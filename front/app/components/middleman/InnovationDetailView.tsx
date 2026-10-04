@@ -112,14 +112,16 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
               </div>
 
               {embedUrl ? (
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-inner border border-black/10">
-                  <iframe
-                    src={embedUrl}
-                    title={`Prezentacja wideo innowacji: ${innovation.title}`}
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
+                <div className="max-w-2xl">
+                  <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-inner border border-black/10">
+                    <iframe
+                      src={embedUrl}
+                      title={`Prezentacja wideo innowacji: ${innovation.title}`}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="p-3.5 rounded-xl bg-stone-50 border border-black/5 flex items-center justify-between gap-3">

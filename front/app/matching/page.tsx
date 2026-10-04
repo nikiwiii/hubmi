@@ -42,7 +42,8 @@ interface ChatTurn {
 function MatchingContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
-  const { matchingMessages: messages, setMatchingMessages: setMessages } = useApp();
+  const { matchingMessages: messages, setMatchingMessages: setMessages } =
+    useApp();
 
   const [inputIdea, setInputIdea] = useState(initialQuery);
   const [isLoading, setIsLoading] = useState(false);
@@ -209,7 +210,10 @@ function MatchingContent() {
               aria-label="Rozpocznij nową rozmowę i wyczyść czat"
               className="min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 bg-white/90 hover:bg-white text-stone-700 hover:text-stone-950 border border-black/5 rounded-xl text-xs font-semibold shadow-2xs cursor-pointer transition-all"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-stone-500" aria-hidden="true" />
+              <RotateCcw
+                className="w-3.5 h-3.5 text-stone-500"
+                aria-hidden="true"
+              />
               <span>Nowa rozmowa</span>
             </button>
           </div>
@@ -411,7 +415,9 @@ function MatchingContent() {
 
                                 {turn.matchResponse.top_solution.video_url && (
                                   <a
-                                    href={turn.matchResponse.top_solution.video_url}
+                                    href={
+                                      turn.matchResponse.top_solution.video_url
+                                    }
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-all shadow-2xs"
@@ -768,7 +774,10 @@ function MatchingContent() {
                     </>
                   ) : (
                     <>
-                      <Mic className="w-3.5 h-3.5 text-stone-600" aria-hidden="true" />
+                      <Mic
+                        className="w-3.5 h-3.5 text-stone-600"
+                        aria-hidden="true"
+                      />
                       <span>Dyktuj</span>
                     </>
                   )}
@@ -784,9 +793,15 @@ function MatchingContent() {
                   className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-full bg-stone-900 hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-stone-900 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
                 >
                   {isLoading ? (
-                    <RotateCcw className="w-4 h-4 animate-spin text-[#EFE5C6]" aria-hidden="true" />
+                    <RotateCcw
+                      className="w-4 h-4 animate-spin text-[#EFE5C6]"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <ArrowUp className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
+                    <ArrowUp
+                      className="w-4 h-4 stroke-[2.5]"
+                      aria-hidden="true"
+                    />
                   )}
                 </button>
               </div>

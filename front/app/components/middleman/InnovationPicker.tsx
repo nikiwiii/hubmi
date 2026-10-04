@@ -155,15 +155,6 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({
                     <span className="text-base font-bold text-stone-900 leading-snug">
                       {inn.title}
                     </span>
-                    {inn.video_url && (
-                      <span
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full shrink-0"
-                        title="Dostępny filmik na YouTube"
-                      >
-                        <Video className="w-3 h-3" />
-                        <span>Wideo</span>
-                      </span>
-                    )}
                   </div>
                   {(inn.addressed_problems || inn.description) && (
                     <span className="text-sm text-stone-600 leading-relaxed line-clamp-2">
@@ -178,9 +169,7 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({
                   )}
                   <div className="mt-2 pt-2 border-t border-black/5 flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1 text-sm font-semibold text-stone-900 group-hover:underline underline-offset-4">
-                      <span>
-                        Zobacz innowację {inn.video_url ? "& wideo" : ""}
-                      </span>
+                      <span>Zobacz innowację</span>
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </span>
                     {onQuickCreate && (
