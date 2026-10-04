@@ -798,6 +798,23 @@ export async function updateConversationStatus(
   return await res.json();
 }
 
+export async function deleteConversation(
+  conversationId: string,
+): Promise<void> {
+  const res = await apiFetch(
+    `${API_BASE}/api/chat/conversations/${conversationId}`,
+    {
+      method: "DELETE",
+      headers: getHeaders(true),
+    },
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd usuwania rozmowy.");
+  }
+}
+
 /**
  * Pobiera aktualną listę wskaźników z bazy Supabase poprzez backend API.
  */

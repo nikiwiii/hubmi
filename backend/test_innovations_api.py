@@ -1,7 +1,11 @@
 import sys
 import io
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+if __name__ == "__main__" and hasattr(sys.stdout, "buffer"):
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    except Exception:
+        pass
 
 from fastapi.testclient import TestClient
 from main import app

@@ -206,6 +206,7 @@ class MemoryDB:
                 "authors": "Konsorcjum ROPS & Fundacja Aktywny Senior",
                 "validation": "Przetestowano w 8 placówkach opiekuńczych z udziałem 240 seniorów.",
                 "url": "https://hubmi.org/innowacje/domy-starcow-wsparcie-seniorow-dofinansowanie",
+                "video_url": "https://www.youtube.com/watch?v=Pl5bkpxEqgs",
                 "file_source": "Innowacja_Domy_Starcow_Dotacje_FERS_2025.pdf"
             },
             {
@@ -219,6 +220,7 @@ class MemoryDB:
                 "authors": "Instytut Technologii Wspomagających Medycynę",
                 "validation": "Spadek liczby niebezpiecznych powikłań po upadkach o 78% w okresie 12 miesięcy.",
                 "url": "https://hubmi.org/innowacje/teleopieka-dla-seniorow-dps",
+                "video_url": "https://www.youtube.com/watch?v=k85mRPqvMbE",
                 "file_source": "Raport_Teleopieka_DPS_Standardy.pdf"
             },
             {
@@ -232,6 +234,7 @@ class MemoryDB:
                 "authors": "Stowarzyszenie Łączymy Pokolenia",
                 "validation": "Zrealizowano 1500 godzin spotkań w 4 domach opieki.",
                 "url": "https://hubmi.org/innowacje/miedzypokoleniowy-wolontariat-dps",
+                "video_url": None,
                 "file_source": "Podrecznik_Wolontariat_DPS_2024.pdf"
             },
             {
@@ -245,6 +248,7 @@ class MemoryDB:
                 "authors": "Fundacja Zielona Energia dla Wszystkich",
                 "validation": "Oszczędności rachunków średnio o 42% rocznie w 3 pilotażowych blokach.",
                 "url": "https://hubmi.org/innowacje/eko-spoldzielnia-energetyczna",
+                "video_url": None,
                 "file_source": "Przewodnik_EkoSpoldzielnia_OZE.pdf"
             },
             {
@@ -258,6 +262,7 @@ class MemoryDB:
                 "authors": "Zespół Psychologów Uniwersytetu Warszawskiego",
                 "validation": "Przebadano 400 uczniów – wzrost tempa czytania ze zrozumieniem o 35%.",
                 "url": "https://hubmi.org/innowacje/edukacja-dysleksja-adhd",
+                "video_url": "https://www.youtube.com/watch?v=HZzYekiW_nY",
                 "file_source": "Innowacja_Edukacyjna_Dysleksja_2025.pdf"
             }
         ]
@@ -862,6 +867,22 @@ class DatabaseRepository:
         return innovation_data
 
     @staticmethod
+    def update_innovation(innovation_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("innovations").update(updates).eq("id", innovation_id).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
+            except Exception as e:
+                logger.error(f"Supabase error update_innovation: {e}")
+        for inn in memory_db.innovations:
+            if str(inn["id"]) == innovation_id:
+                inn.update(updates)
+                return inn
+        return None
+
+    @staticmethod
     def match_innovations_pgvector(
         query_vector: List[float],
         match_threshold: float = 0.20,
@@ -1008,6 +1029,19 @@ class DatabaseRepository:
             conv.update(updates)
             return conv
         return None
+
+    @staticmethod
+    def delete_conversation(conv_id: str) -> bool:
+        if is_supabase_connected and supabase_client:
+            try:
+                supabase_client.table("chat_messages").delete().eq("conversation_id", conv_id).execute()
+                supabase_client.table("chat_conversations").delete().eq("id", conv_id).execute()
+                return True
+            except Exception as e:
+                logger.error(f"Supabase error delete_conversation: {e}")
+        memory_db.conversations = [c for c in memory_db.conversations if str(c.get("id")) != conv_id]
+        memory_db.messages = [m for m in memory_db.messages if str(m.get("conversation_id")) != conv_id]
+        return True
 
     @staticmethod
     def create_message(msg_data: Dict[str, Any]) -> Dict[str, Any]:

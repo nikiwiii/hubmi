@@ -121,6 +121,10 @@ export interface ChatContact {
   lastMessageTime?: string;
   unreadCount?: number;
   isOnline: boolean;
+  userName?: string;
+  topic?: string;
+  status?: "open" | "in_progress" | "closed";
+  ideaTitle?: string | null;
 }
 
 export type ScreenId =

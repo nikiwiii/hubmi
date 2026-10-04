@@ -21,6 +21,7 @@ class InnovationMatchItem(BaseModel):
     funding_info: Optional[str] = None
     target_group: Optional[str] = None
     url: Optional[str] = None
+    video_url: Optional[str] = None
     file_source: Optional[str] = None
     similarity: float
     similarity_percentage: str
