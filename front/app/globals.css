@@ -195,22 +195,121 @@ body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.b
   font-size: 135% !important;
 }
 
-/* High Contrast Mode (WCAG AAA contrast) */
-.high-contrast {
-  --background: #000000 !important;
-  --foreground: #ffffff !important;
-  background-color: #000000 !important;
-  color: #ffffff !important;
+/* =========================================================================
+   DARK THEME (TRYB CIEMNY)
+   ========================================================================= */
+html.dark,
+body.dark,
+.dark {
+  --background: #141518;
+  --foreground: #F3F4F6;
+  background-color: #141518;
+  color: #F3F4F6;
 }
 
-.high-contrast :focus-visible {
-  outline: 3px solid #facc15 !important;
-  outline-offset: 3px !important;
+.dark body {
+  background-color: #141518;
+  color: #F3F4F6;
+}
+
+.dark header,
+.dark nav.bg-\[\#F7F6F1\]\/95,
+.dark nav.bg-\[\#F7F6F1\],
+.dark .bg-\[\#F7F6F1\] {
+  background-color: rgba(20, 21, 24, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark div.bg-white,
+.dark article.bg-white,
+.dark section.bg-white,
+.dark .bg-white {
+  background-color: #1C1E23 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #F3F4F6;
+}
+
+.dark .bg-stone-50,
+.dark .bg-stone-100,
+.dark .bg-stone-50\/60,
+.dark .bg-stone-50\/70,
+.dark .bg-stone-50\/80,
+.dark .bg-stone-100\/90,
+.dark .bg-stone-200\/60,
+.dark .bg-stone-200\/70,
+.dark .bg-stone-200\/80 {
+  background-color: #24272F !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #E5E7EB;
+}
+
+.dark .text-stone-900,
+.dark .text-stone-950,
+.dark .text-stone-800 {
+  color: #F9FAFB !important;
+}
+
+.dark .text-stone-700 {
+  color: #D1D5DB !important;
+}
+
+.dark .text-stone-600,
+.dark .text-stone-500 {
+  color: #9CA3AF !important;
+}
+
+.dark .text-stone-400 {
+  color: #9CA3AF !important;
+}
+
+.dark .border-stone-100,
+.dark .border-stone-200,
+.dark .border-stone-200\/70,
+.dark .border-stone-200\/80,
+.dark .border-stone-200\/90,
+.dark .border-stone-300,
+.dark .border-black\/5,
+.dark .border-black\/10 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #141518 !important;
+  color: #F3F4F6 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6B7280 !important;
+}
+
+.dark button:not(.bg-stone-900):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-yellow-400) {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* =========================================================================
+   HIGH CONTRAST MODE (TRYB WYSOKIEGO KONTRASTU - WCAG AAA ŻÓŁTO-CZARNY)
+   ========================================================================= */
+html.high-contrast,
+body.high-contrast,
+.high-contrast {
+  --background: #000000 !important;
+  --foreground: #FFFFFF !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
 }
 
 .high-contrast body {
   background-color: #000000 !important;
-  color: #ffffff !important;
+  color: #FFFFFF !important;
+}
+
+.high-contrast :focus-visible {
+  outline: 3px solid #FACC15 !important;
+  outline-offset: 3px !important;
 }
 
 .high-contrast header,
@@ -218,12 +317,16 @@ body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.b
 .high-contrast aside,
 .high-contrast section,
 .high-contrast article,
+.high-contrast main,
 .high-contrast div.bg-white,
+.high-contrast div.bg-stone-50,
+.high-contrast div.bg-stone-100,
 .high-contrast div.bg-\[\#FAF9F5\],
 .high-contrast div.bg-\[\#F7F6F1\] {
-  background-color: #121212 !important;
-  border-color: #facc15 !important;
-  color: #ffffff !important;
+  background-color: #000000 !important;
+  border: 2px solid #FACC15 !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
 }
 
 .high-contrast text,
@@ -234,30 +337,42 @@ body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.b
 .high-contrast h2,
 .high-contrast h3,
 .high-contrast h4 {
-  color: #ffffff !important;
+  color: #FFFFFF !important;
 }
 
 .high-contrast .text-stone-400,
 .high-contrast .text-stone-500,
-.high-contrast .text-stone-600 {
-  color: #fef08a !important;
+.high-contrast .text-stone-600,
+.high-contrast .text-stone-700 {
+  color: #FEF08A !important;
 }
 
-.high-contrast button {
-  border-color: #facc15 !important;
+.high-contrast button,
+.high-contrast a[role="button"] {
+  background-color: #000000 !important;
+  border: 2px solid #FACC15 !important;
+  color: #FACC15 !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
 }
 
-.high-contrast button:not(.bg-stone-900) {
-  background-color: #1c1917 !important;
-  color: #fef08a !important;
+.high-contrast button:hover,
+.high-contrast a[role="button"]:hover {
+  background-color: #FACC15 !important;
+  color: #000000 !important;
 }
 
 .high-contrast input,
 .high-contrast textarea,
 .high-contrast select {
   background-color: #000000 !important;
-  color: #ffffff !important;
-  border-color: #facc15 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FACC15 !important;
+}
+
+.high-contrast input::placeholder,
+.high-contrast textarea::placeholder {
+  color: #FEF08A !important;
 }
 
 /* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */

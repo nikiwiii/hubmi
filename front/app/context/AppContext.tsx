@@ -10,7 +10,7 @@ import {
   InstitutionProfile,
   ServiceCardResponse,
 } from '../lib/types';
-import { getCurrentUser, setCurrentUser as setStoredCurrentUser } from '../lib/auth';
+import { setCurrentUser as setStoredCurrentUser } from '../lib/auth';
 import {
   getIdeas,
   saveIdeas,
@@ -50,10 +50,15 @@ interface AppContextType {
   toggleFontSize: () => void;
   fontSizeLevel: 'normal' | 'large' | 'huge';
   setFontSizeLevel: (level: 'normal' | 'large' | 'huge') => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
   isHighContrast: boolean;
   toggleHighContrast: () => void;
   isSoundEnabled: boolean;
   toggleSound: () => void;
+  isTutorialOpen: boolean;
+  openTutorial: () => void;
+  closeTutorial: () => void;
   vote: (id: string, type: 'like' | 'dislike') => Promise<void>;
   toggleTesting: (id: string) => Promise<void>;
   addIdea: (ideaData: any) => Promise<Idea>;
@@ -98,12 +103,11 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
-  const [currentUser, setCurrentUserState] = useState<User | null>(() => {
-    return getCurrentUser();
-  });
+  // null on the first render so the server HTML matches the client. The session is read after mount.
+  const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
-  const [isLoadingUser, setIsLoadingUser] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   // Accessibility states
   const [fontSizeLevel, setFontSizeLevelState] = useState<'normal' | 'large' | 'huge'>(() => {
     if (typeof window !== 'undefined') {
@@ -111,6 +115,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (saved === 'large' || saved === 'huge') return saved;
     }
     return 'normal';
+  });
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('minno_dark_mode') === 'true';
+    }
+    return false;
   });
   const [isHighContrast, setIsHighContrast] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -124,6 +134,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return true;
   });
+  const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
 
   const isLargeFont = fontSizeLevel !== 'normal';
 
@@ -132,6 +143,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (typeof window !== 'undefined') {
       localStorage.setItem('minno_font_size_level', level);
     }
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('minno_dark_mode', String(next));
+      }
+      return next;
+    });
   };
 
   const toggleHighContrast = () => {
@@ -143,6 +164,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return next;
     });
   };
+
+  const openTutorial = () => setIsTutorialOpen(true);
+  const closeTutorial = () => setIsTutorialOpen(false);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    if (isHighContrast) {
+      root.classList.add('high-contrast');
+    } else {
+      root.classList.remove('high-contrast');
+    }
+  }, [isHighContrast]);
 
   const toggleSound = () => {
     setIsSoundEnabled((prev) => {
@@ -556,6 +600,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setMiddlemanRefineText: setMiddlemanRefineTextState,
         resetMiddleman,
 
+        isDarkMode,
+        toggleDarkMode,
+        isTutorialOpen,
+        openTutorial,
+        closeTutorial,
+
         // Matching
         matchingMessages,
         setMatchingMessages,
@@ -568,7 +618,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             : fontSizeLevel === 'large'
             ? 'font-scale-large'
             : ''
-        } ${isHighContrast ? 'high-contrast' : 'bg-[#F7F6F1]'}`}
+        } ${
+          isHighContrast
+            ? 'high-contrast bg-black text-white'
+            : isDarkMode
+            ? 'dark bg-[#141518] text-[#F3F4F6]'
+            : 'bg-[#F7F6F1] text-stone-900'
+        }`}
       >
         {children}
       </div>

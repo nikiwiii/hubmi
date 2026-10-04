@@ -165,6 +165,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
   }
 
   const isPositiveTrend = activeSeries.delta >= 0;
+  const isPercent = research.unit === '%' || research.unit.toLowerCase() === 'procent';
   const powiatPctChange =
     activeSeries.startValue && activeSeries.startValue !== 0
       ? (((activeSeries.endValue - activeSeries.startValue) / activeSeries.startValue) * 100).toFixed(1)
@@ -210,12 +211,15 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
             <Calendar className="w-3.5 h-3.5 text-stone-400 shrink-0" aria-hidden="true" />
           </div>
           <div className="mt-2.5">
-            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
-              {formatResearchValue(activeSeries.startValue)}
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none flex items-baseline">
+              <span>{formatResearchValue(activeSeries.startValue)}</span>
+              {isPercent && <span className="text-lg sm:text-xl font-bold text-stone-600 ml-0.5">%</span>}
             </div>
-            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
-              {research.unit}
-            </div>
+            {!isPercent && (
+              <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+                {research.unit}
+              </div>
+            )}
           </div>
         </div>
 
@@ -228,12 +232,15 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
             <Activity className="w-3.5 h-3.5 text-stone-400 shrink-0" aria-hidden="true" />
           </div>
           <div className="mt-2.5">
-            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
-              {formatResearchValue(activeSeries.endValue)}
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none flex items-baseline">
+              <span>{formatResearchValue(activeSeries.endValue)}</span>
+              {isPercent && <span className="text-lg sm:text-xl font-bold text-stone-600 ml-0.5">%</span>}
             </div>
-            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
-              {research.unit}
-            </div>
+            {!isPercent && (
+              <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+                {research.unit}
+              </div>
+            )}
           </div>
         </div>
 
@@ -256,15 +263,20 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
           </div>
           <div className="mt-2.5">
             <div
-              className={`text-2xl sm:text-3xl font-black tracking-tight leading-none ${
+              className={`text-2xl sm:text-3xl font-black tracking-tight leading-none flex items-baseline ${
                 isPositiveTrend ? 'text-emerald-700' : 'text-rose-700'
               }`}
             >
-              {activeSeries.delta > 0 ? `+${formatResearchValue(activeSeries.delta)}` : formatResearchValue(activeSeries.delta)}
+              <span>
+                {activeSeries.delta > 0 ? `+${formatResearchValue(activeSeries.delta)}` : formatResearchValue(activeSeries.delta)}
+              </span>
+              {isPercent && <span className="text-lg sm:text-xl font-bold ml-0.5">%</span>}
             </div>
-            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
-              {research.unit}
-            </div>
+            {!isPercent && (
+              <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+                {research.unit}
+              </div>
+            )}
           </div>
         </div>
 

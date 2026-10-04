@@ -245,17 +245,22 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                       >
                         Najnowszy ({research.years[research.years.length - 1]})
                       </span>
-                      <div className="text-xl font-extrabold tracking-tight leading-none mt-1">
-                        {formatResearchValue(item.endValue)}
+                      <div className="text-xl font-extrabold tracking-tight leading-none mt-1 flex items-baseline">
+                        <span>{formatResearchValue(item.endValue)}</span>
+                        {(research.unit === '%' || research.unit.toLowerCase() === 'procent') && (
+                          <span className="text-sm font-bold opacity-80 ml-0.5">%</span>
+                        )}
                       </div>
-                      <div
-                        className={`text-[11px] font-medium mt-0.5 truncate max-w-[130px] ${
-                          isSelected ? 'text-stone-300' : 'text-stone-500'
-                        }`}
-                        title={research.unit}
-                      >
-                        {research.unit}
-                      </div>
+                      {research.unit !== '%' && research.unit.toLowerCase() !== 'procent' && (
+                        <div
+                          className={`text-[11px] font-medium mt-0.5 truncate max-w-[130px] ${
+                            isSelected ? 'text-stone-300' : 'text-stone-500'
+                          }`}
+                          title={research.unit}
+                        >
+                          {research.unit}
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-right">
@@ -292,6 +297,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                           }`}
                         >
                           {item.delta > 0 ? `+${formatResearchValue(item.delta)}` : formatResearchValue(item.delta)}
+                          {(research.unit === '%' || research.unit.toLowerCase() === 'procent') ? '%' : ''}
                         </span>
                       </div>
                     </div>
