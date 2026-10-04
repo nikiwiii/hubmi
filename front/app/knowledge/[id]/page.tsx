@@ -101,6 +101,8 @@ export default function ResearchDetailPage() {
       ? (((research.summary.endAvg - research.summary.startAvg) / research.summary.startAvg) * 100).toFixed(1)
       : null;
 
+  const isPercent = research.unit === '%' || research.unit.toLowerCase() === 'procent';
+
   return (
     <div className="py-6 sm:py-8 px-4 sm:px-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-200">
       {/* Pasek nawigacyjny i przełącznik badania */}
@@ -215,12 +217,15 @@ export default function ResearchDetailPage() {
               <Calendar className="w-4 h-4 text-stone-400 shrink-0" aria-hidden="true" />
             </div>
             <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
-                {formatResearchValue(research.summary.startAvg)}
+              <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none flex items-baseline">
+                <span>{formatResearchValue(research.summary.startAvg)}</span>
+                {isPercent && <span className="text-lg sm:text-xl font-bold text-stone-600 ml-0.5">%</span>}
               </div>
-              <div className="text-xs font-medium text-stone-500 mt-2 truncate" title={research.unit}>
-                {research.unit}
-              </div>
+              {!isPercent && (
+                <div className="text-xs font-medium text-stone-500 mt-2 truncate" title={research.unit}>
+                  {research.unit}
+                </div>
+              )}
             </div>
           </div>
 
@@ -233,12 +238,15 @@ export default function ResearchDetailPage() {
               <Activity className="w-4 h-4 text-stone-400 shrink-0" aria-hidden="true" />
             </div>
             <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
-                {formatResearchValue(research.summary.endAvg)}
+              <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none flex items-baseline">
+                <span>{formatResearchValue(research.summary.endAvg)}</span>
+                {isPercent && <span className="text-lg sm:text-xl font-bold text-stone-600 ml-0.5">%</span>}
               </div>
-              <div className="text-xs font-medium text-stone-500 mt-2 truncate" title={research.unit}>
-                {research.unit}
-              </div>
+              {!isPercent && (
+                <div className="text-xs font-medium text-stone-500 mt-2 truncate" title={research.unit}>
+                  {research.unit}
+                </div>
+              )}
             </div>
           </div>
 
@@ -261,15 +269,20 @@ export default function ResearchDetailPage() {
             </div>
             <div className="mt-3">
               <div
-                className={`text-2xl sm:text-3xl font-black tracking-tight leading-none ${
+                className={`text-2xl sm:text-3xl font-black tracking-tight leading-none flex items-baseline ${
                   isPositiveDelta ? 'text-emerald-700' : 'text-rose-700'
                 }`}
               >
-                {research.summary.deltaAvg > 0 ? `+${formatResearchValue(research.summary.deltaAvg)}` : formatResearchValue(research.summary.deltaAvg)}
+                <span>
+                  {research.summary.deltaAvg > 0 ? `+${formatResearchValue(research.summary.deltaAvg)}` : formatResearchValue(research.summary.deltaAvg)}
+                </span>
+                {isPercent && <span className="text-lg sm:text-xl font-bold ml-0.5">%</span>}
               </div>
-              <div className="text-xs font-medium text-stone-500 mt-2 truncate" title={research.unit}>
-                {research.unit}
-              </div>
+              {!isPercent && (
+                <div className="text-xs font-medium text-stone-500 mt-2 truncate" title={research.unit}>
+                  {research.unit}
+                </div>
+              )}
             </div>
           </div>
 
@@ -285,8 +298,9 @@ export default function ResearchDetailPage() {
               <Award className="w-4 h-4 text-amber-500 shrink-0" aria-hidden="true" />
             </div>
             <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
-                {formatResearchValue(research.summary.topCounty.value)}
+              <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none flex items-baseline">
+                <span>{formatResearchValue(research.summary.topCounty.value)}</span>
+                {isPercent && <span className="text-lg sm:text-xl font-bold text-stone-600 ml-0.5">%</span>}
               </div>
               <div
                 className="text-xs font-bold text-stone-800 mt-2 truncate"
