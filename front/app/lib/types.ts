@@ -121,6 +121,10 @@ export interface ChatContact {
   lastMessageTime?: string;
   unreadCount?: number;
   isOnline: boolean;
+  userName?: string;
+  topic?: string;
+  status?: "open" | "in_progress" | "closed";
+  ideaTitle?: string | null;
 }
 
 export type ScreenId =
@@ -220,6 +224,7 @@ export interface InnovationMatchItem {
   funding_info?: string | null;
   target_group?: string | null;
   url?: string | null;
+  video_url?: string | null;
   file_source?: string | null;
   similarity: number;
   similarity_percentage: string;
@@ -338,6 +343,7 @@ export interface InnovationRecord {
   funding_info?: string | null;
   category?: string | null;
   url?: string | null;
+  video_url?: string | null;
 }
 
 export type InstitutionType =
@@ -393,6 +399,7 @@ export interface ServiceCardResponse {
   innovation_id: string;
   innovation_title: string;
   innovation_url?: string | null;
+  innovation_video_url?: string | null;
   card: ServiceCard;
 }
 
@@ -504,6 +511,7 @@ export interface KnowledgeRagMatchedInnovation {
   addressed_problems?: string;
   funding_info?: string;
   url?: string | null;
+  video_url?: string | null;
   score: number;
 }
 

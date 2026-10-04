@@ -16,7 +16,7 @@ PyJWT>=2.8.0
 pypdf>=6.0.0
 fpdf2>=2.8.0
 pymupdf>=1.24.0
-
+urllib3>=2.5.0
 # tests
 pytest>=8.0.0
 

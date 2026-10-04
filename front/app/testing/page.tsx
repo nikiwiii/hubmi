@@ -19,6 +19,7 @@ import {
   Layers,
   HeartHandshake,
   Lock,
+  RefreshCw,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { Idea } from "../lib/types";
@@ -28,7 +29,7 @@ import { getThemeStyles } from "../components/shared/IdeaCard";
 
 export default function TestingPage() {
   const router = useRouter();
-  const { ideas, currentUser, toggleTesting, isLoadingIdeas } = useApp();
+  const { ideas, currentUser, toggleTesting, isLoadingIdeas, isLoadingUser } = useApp();
   const isAdmin = currentUser?.role === "admin";
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,6 +71,15 @@ export default function TestingPage() {
   const myTestingCount = currentUser
     ? ideas.filter((i) => i.testersList?.includes(currentUser.email)).length
     : 0;
+
+  if (isLoadingUser) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[55vh] gap-3 text-stone-400 py-16">
+        <RefreshCw className="w-6 h-6 animate-spin text-stone-500" />
+        <span className="text-sm font-medium">Weryfikacja uprawnień...</span>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (

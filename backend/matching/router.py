@@ -83,6 +83,7 @@ def add_innovation(
         "target_group": data.target_group,
         "beneficiaries": data.beneficiaries,
         "url": data.url,
+        "video_url": data.video_url,
         "file_source": data.file_source,
         "embedding": embedding
     }

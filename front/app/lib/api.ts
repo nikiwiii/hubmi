@@ -200,13 +200,14 @@ export async function loginUser(
   const userRole = data.user?.role || data.role;
   const isAdmin =
     userRole === "admin" || userEmail.toLowerCase().includes("admin");
+  const finalRole = isAdmin ? "admin" : userRole === "expert" ? "expert" : "creator";
 
   const userObj: User = {
     id: userId,
     email: userEmail,
     name: userName,
-    role: isAdmin ? "admin" : "creator",
-    avatarBg: isAdmin ? "#F5E85A" : "#A4B3F6",
+    role: finalRole,
+    avatarBg: finalRole === "admin" ? "#F5E85A" : finalRole === "expert" ? "#CAD7CE" : "#A4B3F6",
     createdAt:
       data.user?.created_at?.split("T")[0] ||
       new Date().toISOString().split("T")[0],
@@ -407,6 +408,25 @@ export async function fetchIdeasFromBackend(): Promise<Idea[]> {
 
   const data: BackendIdea[] = await res.json();
   return data.map(mapBackendIdeaToFrontend);
+}
+
+export async function fetchIdeaById(ideaId: string): Promise<Idea | null> {
+  try {
+    const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}`, {
+      method: "GET",
+      headers: getHeaders(true),
+    });
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const item: BackendIdea = await res.json();
+    return mapBackendIdeaToFrontend(item);
+  } catch (err) {
+    console.warn(`Nie udało się pobrać pomysłu ${ideaId}:`, err);
+    return null;
+  }
 }
 
 export async function createIdeaOnBackend(data: {
@@ -796,6 +816,23 @@ export async function updateConversationStatus(
   }
 
   return await res.json();
+}
+
+export async function deleteConversation(
+  conversationId: string,
+): Promise<void> {
+  const res = await apiFetch(
+    `${API_BASE}/api/chat/conversations/${conversationId}`,
+    {
+      method: "DELETE",
+      headers: getHeaders(true),
+    },
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd usuwania rozmowy.");
+  }
 }
 
 /**

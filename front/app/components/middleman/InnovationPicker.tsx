@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  Video,
 } from "lucide-react";
 import { InnovationRecord } from "../../lib/types";
 import { useApp } from "../../context/AppContext";
@@ -140,9 +141,20 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({ onSelect }) 
                   onClick={() => onSelect(inn)}
                   className="w-full h-full text-left p-5 bg-white hover:bg-[#FAF9F5] border border-black/5 hover:border-black/15 rounded-2xl shadow-2xs transition-all cursor-pointer group flex flex-col gap-2"
                 >
-                  <span className="text-base font-bold text-stone-900 leading-snug">
-                    {inn.title}
-                  </span>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-base font-bold text-stone-900 leading-snug">
+                      {inn.title}
+                    </span>
+                    {inn.video_url && (
+                      <span
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full shrink-0"
+                        title="Dostępny filmik na YouTube"
+                      >
+                        <Video className="w-3 h-3" />
+                        <span>Wideo</span>
+                      </span>
+                    )}
+                  </div>
                   {(inn.addressed_problems || inn.description) && (
                     <span className="text-sm text-stone-600 leading-relaxed line-clamp-2">
                       {inn.addressed_problems || inn.description}

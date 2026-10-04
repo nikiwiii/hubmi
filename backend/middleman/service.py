@@ -117,6 +117,7 @@ def innovation_for_prompt(item: Dict[str, Any]) -> Dict[str, Any]:
         "beneficiaries": item.get("beneficiaries"),
         "validation": item.get("validation"),
         "funding_info": item.get("funding_info"),
+        "video_url": item.get("video_url"),
     }
 
 

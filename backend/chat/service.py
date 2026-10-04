@@ -212,3 +212,18 @@ class ChatService:
 
         updated = DatabaseRepository.update_conversation(conv_id, {"status": new_status})
         return cls._to_conversation_response(updated)
+
+    @classmethod
+    def delete_conversation(
+        cls,
+        conv_id: str,
+        current_user_id: str,
+        is_admin: bool
+    ) -> bool:
+        conv = DatabaseRepository.get_conversation_by_id(conv_id)
+        if not conv:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nie znaleziono konwersacji.")
+        if not is_admin and str(conv["user_id"]) != current_user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Brak uprawnień do usunięcia tej rozmowy.")
+
+        return DatabaseRepository.delete_conversation(conv_id)

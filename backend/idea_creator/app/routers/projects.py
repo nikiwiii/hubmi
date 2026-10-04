@@ -57,7 +57,7 @@ def list_projects(repo: IdeasRepository = Depends(get_repository)):
 
 
 @router.get("/{project_id}", response_model=ProjectOut, summary="Szczegóły projektu")
-def get_project(project_id: UUID, repo: IdeasRepository = Depends(get_repository)):
+def get_project(project_id: str, repo: IdeasRepository = Depends(get_repository)):
     try:
         project = repo.get(str(project_id))
     except RepositoryError:

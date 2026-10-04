@@ -127,6 +127,16 @@ class IdeaService:
         return cls._compute_stats(created, user_id)
 
     @classmethod
+    def get_idea(cls, idea_id: str, current_user_id: Optional[str] = None) -> IdeaResponse:
+        idea = DatabaseRepository.get_idea_by_id(idea_id)
+        if not idea:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Pomysł o podanym ID nie istnieje."
+            )
+        return cls._compute_stats(idea, current_user_id)
+
+    @classmethod
     def delete_idea(cls, idea_id: str, user_id: str, is_admin: bool = False) -> bool:
         idea = DatabaseRepository.get_idea_by_id(idea_id)
         if not idea:
