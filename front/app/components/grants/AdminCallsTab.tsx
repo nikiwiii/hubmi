@@ -58,7 +58,13 @@ function errorText(e: unknown, fallback: string) {
   return e instanceof Error ? e.message : fallback;
 }
 
-export function AdminCallsTab({ onFeedback }: { onFeedback: (msg: string) => void }) {
+export function AdminCallsTab({
+  onFeedback,
+  onCount,
+}: {
+  onFeedback: (msg: string) => void;
+  onCount?: (count: number) => void;
+}) {
   const [calls, setCalls] = useState<GrantCall[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -66,9 +72,13 @@ export function AdminCallsTab({ onFeedback }: { onFeedback: (msg: string) => voi
 
   const reload = () =>
     fetchAllCalls()
-      .then(setCalls)
+      .then((list) => {
+        setCalls(list);
+        onCount?.(list.length);
+      })
       .catch((e) => {
         setCalls([]);
+        onCount?.(0);
         setError(errorText(e, "Nie udało się wczytać naborów."));
       });
 
@@ -83,7 +93,9 @@ export function AdminCallsTab({ onFeedback }: { onFeedback: (msg: string) => voi
       const list = prev ?? [];
       const old = list.find((c) => c.id === call.id);
       const merged = { ...call, applications_count: call.applications_count ?? old?.applications_count ?? 0 };
-      return old ? list.map((c) => (c.id === call.id ? merged : c)) : [merged, ...list];
+      const next = old ? list.map((c) => (c.id === call.id ? merged : c)) : [merged, ...list];
+      onCount?.(next.length);
+      return next;
     });
 
   if (creating) {

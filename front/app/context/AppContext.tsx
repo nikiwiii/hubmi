@@ -10,7 +10,7 @@ import {
   InstitutionProfile,
   ServiceCardResponse,
 } from '../lib/types';
-import { getCurrentUser, setCurrentUser as setStoredCurrentUser } from '../lib/auth';
+import { setCurrentUser as setStoredCurrentUser } from '../lib/auth';
 import {
   getIdeas,
   saveIdeas,
@@ -56,9 +56,6 @@ interface AppContextType {
   toggleHighContrast: () => void;
   isSoundEnabled: boolean;
   toggleSound: () => void;
-  isTutorialOpen: boolean;
-  openTutorial: () => void;
-  closeTutorial: () => void;
   vote: (id: string, type: 'like' | 'dislike') => Promise<void>;
   toggleTesting: (id: string) => Promise<void>;
   addIdea: (ideaData: any) => Promise<Idea>;
@@ -103,12 +100,11 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
-  const [currentUser, setCurrentUserState] = useState<User | null>(() => {
-    return getCurrentUser();
-  });
+  // null on the first render so the server HTML matches the client. The session is read after mount.
+  const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
-  const [isLoadingUser, setIsLoadingUser] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   // Accessibility states
   const [fontSizeLevel, setFontSizeLevelState] = useState<'normal' | 'large' | 'huge'>(() => {
     if (typeof window !== 'undefined') {
@@ -135,7 +131,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return true;
   });
-  const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
 
   const isLargeFont = fontSizeLevel !== 'normal';
 
@@ -166,8 +161,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const openTutorial = () => setIsTutorialOpen(true);
-  const closeTutorial = () => setIsTutorialOpen(false);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -603,9 +596,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         isDarkMode,
         toggleDarkMode,
-        isTutorialOpen,
-        openTutorial,
-        closeTutorial,
 
         // Matching
         matchingMessages,

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { CustomSelect } from "../components/shared/CustomSelect";
 import { AdminCallsTab } from "../components/grants/AdminCallsTab";
+import { fetchAllCalls } from "../lib/grantsApi";
 import { useApp } from "../context/AppContext";
 import {
   fetchTesterApplications,
@@ -49,6 +50,7 @@ export default function AdminPage() {
   // Tester applications state
   const [testerApps, setTesterApps] = useState<TesterApplication[]>([]);
   const [isLoadingTesterApps, setIsLoadingTesterApps] = useState(false);
+  const [callsCount, setCallsCount] = useState(0);
 
   // Modal / Form states for Create/Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,6 +86,19 @@ export default function AdminPage() {
       cancelled = true;
     };
   }, [isAdmin, activeTab]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+    fetchAllCalls()
+      .then((calls) => {
+        if (!cancelled) setCallsCount(calls.length);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
 
   if (isLoadingUser) {
     return (
@@ -357,14 +372,17 @@ export default function AdminPage() {
             )}
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "calls"}
             onClick={() => setActiveTab("calls")}
-            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "calls"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-600 hover:text-stone-900"
+                ? "bg-white text-stone-900 shadow-2xs font-bold"
+                : "text-stone-700 hover:text-stone-900"
             }`}
           >
-            Nabory
+            Nabory ({callsCount})
           </button>
         </div>
       </div>
@@ -916,7 +934,9 @@ export default function AdminPage() {
       )}
 
       {/* TAB 3: GRANT CALLS */}
-      {activeTab === "calls" && <AdminCallsTab onFeedback={setAdminFeedback} />}
+      {activeTab === "calls" && (
+        <AdminCallsTab onFeedback={setAdminFeedback} onCount={setCallsCount} />
+      )}
 
       {/* CREATE / EDIT MODAL */}
       {isModalOpen && (
