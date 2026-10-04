@@ -997,3 +997,17 @@ export function interpolateColor(
 
   return `rgb(${r}, ${g}, ${b})`;
 }
+
+// Formatowanie wartości wskaźników do czytelnej postaci (np. z separatorem tysięcy)
+export function formatResearchValue(val: number | null | undefined): string {
+  if (val === null || val === undefined || isNaN(val)) return '—';
+  const abs = Math.abs(val);
+  if (abs >= 1000) {
+    return Number(val.toFixed(1)).toLocaleString('pl-PL', { maximumFractionDigits: 1 });
+  }
+  if (abs >= 10) {
+    return Number(val.toFixed(1)).toLocaleString('pl-PL', { maximumFractionDigits: 1 });
+  }
+  return Number(val.toFixed(2)).toLocaleString('pl-PL', { maximumFractionDigits: 2 });
+}
+

@@ -16,7 +16,8 @@ import {
   ResearchInfo,
   PowiatTimeSeries,
   getAllPowiatTimeSeries,
-  getRegionalAverageTimeSeries
+  getRegionalAverageTimeSeries,
+  formatResearchValue
 } from '../../lib/researchData';
 import { POWIATY_DATA } from '../../lib/malopolskaMapData';
 import {
@@ -28,6 +29,7 @@ import {
   ChevronDown,
   Check,
   Award,
+  Calendar,
   Sparkles
 } from 'lucide-react';
 import { CustomSelect, SelectOption } from '../shared/CustomSelect';
@@ -78,7 +80,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
   const mainPowiatOptions: SelectOption[] = useMemo(() => {
     return allSeries.map((s) => ({
       value: s.powiatId,
-      label: `${s.powiatName} (${s.endValue} ${research.unit})`,
+      label: `${s.powiatName} (${formatResearchValue(s.endValue)} ${research.unit})`,
     }));
   }, [allSeries, research.unit]);
 
@@ -129,6 +131,10 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
   }
 
   const isPositiveTrend = activeSeries.delta >= 0;
+  const powiatPctChange =
+    activeSeries.startValue && activeSeries.startValue !== 0
+      ? (((activeSeries.endValue - activeSeries.startValue) / activeSeries.startValue) * 100).toFixed(1)
+      : null;
 
   // Custom Tooltip dla Recharts
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -148,7 +154,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
                 <span className="truncate max-w-[130px]">{entry.name}:</span>
               </span>
               <span className="font-bold text-stone-100">
-                {entry.value} {research.unit}
+                {formatResearchValue(entry.value)} {research.unit}
               </span>
             </div>
           ))}
@@ -176,7 +182,6 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
               value={activeSeries.powiatId}
               onChange={onSelectPowiat}
               options={mainPowiatOptions}
-              labelPrefix="Powiat:"
             />
           )}
 
@@ -189,56 +194,90 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
       </div>
 
       {/* Karty podsumowujące statystyki wybranego powiatu */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70">
-          <span className="text-[11px] font-medium text-stone-500 block">
-            Początek ({research.years[0]})
-          </span>
-          <span className="text-xl font-extrabold text-stone-900 mt-0.5 block">
-            {activeSeries.startValue} {research.unit}
-          </span>
-        </div>
-
-        <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70">
-          <span className="text-[11px] font-medium text-stone-500 block">
-            Ostatni pomiar ({research.years[research.years.length - 1]})
-          </span>
-          <span className="text-xl font-extrabold text-stone-900 mt-0.5 block">
-            {activeSeries.endValue} {research.unit}
-          </span>
-        </div>
-
-        <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70">
-          <span className="text-[11px] font-medium text-stone-500 block">
-            Zmiana całkowita (11 lat)
-          </span>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            {isPositiveTrend ? (
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
-            ) : (
-              <TrendingDown className="w-4 h-4 text-rose-600" />
-            )}
-            <span
-              className={`text-xl font-extrabold ${
-                isPositiveTrend ? 'text-emerald-700' : 'text-rose-700'
-              }`}
-            >
-              {activeSeries.delta > 0 ? `+${activeSeries.delta}` : activeSeries.delta}{' '}
-              {research.unit}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        {/* Karta 1: Początek */}
+        <div className="bg-stone-50/70 p-4 rounded-2xl border border-stone-200/80 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-stone-500">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+              Początek ({research.years[0]})
             </span>
+            <Calendar className="w-3.5 h-3.5 text-stone-400 shrink-0" aria-hidden="true" />
+          </div>
+          <div className="mt-2.5">
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
+              {formatResearchValue(activeSeries.startValue)}
+            </div>
+            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+              {research.unit}
+            </div>
           </div>
         </div>
 
-        <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70">
-          <span className="text-[11px] font-medium text-stone-500 block">
-            Pozycja w Małopolsce
-          </span>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <Award className="w-4 h-4 text-amber-500" />
-            <span className="text-xl font-extrabold text-stone-900">
-              #{activeSeries.latestRank}{' '}
-              <span className="text-xs font-normal text-stone-500">/ 22</span>
+        {/* Karta 2: Ostatni pomiar */}
+        <div className="bg-stone-50/70 p-4 rounded-2xl border border-stone-200/80 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-stone-500">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+              Ostatni pomiar ({research.years[research.years.length - 1]})
             </span>
+            <Activity className="w-3.5 h-3.5 text-stone-400 shrink-0" aria-hidden="true" />
+          </div>
+          <div className="mt-2.5">
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
+              {formatResearchValue(activeSeries.endValue)}
+            </div>
+            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+              {research.unit}
+            </div>
+          </div>
+        </div>
+
+        {/* Karta 3: Zmiana całkowita */}
+        <div className="bg-stone-50/70 p-4 rounded-2xl border border-stone-200/80 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+              Zmiana ({research.years.length} lat)
+            </span>
+            <span
+              className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                isPositiveTrend
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/70'
+                  : 'bg-rose-50 text-rose-700 border border-rose-200/70'
+              }`}
+            >
+              {isPositiveTrend ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+              {powiatPctChange ? `${activeSeries.delta > 0 ? '+' : ''}${powiatPctChange}%` : ''}
+            </span>
+          </div>
+          <div className="mt-2.5">
+            <div
+              className={`text-2xl sm:text-3xl font-black tracking-tight leading-none ${
+                isPositiveTrend ? 'text-emerald-700' : 'text-rose-700'
+              }`}
+            >
+              {activeSeries.delta > 0 ? `+${formatResearchValue(activeSeries.delta)}` : formatResearchValue(activeSeries.delta)}
+            </div>
+            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+              {research.unit}
+            </div>
+          </div>
+        </div>
+
+        {/* Karta 4: Pozycja w regionie */}
+        <div className="bg-stone-50/70 p-4 rounded-2xl border border-stone-200/80 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-stone-500">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+              Pozycja w regionie
+            </span>
+            <Award className="w-3.5 h-3.5 text-amber-500 shrink-0" aria-hidden="true" />
+          </div>
+          <div className="mt-2.5">
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
+              #{activeSeries.latestRank}{' '}
+              <span className="text-xs font-medium text-stone-400">/ 22</span>
+            </div>
+            <div className="text-xs font-semibold text-stone-600 mt-1.5 truncate">
+              {activeSeries.latestRank === 1 ? 'Lider w Małopolsce' : activeSeries.latestRank <= 5 ? 'Ścisła czołówka regionu' : 'W rankingu województwa'}
+            </div>
           </div>
         </div>
       </div>
@@ -263,6 +302,10 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
               axisLine={{ stroke: '#e2e8f0' }}
               tick={{ fill: '#64748b', fontSize: 12 }}
               unit={research.unit === '%' ? '%' : ''}
+              tickFormatter={(val: number) => {
+                if (Math.abs(val) >= 1000) return `${(val / 1000).toLocaleString('pl-PL')} tys.`;
+                return val.toLocaleString('pl-PL');
+              }}
               domain={['auto', 'auto']}
             />
             <Tooltip content={<CustomTooltip />} />
