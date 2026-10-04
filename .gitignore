@@ -19,3 +19,5 @@ node_modules/
 out/
 .DS_Store
 *.log
+*.db
+*.sqlite3

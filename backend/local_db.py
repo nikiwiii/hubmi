@@ -6,12 +6,12 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger("hubmi.local_db")
 
-DB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-DB_PATH = os.path.join(DB_DIR, "hubmi_local.db")
+# In-memory shared SQLite (nie tworzy plików .db na dysku - dane docelowo są na Supabase)
+_MEM_URI = "file:hubmi_local_mem?mode=memory&cache=shared"
+_keepalive_conn = sqlite3.connect(_MEM_URI, uri=True, check_same_thread=False)
 
 def _get_connection() -> sqlite3.Connection:
-    os.makedirs(DB_DIR, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(_MEM_URI, uri=True, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -82,7 +82,7 @@ def init_local_db():
         """)
 
         conn.commit()
-        logger.info(f"Lokalna baza SQLite zainicjalizowana pomyślnie w {DB_PATH}")
+        logger.info("Lokalna baza SQLite (in-memory) zainicjalizowana pomyślnie")
     finally:
         conn.close()
 
