@@ -602,3 +602,84 @@ UPDATE public.indicators SET category_id = 'zdrowie' WHERE id IN ('average_hospi
 UPDATE public.indicators SET category_id = 'rodzina' WHERE id IN ('foster_families_count', 'care_and_education_centers', 'kindergarten_availability', 'large_families_share');
 UPDATE public.indicators SET category_id = 'finanse' WHERE id IN ('municipal_budget_expenditures');
 UPDATE public.indicators SET category_id = 'kultura' WHERE id IN ('museum_availability');
+
+-- ============================================================
+-- 17. TABELE ZASTĘPUJĄCE BAZĘ LOKALNĄ (hubmi_local.db)
+--     Moduł testowania prototypów, moderacji i statusów pomysłów
+--     (Wklej tę sekcję do SQL Editor w Supabase, aby dodać tabele
+--      obsługiwane wcześniej przez lokalną bazę hubmi_local.db)
+-- ============================================================
+
+-- 17.1. Rozszerzenie kolumn w tabeli ideas o pola moderacji i kreatora
+ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS stage TEXT;
+ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS essence TEXT;
+ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS innovation TEXT;
+ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS target_audience TEXT;
+ALTER TABLE public.ideas ADD COLUMN IF NOT EXISTS dedicated_to TEXT;
+
+-- 17.2. Tabela statusów moderacji pomysłów (idea_statuses)
+CREATE TABLE IF NOT EXISTS public.idea_statuses (
+    idea_id TEXT PRIMARY KEY,
+    status TEXT NOT NULL DEFAULT 'active',
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_idea_statuses_status ON public.idea_statuses(status);
+ALTER TABLE public.idea_statuses DISABLE ROW LEVEL SECURITY;
+
+-- 17.3. Tabela ocen użyteczności i feedbacku testerów społecznych (idea_feedback)
+CREATE TABLE IF NOT EXISTS public.idea_feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    idea_id UUID REFERENCES public.ideas(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID,
+    author_name TEXT NOT NULL,
+    author_role TEXT DEFAULT 'Tester społeczny',
+    overall_rating INT CHECK (overall_rating BETWEEN 1 AND 5),
+    usability_rating INT CHECK (usability_rating BETWEEN 1 AND 5),
+    accessibility_rating INT CHECK (accessibility_rating BETWEEN 1 AND 5),
+    impact_rating INT CHECK (impact_rating BETWEEN 1 AND 5),
+    strengths TEXT,
+    weaknesses TEXT,
+    suggested_improvements TEXT,
+    comment TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_idea_feedback_idea ON public.idea_feedback(idea_id);
+CREATE INDEX IF NOT EXISTS idx_idea_feedback_created ON public.idea_feedback(created_at DESC);
+ALTER TABLE public.idea_feedback DISABLE ROW LEVEL SECURITY;
+
+-- 17.4. Tabela komentarzy i dyskusji pod prototypami (idea_comments)
+CREATE TABLE IF NOT EXISTS public.idea_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    idea_id UUID REFERENCES public.ideas(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID,
+    author_name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_idea_comments_idea ON public.idea_comments(idea_id);
+CREATE INDEX IF NOT EXISTS idx_idea_comments_created ON public.idea_comments(created_at ASC);
+ALTER TABLE public.idea_comments DISABLE ROW LEVEL SECURITY;
+
+-- 17.5. Tabela zgłoszeń testerów innowacji (tester_applications)
+CREATE TABLE IF NOT EXISTS public.tester_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    idea_id UUID REFERENCES public.ideas(id) ON DELETE CASCADE NOT NULL,
+    idea_title TEXT NOT NULL,
+    user_id UUID,
+    user_name TEXT NOT NULL,
+    user_email TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    motivation TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_tester_apps_idea ON public.tester_applications(idea_id);
+CREATE INDEX IF NOT EXISTS idx_tester_apps_user ON public.tester_applications(user_id);
+CREATE INDEX IF NOT EXISTS idx_tester_apps_status ON public.tester_applications(status);
+ALTER TABLE public.tester_applications DISABLE ROW LEVEL SECURITY;
+
+-- 17.6. Uprawnienia dla ról Supabase (anon, authenticated, service_role)
+GRANT ALL ON TABLE public.idea_statuses TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.idea_feedback TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.idea_comments TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.tester_applications TO anon, authenticated, service_role;
