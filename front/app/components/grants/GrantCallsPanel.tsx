@@ -128,8 +128,14 @@ export function GrantCallsPanel({ myIdeas }: Props) {
       )}
 
       {pickerCall && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1C1E23] rounded-2xl p-6 max-w-lg w-full border border-stone-200 dark:border-white/15 shadow-xl space-y-4">
+        <div
+          onClick={() => !creatingFor && setPickerCall(null)}
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-2xs flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-[#1C1E23] rounded-2xl p-6 max-w-lg w-full border border-stone-200 dark:border-white/15 shadow-xl space-y-4 cursor-default"
+          >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-base font-bold text-stone-900 dark:text-white">Który pomysł zgłaszasz?</h3>

@@ -22,14 +22,14 @@ export const IdeaMockupVisualizer: React.FC<IdeaMockupVisualizerProps> = ({
   keyBenefits,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-[#FAF9F5] rounded-2xl border border-black/5">
+    <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-[#E8F0FA] via-[#F3F7FC] to-[#FAFBFD] dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/10">
       {/* Phone Screen Mockup Preview */}
       <div className="relative w-full max-w-70 aspect-9/18 bg-stone-900 rounded-[42px] p-2.5 shadow-xl border border-stone-800">
         {/* Dynamic Island */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-20" />
 
         {/* Screen Content */}
-        <div className="relative w-full h-full bg-[#F7F6F1] rounded-[34px] overflow-hidden flex flex-col p-4 pt-8 select-none">
+        <div className="relative w-full h-full bg-gradient-to-b from-[#F7FAFD] to-[#EDF3FA] dark:bg-[#1C1E23] rounded-[34px] overflow-hidden flex flex-col p-4 pt-8 select-none">
           <div className="mb-3">
             <h4 className="text-xl font-bold tracking-tight text-stone-900 leading-tight">
               {title.split(" ").slice(0, 2).join(" ")}

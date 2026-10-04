@@ -41,6 +41,7 @@ interface InnovationTestPanelProps {
   currentUser: User | null;
   isTester: boolean;
   onToggleTesting: (ideaId: string) => void;
+  className?: string;
 }
 
 const TESTER_ROLES = [
@@ -59,15 +60,20 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
   currentUser,
   isTester,
   onToggleTesting,
+  className,
 }) => {
   const router = useRouter();
   const isAdmin = currentUser?.role === "admin";
   const [summary, setSummary] = useState<TestingSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"reviews" | "add_review" | "comments">("reviews");
+  const [activeTab, setActiveTab] = useState<
+    "reviews" | "add_review" | "comments"
+  >("reviews");
 
   // Tester application states
-  const [myAppStatus, setMyAppStatus] = useState<"none" | "pending" | "approved" | "rejected">("none");
+  const [myAppStatus, setMyAppStatus] = useState<
+    "none" | "pending" | "approved" | "rejected"
+  >("none");
   const isApprovedTester = isTester || myAppStatus === "approved" || isAdmin;
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [motivationInput, setMotivationInput] = useState("");
@@ -118,7 +124,8 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
       try {
         const apps = await fetchTesterApplications(ideaId);
         const mine = apps.find(
-          (a) => a.user_id === currentUser.id || a.user_email === currentUser.email
+          (a) =>
+            a.user_id === currentUser.id || a.user_email === currentUser.email,
         );
         if (mine) {
           setMyAppStatus(mine.status);
@@ -148,7 +155,9 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
       return;
     }
     if (myAppStatus === "pending") {
-      alert("Twoje zgłoszenie do testów oczekuje już na decyzję administratora.");
+      alert(
+        "Twoje zgłoszenie do testów oczekuje już na decyzję administratora.",
+      );
       return;
     }
     setApplyErrorMsg(null);
@@ -165,14 +174,18 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
     try {
       await applyAsTester(ideaId, motivationInput.trim() || undefined);
       setMyAppStatus("pending");
-      setApplySuccessMsg("Zgłoszenie zostało wysłane do administratora! Otrzymasz powiadomienie po akceptacji.");
+      setApplySuccessMsg(
+        "Zgłoszenie zostało wysłane do administratora! Otrzymasz powiadomienie po akceptacji.",
+      );
       setTimeout(() => {
         setIsApplyModalOpen(false);
         setApplySuccessMsg(null);
         setMotivationInput("");
       }, 1800);
     } catch (err: any) {
-      setApplyErrorMsg(err.message || "Wystąpił błąd podczas wysyłania zgłoszenia.");
+      setApplyErrorMsg(
+        err.message || "Wystąpił błąd podczas wysyłania zgłoszenia.",
+      );
     } finally {
       setIsSubmittingApp(false);
     }
@@ -198,7 +211,9 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
 
     try {
       const created = await submitIdeaFeedback(ideaId, payload);
-      setFeedbackSuccess("Dziękujemy! Twoja ocena i informacja zwrotna zostały pomyślnie zapisane.");
+      setFeedbackSuccess(
+        "Dziękujemy! Twoja ocena i informacja zwrotna zostały pomyślnie zapisane.",
+      );
       // Refresh summary
       await loadData();
       // Reset form
@@ -211,7 +226,9 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
         setFeedbackSuccess(null);
       }, 1500);
     } catch (err: any) {
-      setFeedbackError(err.message || "Wystąpił błąd podczas wysyłania opinii.");
+      setFeedbackError(
+        err.message || "Wystąpił błąd podczas wysyłania opinii.",
+      );
     } finally {
       setIsSubmittingFeedback(false);
     }
@@ -238,13 +255,17 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
     label: string,
     sublabel: string,
     value: number,
-    onChange: (val: number) => void
+    onChange: (val: number) => void,
   ) => {
     return (
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200/70">
         <div>
-          <span className="text-xs font-bold text-stone-900 block">{label}</span>
-          <span className="text-[11px] text-stone-600 font-medium">{sublabel}</span>
+          <span className="text-xs font-bold text-stone-900 block">
+            {label}
+          </span>
+          <span className="text-[11px] text-stone-600 font-medium">
+            {sublabel}
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -258,10 +279,11 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
             >
               <Star
                 aria-hidden="true"
-                className={`w-5 h-5 ${star <= value
+                className={`w-5 h-5 ${
+                  star <= value
                     ? "text-amber-500 fill-amber-400"
                     : "text-stone-300 hover:text-amber-300"
-                  }`}
+                }`}
               />
             </button>
           ))}
@@ -279,10 +301,11 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
         {[1, 2, 3, 4, 5].map((s) => (
           <Star
             key={s}
-            className={`${size} ${s <= Math.round(val)
+            className={`${size} ${
+              s <= Math.round(val)
                 ? "text-amber-500 fill-amber-400"
                 : "text-stone-300"
-              }`}
+            }`}
           />
         ))}
       </div>
@@ -290,108 +313,93 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
   };
 
   return (
-    <div className="mt-8 rounded-3xl bg-white border border-stone-200/90 shadow-sm overflow-hidden">
-      {/* Top Header Banner */}
-      <div className="p-6 sm:p-8 bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-white flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1.5 max-w-xl">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Ocena Użyteczności & Feedback
-          </h2>
-          <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-            Testuj prototyp w warunkach lokalnych, oceń dostępność dla seniorów i zgłaszaj usprawnienia przed wdrożeniem w gminie.
-          </p>
-        </div>
-
-        {/* Tester status CTA */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
-          {isApprovedTester ? (
-            <div className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold bg-emerald-600 text-white shadow-md ring-2 ring-emerald-300/40">
-              <Check className="w-4 h-4 stroke-[3]" />
-              <span>{isAdmin ? "Status Administratora (Uprawnienia testera)" : "Aktywny Zaakceptowany Tester"}</span>
-            </div>
-          ) : myAppStatus === "pending" ? (
-            <div className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold bg-amber-500 text-white shadow-md ring-2 ring-amber-300/40">
-              <Clock className="w-4 h-4 animate-spin" />
-              <span>Zgłoszenie czeka na decyzję admina</span>
-            </div>
-          ) : (
-            <button
-              onClick={handleOpenApplyModal}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold bg-white text-stone-900 hover:bg-stone-100 transition-all cursor-pointer shadow-md"
-            >
-              <Users className="w-4 h-4 text-stone-700" />
-              <span>Dołącz jako Tester ({summary?.testers_count || 0})</span>
-            </button>
-          )}
-        </div>
-      </div>
-
+    <div
+      className={`rounded-3xl bg-white dark:bg-[#1C1E23] border border-stone-200/90 dark:border-white/10 shadow-sm overflow-hidden ${
+        className ?? "mt-8"
+      }`}
+    >
       {/* Usability & Accessibility Scorecards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-5 sm:p-6 bg-[#FAF9F5] border-b border-stone-200">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-5 sm:p-6 bg-[#FAF9F5] dark:bg-white/5 border-b border-stone-200 dark:border-white/10">
         {/* Metric 1: Overall */}
-        <div className="bg-white p-4 rounded-2xl border border-black/5 shadow-2xs space-y-1">
+        <div className="bg-white dark:bg-[#1C1E23] p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
             Średnia Ogólna
           </span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-stone-900">
-              {summary && summary.reviews_count > 0 ? summary.avg_overall_rating.toFixed(1) : "—"}
+            <span className="text-2xl font-bold text-stone-900 dark:text-white">
+              {summary && summary.reviews_count > 0
+                ? summary.avg_overall_rating.toFixed(1)
+                : "—"}
             </span>
             <span className="text-xs text-stone-400">/ 5.0</span>
           </div>
-          {summary && summary.reviews_count > 0 && renderReadOnlyStars(summary.avg_overall_rating)}
-          <span className="text-[10px] text-stone-500 block pt-0.5">
+          {summary &&
+            summary.reviews_count > 0 &&
+            renderReadOnlyStars(summary.avg_overall_rating)}
+          <span className="text-[10px] text-stone-500 dark:text-stone-400 block pt-0.5">
             {summary?.reviews_count || 0} ocen testerów
           </span>
         </div>
 
         {/* Metric 2: Usability */}
-        <div className="bg-white p-4 rounded-2xl border border-black/5 shadow-2xs space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">
+        <div className="bg-white dark:bg-[#1C1E23] p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block">
             Użyteczność / Obsługa
           </span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-stone-900">
-              {summary && summary.reviews_count > 0 ? summary.avg_usability_rating.toFixed(1) : "—"}
+            <span className="text-2xl font-bold text-stone-900 dark:text-white">
+              {summary && summary.reviews_count > 0
+                ? summary.avg_usability_rating.toFixed(1)
+                : "—"}
             </span>
             <span className="text-xs text-stone-400">/ 5.0</span>
           </div>
-          {summary && summary.reviews_count > 0 && renderReadOnlyStars(summary.avg_usability_rating)}
-          <span className="text-[10px] text-stone-500 block pt-0.5">
+          {summary &&
+            summary.reviews_count > 0 &&
+            renderReadOnlyStars(summary.avg_usability_rating)}
+          <span className="text-[10px] text-stone-500 dark:text-stone-400 block pt-0.5">
             Intuicyjność procedur
           </span>
         </div>
 
         {/* Metric 3: Accessibility */}
-        <div className="bg-white p-4 rounded-2xl border border-black/5 shadow-2xs space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
+        <div className="bg-white dark:bg-[#1C1E23] p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block">
             Dostępność & WCAG
           </span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-stone-900">
-              {summary && summary.reviews_count > 0 ? summary.avg_accessibility_rating.toFixed(1) : "—"}
+            <span className="text-2xl font-bold text-stone-900 dark:text-white">
+              {summary && summary.reviews_count > 0
+                ? summary.avg_accessibility_rating.toFixed(1)
+                : "—"}
             </span>
             <span className="text-xs text-stone-400">/ 5.0</span>
           </div>
-          {summary && summary.reviews_count > 0 && renderReadOnlyStars(summary.avg_accessibility_rating)}
-          <span className="text-[10px] text-stone-500 block pt-0.5">
+          {summary &&
+            summary.reviews_count > 0 &&
+            renderReadOnlyStars(summary.avg_accessibility_rating)}
+          <span className="text-[10px] text-stone-500 dark:text-stone-400 block pt-0.5">
             Seniorzy i bariery
           </span>
         </div>
 
         {/* Metric 4: Impact */}
-        <div className="bg-white p-4 rounded-2xl border border-black/5 shadow-2xs space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 block">
+        <div className="bg-white dark:bg-[#1C1E23] p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 block">
             Wpływ Społeczny
           </span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-stone-900">
-              {summary && summary.reviews_count > 0 ? summary.avg_impact_rating.toFixed(1) : "—"}
+            <span className="text-2xl font-bold text-stone-900 dark:text-white">
+              {summary && summary.reviews_count > 0
+                ? summary.avg_impact_rating.toFixed(1)
+                : "—"}
             </span>
             <span className="text-xs text-stone-400">/ 5.0</span>
           </div>
-          {summary && summary.reviews_count > 0 && renderReadOnlyStars(summary.avg_impact_rating)}
-          <span className="text-[10px] text-stone-500 block pt-0.5">
+          {summary &&
+            summary.reviews_count > 0 &&
+            renderReadOnlyStars(summary.avg_impact_rating)}
+          <span className="text-[10px] text-stone-500 dark:text-stone-400 block pt-0.5">
             Skala rozwiązania problemu
           </span>
         </div>
@@ -408,10 +416,11 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
           role="tab"
           aria-selected={activeTab === "reviews"}
           onClick={() => setActiveTab("reviews")}
-          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "reviews"
+          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "reviews"
               ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
               : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
-            }`}
+          }`}
         >
           <ShieldCheck className="w-4 h-4" aria-hidden="true" />
           <span>Opinie i Usprawnienia</span>
@@ -425,13 +434,14 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
           role="tab"
           aria-selected={activeTab === "add_review"}
           onClick={() => setActiveTab("add_review")}
-          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "add_review"
+          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "add_review"
               ? "bg-amber-600 text-white shadow-2xs"
               : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
-            }`}
+          }`}
         >
           <Star className="w-4 h-4" aria-hidden="true" />
-          <span>Wystaw Ocenę & Feedback</span>
+          <span>Wystaw Opinię</span>
         </button>
 
         <button
@@ -439,10 +449,11 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
           role="tab"
           aria-selected={activeTab === "comments"}
           onClick={() => setActiveTab("comments")}
-          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${activeTab === "comments"
+          className={`min-h-[38px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "comments"
               ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
               : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
-            }`}
+          }`}
         >
           <MessageSquare className="w-4 h-4" aria-hidden="true" />
           <span>Dyskusja Testerów</span>
@@ -478,11 +489,14 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
                           </span>
                         </div>
                         <span className="text-[10px] text-stone-400">
-                          {new Date(item.created_at).toLocaleDateString("pl-PL", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
+                          {new Date(item.created_at).toLocaleDateString(
+                            "pl-PL",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )}
                         </span>
                       </div>
                     </div>
@@ -551,32 +565,52 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
               <div className="w-12 h-12 rounded-2xl bg-stone-100 text-stone-400 mx-auto flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-stone-800">
+              <h3 className="text-sm font-bold text-stone-800 dark:text-white">
                 Brak zarejestrowanych ocen z testów terenowych
               </h3>
-              <p className="text-xs text-stone-500 max-w-sm mx-auto">
-                Bądź pierwszą osobą, która przetestuje ten prototyp i wskaże autorom potencjalne usprawnienia oraz ocenę użyteczności.
+              <p className="text-xs text-stone-500 dark:text-stone-400 max-w-sm mx-auto">
+                {isApprovedTester
+                  ? "Bądź pierwszą osobą, która przetestuje ten prototyp i wskaże autorom potencjalne usprawnienia oraz ocenę użyteczności."
+                  : "Ten prototyp nie posiada jeszcze ocen z testów. Wyślij zgłoszenie, aby dołączyć do grupy testerów i ocenić innowację."}
               </p>
-              <button
-                onClick={() => setActiveTab("add_review")}
-                className="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-bold hover:bg-stone-800 transition-colors cursor-pointer"
-              >
-                Dodaj pierwszą ocenę
-              </button>
+              {isApprovedTester ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("add_review")}
+                  className="px-4 py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-950 rounded-xl text-xs font-bold hover:bg-stone-800 dark:hover:bg-stone-100 transition-colors cursor-pointer shadow-2xs"
+                >
+                  Dodaj pierwszą ocenę
+                </button>
+              ) : myAppStatus === "pending" ? (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-bold">
+                  <Clock className="w-3.5 h-3.5 animate-spin" />
+                  <span>Twoje zgłoszenie do testów oczekuje na decyzję administratora</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleOpenApplyModal}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-950 rounded-xl text-xs font-bold hover:bg-stone-800 dark:hover:bg-stone-100 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Users className="w-4 h-4" />
+                  <span>Wyślij zgłoszenie o zostanie testerem</span>
+                </button>
+              )}
             </div>
           )}
         </div>
       )}
 
       {/* TAB CONTENT: 2. ADD FEEDBACK FORM */}
-      {activeTab === "add_review" && (
-        !isApprovedTester ? (
+      {activeTab === "add_review" &&
+        (!isApprovedTester ? (
           <div className="p-8 sm:p-12 text-center max-w-lg mx-auto space-y-4">
             <div
-              className={`w-14 h-14 rounded-2xl mx-auto flex items-center justify-center ${myAppStatus === "pending"
+              className={`w-14 h-14 rounded-2xl mx-auto flex items-center justify-center ${
+                myAppStatus === "pending"
                   ? "bg-amber-100 text-amber-800"
                   : "bg-stone-100 text-stone-600"
-                }`}
+              }`}
             >
               {myAppStatus === "pending" ? (
                 <Clock className="w-7 h-7 animate-spin text-amber-700" />
@@ -609,13 +643,17 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
             )}
           </div>
         ) : (
-          <form onSubmit={handleSubmitFeedback} className="p-6 sm:p-8 space-y-5">
+          <form
+            onSubmit={handleSubmitFeedback}
+            className="p-6 sm:p-8 space-y-5"
+          >
             <div className="border-b border-stone-200 pb-3">
               <h3 className="text-base font-bold text-stone-900">
                 Formularz Testera Społecznego
               </h3>
               <p className="text-xs text-stone-500">
-                Oceń innowację &quot;{ideaTitle}&quot; z punktu widzenia dostępności i wdrożenia.
+                Oceń innowację &quot;{ideaTitle}&quot; z punktu widzenia
+                dostępności i wdrożenia.
               </p>
             </div>
 
@@ -660,25 +698,25 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
                 "1. Ocena ogólna prototypu",
                 "Subiektywna ocena wartości rozwiązania dla mieszkańców",
                 overallRating,
-                setOverallRating
+                setOverallRating,
               )}
               {renderStarsSelector(
                 "2. Ocena użyteczności (Usability)",
                 "Intuicyjność obsługi, jasność instrukcji, prostota codziennego użytkowania",
                 usabilityRating,
-                setUsabilityRating
+                setUsabilityRating,
               )}
               {renderStarsSelector(
                 "3. Dostępność dla seniorów i WCAG",
                 "Brak barier sensorycznych i ruchowych, wielkość elementów, kontrast",
                 accessibilityRating,
-                setAccessibilityRating
+                setAccessibilityRating,
               )}
               {renderStarsSelector(
                 "4. Wpływ społeczny i zapotrzebowanie",
                 "Czy to rozwiązanie realnie rozwiązuje zgłoszony problem w Małopolsce",
                 impactRating,
-                setImpactRating
+                setImpactRating,
               )}
             </div>
 
@@ -715,10 +753,13 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
             <div className="space-y-1.5 p-4 rounded-2xl bg-amber-50/70 border border-amber-200">
               <label className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
                 <Lightbulb className="w-4 h-4 text-amber-600" />
-                <span>Proponowane usprawnienia dla twórców (Sugestia zmian)</span>
+                <span>
+                  Proponowane usprawnienia dla twórców (Sugestia zmian)
+                </span>
               </label>
               <p className="text-[11px] text-amber-800">
-                Co konkretnie autorzy innowacji powinni poprawić, dodać lub zmodyfikować przed wdrożeniem w regionie?
+                Co konkretnie autorzy innowacji powinni poprawić, dodać lub
+                zmodyfikować przed wdrożeniem w regionie?
               </p>
               <textarea
                 rows={3}
@@ -805,14 +846,18 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
               </div>
             ) : (
               <p className="text-xs text-stone-400 italic">
-                Brak pytań i komentarzy. Zadaj pytanie autorom lub mentorom projektu.
+                Brak pytań i komentarzy. Zadaj pytanie autorom lub mentorom
+                projektu.
               </p>
             )}
           </div>
 
           {/* Add comment input - restricted to approved testers & admins */}
           {isApprovedTester ? (
-            <form onSubmit={handleAddComment} className="space-y-2 pt-2 border-t border-stone-200">
+            <form
+              onSubmit={handleAddComment}
+              className="space-y-2 pt-2 border-t border-stone-200"
+            >
               <label className="text-xs font-bold text-stone-900 block">
                 Dodaj komentarz do wątku testowego (Aktywny Tester)
               </label>
@@ -834,7 +879,9 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
                 </button>
               </div>
               {commentError && (
-                <p className="text-[11px] text-rose-600 font-semibold">{commentError}</p>
+                <p className="text-[11px] text-rose-600 font-semibold">
+                  {commentError}
+                </p>
               )}
             </form>
           ) : (
@@ -890,9 +937,12 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
 
             <p className="text-xs text-stone-600 leading-relaxed">
               Zgłaszasz chęć udziału w testach innowacji{" "}
-              <strong className="text-stone-900">&quot;{ideaTitle}&quot;</strong>.
-              Twoje zgłoszenie zostanie przesłane do weryfikacji administratora platformy.
-              Po zatwierdzeniu otrzymasz powiadomienie e-mail i pełny dostęp do formularza ocen.
+              <strong className="text-stone-900">
+                &quot;{ideaTitle}&quot;
+              </strong>
+              . Twoje zgłoszenie zostanie przesłane do weryfikacji
+              administratora platformy. Po zatwierdzeniu otrzymasz powiadomienie
+              e-mail i pełny dostęp do formularza ocen.
             </p>
 
             {applySuccessMsg && (
@@ -922,7 +972,8 @@ export const InnovationTestPanel: React.FC<InnovationTestPanelProps> = ({
                   className="w-full p-3 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900"
                 />
                 <span className="text-[10px] text-stone-400 block">
-                  Uzasadnienie pomoże moderatorowi dopasować Cię do odpowiedniej grupy testowej.
+                  Uzasadnienie pomoże moderatorowi dopasować Cię do odpowiedniej
+                  grupy testowej.
                 </span>
               </div>
 

@@ -486,7 +486,7 @@ export default function ProposePage() {
       {/* KROK 1: TYTUŁ I OPIS POMYSŁU */}
       {/* ========================================================================= */}
       {step === 1 && (
-        <div className="rounded-[28px] bg-[#d8e2f2] dark:bg-[#0b1524]/20 p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
+        <div className="rounded-[28px] bg-gradient-to-br from-[#E8F0FA] via-[#F3F7FC] to-[#FAFBFD] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
           <div className="border-b border-black/5 pb-4">
             <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
               Podstawowe informacje o pomyśle
@@ -609,7 +609,7 @@ export default function ProposePage() {
       {/* KROK 2: NA CZYM POLEGA & DLA KOGO (WARTOŚĆ I ODBIORCY) */}
       {/* ========================================================================= */}
       {step === 2 && (
-        <div className="bg-[#d8e2f2] dark:bg-[#0b1524]/20 rounded-[28px] p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
+        <div className="bg-gradient-to-br from-[#E8F0FA] via-[#F3F7FC] to-[#FAFBFD] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] rounded-[28px] p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
           <div className="border-b border-black/5 pb-4">
             <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
               Innowacyjność i odbiorcy
@@ -723,7 +723,7 @@ export default function ProposePage() {
       {/* KROK 3: KATEGORIA I ETAP ROZWOJU */}
       {/* ========================================================================= */}
       {step === 3 && (
-        <div className="bg-[#d8e2f2] dark:bg-[#0b1524]/20 rounded-[28px] p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
+        <div className="bg-gradient-to-br from-[#E8F0FA] via-[#F3F7FC] to-[#FAFBFD] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] rounded-[28px] p-6 sm:p-9 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-6 transition-all">
           <div className="border-b border-black/5 pb-4">
             <h2 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
               Etap rozwoju i kategoria
@@ -860,7 +860,7 @@ export default function ProposePage() {
       {step === 4 && (
         <div className="space-y-6">
           {/* Podsumowanie wprowadzonych treści z kroków 1, 2 i 3 */}
-          <div className="bg-[#d8e2f2] dark:bg-[#0b1524]/20 rounded-[28px] p-6 sm:p-8 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-4 transition-all">
+          <div className="bg-gradient-to-br from-[#E8F0FA] via-[#F3F7FC] to-[#FAFBFD] dark:bg-[radial-gradient(circle_at_14%_14%,#1E2B3C_0%,#1C1E23_48%,#0F172A_80%,#141518_100%)] rounded-[28px] p-6 sm:p-8 border border-stone-200/80 dark:border-white/10 shadow-2xs space-y-4 transition-all">
             <div className="flex items-center justify-between border-b border-black/5 pb-3">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-stone-700" />

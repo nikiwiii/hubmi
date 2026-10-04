@@ -252,10 +252,11 @@ export default function DiscoverIdeaDetailPage() {
               type="button"
               onClick={() => vote(currentIdea.id, "like")}
               aria-label={`Polub pomysł (${currentIdea.likes} polubień)`}
-              className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "like"
-                ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
-                : "bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-800 dark:text-stone-200"
-                }`}
+              className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                currentIdea.userVote === "like"
+                  ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
+                  : "bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-800 dark:text-stone-200"
+              }`}
             >
               <ThumbsUp
                 aria-hidden="true"
@@ -268,10 +269,11 @@ export default function DiscoverIdeaDetailPage() {
               type="button"
               onClick={() => vote(currentIdea.id, "dislike")}
               aria-label={`Nie podoba mi się (${currentIdea.dislikes} ocen)`}
-              className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "dislike"
-                ? "bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900"
-                : "bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-700 dark:text-stone-300"
-                }`}
+              className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                currentIdea.userVote === "dislike"
+                  ? "bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900"
+                  : "bg-stone-100 dark:bg-white/10 hover:bg-stone-200 dark:hover:bg-white/15 text-stone-700 dark:text-stone-300"
+              }`}
             >
               <ThumbsDown
                 aria-hidden="true"
@@ -295,8 +297,13 @@ export default function DiscoverIdeaDetailPage() {
                 aria-label="Usuń tę propozycję"
                 className="min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 transition-all cursor-pointer"
               >
-                <Trash2 className="w-4 h-4 text-rose-600 dark:text-rose-400" aria-hidden="true" />
-                <span>{currentUser?.role === "admin" ? "Usuń (Admin)" : "Usuń propozycję"}</span>
+                <Trash2
+                  className="w-4 h-4 text-rose-600 dark:text-rose-400"
+                  aria-hidden="true"
+                />
+                <span>
+                  {currentUser?.role === "admin" ? "Usuń" : "Usuń propozycję"}
+                </span>
               </button>
             )}
 
@@ -342,10 +349,11 @@ export default function DiscoverIdeaDetailPage() {
                 const el = document.getElementById("test-panel");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
               }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${isTester
-                ? "bg-emerald-700 text-white"
-                : "bg-stone-900 dark:bg-white hover:bg-stone-800 dark:hover:bg-stone-100 text-white dark:text-stone-950"
-                }`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                isTester
+                  ? "bg-emerald-700 text-white"
+                  : "bg-stone-900 dark:bg-white hover:bg-stone-800 dark:hover:bg-stone-100 text-white dark:text-stone-950"
+              }`}
             >
               {isTester ? (
                 <>
@@ -395,7 +403,10 @@ export default function DiscoverIdeaDetailPage() {
                     key={idx}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200/80 text-xs font-medium text-stone-700"
                   >
-                    <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
+                    <Check
+                      className="w-3.5 h-3.5 text-emerald-600"
+                      aria-hidden="true"
+                    />
                     {benefit}
                   </span>
                 ))}
@@ -403,6 +414,23 @@ export default function DiscoverIdeaDetailPage() {
             </div>
           )}
 
+          {/* Moduł IV: Tester innowacji - Usability rating, feedback & comments */}
+          <div
+            id="test-panel"
+            className="pt-4 border-t border-stone-100 dark:border-white/10 space-y-3"
+          >
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">
+              Opinie i feedback
+            </p>
+            <InnovationTestPanel
+              ideaId={currentIdea.id}
+              ideaTitle={currentIdea.title}
+              currentUser={currentUser}
+              isTester={isTester}
+              onToggleTesting={toggleTesting}
+              className="mt-0"
+            />
+          </div>
         </div>
       </div>
 
@@ -470,7 +498,10 @@ export default function DiscoverIdeaDetailPage() {
             {/* Modal Footer */}
             <div className="px-5 py-3.5 bg-stone-900 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-stone-400">
               <span className="italic">
-                Autor pomysłu: <strong className="text-stone-200">{currentIdea.authorName}</strong>
+                Autor pomysłu:{" "}
+                <strong className="text-stone-200">
+                  {currentIdea.authorName}
+                </strong>
               </span>
               <button
                 type="button"
@@ -483,16 +514,6 @@ export default function DiscoverIdeaDetailPage() {
           </div>
         </div>
       )}
-      {/* Moduł IV: Tester innowacji - Usability rating, feedback & comments */}
-      <div id="test-panel">
-        <InnovationTestPanel
-          ideaId={currentIdea.id}
-          ideaTitle={currentIdea.title}
-          currentUser={currentUser}
-          isTester={isTester}
-          onToggleTesting={toggleTesting}
-        />
-      </div>
 
       {/* Modal potwierdzenia usunięcia propozycji */}
       <DeleteIdeaModal

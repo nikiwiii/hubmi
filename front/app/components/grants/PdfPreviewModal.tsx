@@ -3,7 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Download, Loader2, X } from "lucide-react";
-import { downloadUrl, fetchApplicationPdf, pdfFileName } from "../../lib/grantsApi";
+import {
+  downloadUrl,
+  fetchApplicationPdf,
+  pdfFileName,
+} from "../../lib/grantsApi";
 
 interface Props {
   applicationId: string;
@@ -31,7 +35,9 @@ export function PdfPreviewModal({ applicationId, title, onClose }: Props) {
       const blob = await fetchApplicationPdf(applicationId);
       if (cancelled) return;
       const bytes = new Uint8Array(await blob.arrayBuffer());
-      blobUrl = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      blobUrl = URL.createObjectURL(
+        new Blob([bytes], { type: "application/pdf" }),
+      );
       setDownloadBlobUrl(blobUrl);
 
       const task = pdfjs.getDocument({ data: bytes });
@@ -64,7 +70,9 @@ export function PdfPreviewModal({ applicationId, title, onClose }: Props) {
     })().catch((e) => {
       if (cancelled) return;
       setRendering(false);
-      setError(e instanceof Error ? e.message : "Nie udało się wygenerować PDF.");
+      setError(
+        e instanceof Error ? e.message : "Nie udało się wygenerować PDF.",
+      );
     });
 
     return () => {
@@ -84,13 +92,21 @@ export function PdfPreviewModal({ applicationId, title, onClose }: Props) {
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-2xs" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-stone-900/50 backdrop-blur-2xs"
+        onClick={onClose}
+      />
       <div className="relative bg-white dark:bg-[#1C1E23] rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col border border-stone-200 dark:border-white/10 shadow-xl overflow-hidden">
         <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-stone-100 dark:border-white/10">
-          <h3 className="text-sm font-bold text-stone-900 dark:text-white truncate">{title || "Wniosek"} – PDF</h3>
+          <h3 className="text-sm font-bold text-stone-900 dark:text-white truncate">
+            {title || "Wniosek"} – PDF
+          </h3>
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => downloadBlobUrl && downloadUrl(downloadBlobUrl, pdfFileName(applicationId, title))}
+              onClick={() =>
+                downloadBlobUrl &&
+                downloadUrl(downloadBlobUrl, pdfFileName(applicationId, title))
+              }
               disabled={!downloadBlobUrl}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 dark:bg-white text-white dark:text-stone-950 rounded-xl text-xs font-semibold disabled:opacity-40 cursor-pointer shadow-2xs hover:bg-stone-800 dark:hover:bg-stone-100 transition-colors"
             >
@@ -103,7 +119,8 @@ export function PdfPreviewModal({ applicationId, title, onClose }: Props) {
               aria-label="Zamknij podgląd"
             >
               <X className="w-4 h-4" />
-            </button>
+            </button>{" "}
+            d
           </div>
         </div>
         <div className="relative flex-1 min-h-0 bg-stone-100 dark:bg-[#14161A]">
@@ -118,7 +135,10 @@ export function PdfPreviewModal({ applicationId, title, onClose }: Props) {
               {error}
             </div>
           )}
-          <div ref={pagesRef} className="h-full overflow-y-auto p-4 space-y-3" />
+          <div
+            ref={pagesRef}
+            className="h-full overflow-y-auto p-4 space-y-3"
+          />
         </div>
       </div>
     </div>,
