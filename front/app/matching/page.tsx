@@ -151,16 +151,15 @@ function MatchingContent() {
     } catch (err: any) {
       setError(
         err?.message ||
-          "Wystąpił błąd podczas przeszukiwania bazy innowacji. Upewnij się, że serwer jest uruchomiony i spróbuj ponownie.",
+        "Wystąpił błąd podczas przeszukiwania bazy innowacji. Upewnij się, że serwer jest uruchomiony i spróbuj ponownie.",
       );
       setMessages([
         ...updatedMessages,
         {
           id: `assistant-error-${Date.now()}`,
           sender: "assistant",
-          text: `Nie udało się połączyć z bazą innowacji: ${
-            err?.message || "Błąd serwera."
-          }`,
+          text: `Nie udało się połączyć z bazą innowacji: ${err?.message || "Błąd serwera."
+            }`,
           timestamp: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -278,19 +277,17 @@ function MatchingContent() {
                           const isHigh = (top?.similarity || 0) >= 0.45;
                           return (
                             <div
-                              className={`p-4 sm:p-4.5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs ${
-                                isHigh
+                              className={`p-4 sm:p-4.5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs ${isHigh
                                   ? "bg-emerald-50/70 border-emerald-200 text-emerald-900"
                                   : "bg-amber-50/70 border-amber-200 text-amber-900"
-                              }`}
+                                }`}
                             >
                               <div className="flex items-start gap-2.5">
                                 <div
-                                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-                                    isHigh
+                                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${isHigh
                                       ? "bg-emerald-600 text-white"
                                       : "bg-amber-600 text-white"
-                                  }`}
+                                    }`}
                                 >
                                   {isHigh ? (
                                     <CheckCircle2 className="w-4 h-4" />
@@ -611,8 +608,8 @@ function MatchingContent() {
                               href={
                                 turn.matchResponse.top_solution
                                   ? `/middleman?innovation=${encodeURIComponent(
-                                      turn.matchResponse.top_solution.id,
-                                    )}`
+                                    turn.matchResponse.top_solution.id,
+                                  )}`
                                   : "/middleman"
                               }
                               className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-xl transition-all shadow-2xs"
@@ -761,11 +758,10 @@ function MatchingContent() {
                       : "Rozpocznij dyktowanie pomysłu głosem"
                   }
                   aria-pressed={isListening}
-                  className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    isListening
+                  className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${isListening
                       ? "bg-rose-600 text-white shadow-xs animate-pulse"
                       : "bg-stone-100 hover:bg-stone-200/80 text-stone-700 hover:text-stone-900 border border-black/5"
-                  }`}
+                    }`}
                 >
                   {isListening ? (
                     <>

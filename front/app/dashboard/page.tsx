@@ -401,7 +401,8 @@ function DashboardContent() {
   });
 
   const filteredIdeas = ideas.filter((idea) => {
-    if (ideaStatusFilter !== "all" && idea.status !== ideaStatusFilter) return false;
+    if (ideaStatusFilter !== "all" && idea.status !== ideaStatusFilter)
+      return false;
     if (searchIdeaQuery.trim()) {
       const q = searchIdeaQuery.toLowerCase();
       const matchTitle = (idea.title || "").toLowerCase().includes(q);
@@ -625,13 +626,7 @@ function DashboardContent() {
         </div>
 
         {/* TAB 1: NABORY I WNIOSKI (GENERATOR PDF) */}
-        <div
-          className={
-            activeTab === "calls"
-              ? "block"
-              : "hidden"
-          }
-        >
+        <div className={activeTab === "calls" ? "block" : "hidden"}>
           <AdminCallsTab
             onFeedback={setAdminFeedback}
             onCount={setCallsCount}
@@ -639,22 +634,28 @@ function DashboardContent() {
         </div>
 
         {/* TAB 2: MODERACJA POMYSŁÓW */}
-        <div
-          className={
-            activeTab === "ideas"
-              ? "block space-y-4"
-              : "hidden"
-          }
-        >
+        <div className={activeTab === "ideas" ? "block space-y-4" : "hidden"}>
           {/* Pasek filtrów - zsynchronizowany z pozostałymi zakładkami */}
           <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs">
             <div className="flex flex-wrap items-center gap-1.5">
               {(
                 [
                   { id: "all", label: `Wszystkie`, count: ideas.length },
-                  { id: "pending", label: `Oczekujące`, count: pendingIdeasCount },
-                  { id: "active", label: `Aktywne`, count: ideas.filter((i) => i.status === "active").length },
-                  { id: "testing", label: `W testach`, count: ideas.filter((i) => i.status === "testing").length },
+                  {
+                    id: "pending",
+                    label: `Oczekujące`,
+                    count: pendingIdeasCount,
+                  },
+                  {
+                    id: "active",
+                    label: `Aktywne`,
+                    count: ideas.filter((i) => i.status === "active").length,
+                  },
+                  {
+                    id: "testing",
+                    label: `W testach`,
+                    count: ideas.filter((i) => i.status === "testing").length,
+                  },
                 ] as const
               ).map((tab) => (
                 <button
@@ -669,9 +670,13 @@ function DashboardContent() {
                   }`}
                 >
                   {tab.label}
-                  <span className={`text-[10px] font-bold px-1 rounded ${
-                    ideaStatusFilter === tab.id ? "opacity-80" : "opacity-60"
-                  }`}>{tab.count}</span>
+                  <span
+                    className={`text-[10px] font-bold px-1 rounded ${
+                      ideaStatusFilter === tab.id ? "opacity-80" : "opacity-60"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
                 </button>
               ))}
             </div>
@@ -715,152 +720,148 @@ function DashboardContent() {
           {/* Karty pomysłów */}
           <div className="space-y-3 sm:space-y-4">
             {filteredIdeas.map((idea) => {
-                const isPending = idea.status === "pending";
+              const isPending = idea.status === "pending";
 
-                return (
-                  <div
-                    key={idea.id}
-                    className={`rounded-2xl border transition-all space-y-0 ${
-                      isPending
-                        ? "bg-amber-50/40 dark:bg-amber-950/20 border-amber-300/80 dark:border-amber-500/40 shadow-xs ring-1 ring-amber-400/20"
-                        : "bg-white dark:bg-[#1C1E23] border-stone-200/80 dark:border-white/10 shadow-2xs hover:shadow-sm"
-                    }`}
-                  >
-                    {/* Górna sekcja: meta + tytuł */}
-                    <div className="p-4 sm:p-5 space-y-3">
-                      {/* Meta-row: kategoria, autor, data, status */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 border border-stone-200/60 dark:border-white/10">
-                          {idea.category}
+              return (
+                <div
+                  key={idea.id}
+                  className={`rounded-2xl border transition-all space-y-0 ${
+                    isPending
+                      ? "bg-amber-50/40 dark:bg-amber-950/20 border-amber-300/80 dark:border-amber-500/40 shadow-xs ring-1 ring-amber-400/20"
+                      : "bg-white dark:bg-[#1C1E23] border-stone-200/80 dark:border-white/10 shadow-2xs hover:shadow-sm"
+                  }`}
+                >
+                  {/* Górna sekcja: meta + tytuł */}
+                  <div className="p-4 sm:p-5 space-y-3">
+                    {/* Meta-row: kategoria, autor, data, status */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300 border border-stone-200/60 dark:border-white/10">
+                        {idea.category}
+                      </span>
+
+                      {/* Status Pill */}
+                      {isPending ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                          <Clock className="w-3 h-3 text-amber-700 dark:text-amber-400" />
+                          Oczekuje na akceptację
                         </span>
-
-                        {/* Status Pill */}
-                        {isPending ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
-                            <Clock className="w-3 h-3 text-amber-700 dark:text-amber-400" />
-                            Oczekuje na akceptację
-                          </span>
-                        ) : idea.status === "active" ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Aktywny
-                          </span>
-                        ) : idea.status === "testing" ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border border-sky-200/60">
-                            <Users className="w-3 h-3" />W testach (
-                            {idea.testersCount} testerów)
-                          </span>
-                        ) : idea.status === "rejected" ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200/60">
-                            <X className="w-3 h-3" />
-                            Odrzucony
-                          </span>
-                        ) : null}
-
-                        <span className="ml-auto text-[11px] text-stone-400 dark:text-stone-500">
-                          {idea.createdAt}
+                      ) : idea.status === "active" ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Aktywny
                         </span>
-                      </div>
+                      ) : idea.status === "testing" ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border border-sky-200/60">
+                          <Users className="w-3 h-3" />W testach (
+                          {idea.testersCount} testerów)
+                        </span>
+                      ) : idea.status === "rejected" ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200/60">
+                          <X className="w-3 h-3" />
+                          Odrzucony
+                        </span>
+                      ) : null}
 
-                      {/* Tytuł + opis */}
-                      <div>
-                        <h4 className="text-sm sm:text-base font-bold text-stone-900 dark:text-white flex items-start gap-2">
-                          <span className="flex-1">{idea.title}</span>
-                          <button
-                            type="button"
-                            onClick={() => router.push(`/discover/${idea.id}`)}
-                            className="text-stone-400 hover:text-stone-900 dark:hover:text-white p-1 rounded-lg cursor-pointer shrink-0"
-                            title="Zobacz podgląd pomysłu"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </button>
-                        </h4>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                          Autor:{" "}
-                          <span className="font-semibold text-stone-700 dark:text-stone-300">
-                            {idea.authorName}
-                          </span>
-                        </p>
-                        {idea.description && (
-                          <p className="text-xs text-stone-600 dark:text-stone-400 line-clamp-2 leading-relaxed mt-1.5">
-                            {idea.description}
-                          </p>
-                        )}
-                      </div>
+                      <span className="ml-auto text-[11px] text-stone-400 dark:text-stone-500">
+                        {idea.createdAt}
+                      </span>
                     </div>
 
-                    {/* Dolna sekcja: akcje moderacji */}
-                    <div
-                      className={`px-4 sm:px-5 py-3 border-t flex flex-wrap items-center gap-2 ${
-                        isPending
-                          ? "border-amber-200/60 dark:border-amber-700/30 bg-amber-50/50 dark:bg-amber-950/20"
-                          : "border-stone-100 dark:border-white/5 bg-stone-50/50 dark:bg-white/2"
-                      }`}
-                    >
-                      {isPending && (
-                        <>
-                          <button
-                            onClick={() =>
-                              handleApproveIdea(idea.id, idea.title)
-                            }
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            Zaakceptuj
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleRejectIdea(idea.id, idea.title)
-                            }
-                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-white/5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700/30 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                            Odrzuć
-                          </button>
-                        </>
-                      )}
-
-                      <div className="ml-auto flex items-center gap-2">
-                        <CustomSelect
-                          value={idea.status}
-                          onChange={(val) =>
-                            updateIdeaStatus(
-                              idea.id,
-                              val as
-                                | "active"
-                                | "pending"
-                                | "testing"
-                                | "rejected"
-                                | "archived",
-                            )
-                          }
-                          options={[
-                            { value: "active", label: "Aktywny" },
-                            { value: "pending", label: "Oczekujący" },
-                            { value: "testing", label: "Testy" },
-                            { value: "rejected", label: "Odrzucony" },
-                            { value: "archived", label: "Archiwum" },
-                          ]}
-                          className="text-xs"
-                        />
+                    {/* Tytuł + opis */}
+                    <div>
+                      <h4 className="text-sm sm:text-base font-bold text-stone-900 dark:text-white flex items-start gap-2">
+                        <span className="flex-1">{idea.title}</span>
                         <button
                           type="button"
-                          onClick={() => {
-                            if (confirm(`Usunąć pomysł "${idea.title}"?`)) {
-                              deleteIdea(idea.id);
-                              setAdminFeedback("Usunięto pomysł.");
-                            }
-                          }}
-                          className="p-2 min-h-[34px] min-w-[34px] flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-500 dark:text-rose-400 rounded-xl cursor-pointer transition-colors"
-                          title="Usuń całkowicie"
+                          onClick={() => router.push(`/discover/${idea.id}`)}
+                          className="text-stone-400 hover:text-stone-900 dark:hover:text-white p-1 rounded-lg cursor-pointer shrink-0"
+                          title="Zobacz podgląd pomysłu"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <ExternalLink className="w-3.5 h-3.5" />
                         </button>
-                      </div>
+                      </h4>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                        Autor:{" "}
+                        <span className="font-semibold text-stone-700 dark:text-stone-300">
+                          {idea.authorName}
+                        </span>
+                      </p>
+                      {idea.description && (
+                        <p className="text-xs text-stone-600 dark:text-stone-400 line-clamp-2 leading-relaxed mt-1.5">
+                          {idea.description}
+                        </p>
+                      )}
                     </div>
                   </div>
-                );
-              })}
+
+                  {/* Dolna sekcja: akcje moderacji */}
+                  <div
+                    className={`px-4 sm:px-5 py-3 border-t flex flex-wrap items-center gap-2 ${
+                      isPending
+                        ? "border-amber-200/60 dark:border-amber-700/30 bg-amber-50/50 dark:bg-amber-950/20"
+                        : "border-stone-100 dark:border-white/5 bg-stone-50/50 dark:bg-white/2"
+                    }`}
+                  >
+                    {isPending && (
+                      <>
+                        <button
+                          onClick={() => handleApproveIdea(idea.id, idea.title)}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Zaakceptuj
+                        </button>
+                        <button
+                          onClick={() => handleRejectIdea(idea.id, idea.title)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-white/5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700/30 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          Odrzuć
+                        </button>
+                      </>
+                    )}
+
+                    <div className="ml-auto flex items-center gap-2">
+                      <CustomSelect
+                        value={idea.status}
+                        onChange={(val) =>
+                          updateIdeaStatus(
+                            idea.id,
+                            val as
+                              | "active"
+                              | "pending"
+                              | "testing"
+                              | "rejected"
+                              | "archived",
+                          )
+                        }
+                        options={[
+                          { value: "active", label: "Aktywny" },
+                          { value: "pending", label: "Oczekujący" },
+                          { value: "testing", label: "Testy" },
+                          { value: "rejected", label: "Odrzucony" },
+                          { value: "archived", label: "Archiwum" },
+                        ]}
+                        className="text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`Usunąć pomysł "${idea.title}"?`)) {
+                            deleteIdea(idea.id);
+                            setAdminFeedback("Usunięto pomysł.");
+                          }
+                        }}
+                        className="p-2 min-h-[34px] min-w-[34px] flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-500 dark:text-rose-400 rounded-xl cursor-pointer transition-colors"
+                        title="Usuń całkowicie"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
 
             {filteredIdeas.length === 0 && (
               <div className="p-12 text-center text-xs text-stone-500 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs">
@@ -873,22 +874,29 @@ function DashboardContent() {
         </div>
 
         {/* TAB 3: ZGŁOSZENIA TESTERÓW */}
-        <div
-          className={
-            activeTab === "testers"
-              ? "block space-y-4"
-              : "hidden"
-          }
-        >
+        <div className={activeTab === "testers" ? "block space-y-4" : "hidden"}>
           {/* Pasek filtrów - ta sama struktura co tab ideas */}
           <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs">
             <div className="flex flex-wrap items-center gap-1.5">
               {(
                 [
                   { id: "all", label: "Wszystkie", count: testerApps.length },
-                  { id: "pending", label: "Oczekujące", count: pendingTesterAppsCount },
-                  { id: "approved", label: "Zaakceptowane", count: approvedTesterAppsCount },
-                  { id: "rejected", label: "Odrzucone", count: testerApps.filter((a) => a.status === "rejected").length },
+                  {
+                    id: "pending",
+                    label: "Oczekujące",
+                    count: pendingTesterAppsCount,
+                  },
+                  {
+                    id: "approved",
+                    label: "Zaakceptowane",
+                    count: approvedTesterAppsCount,
+                  },
+                  {
+                    id: "rejected",
+                    label: "Odrzucone",
+                    count: testerApps.filter((a) => a.status === "rejected")
+                      .length,
+                  },
                 ] as const
               ).map((f) => (
                 <button
@@ -903,9 +911,13 @@ function DashboardContent() {
                   }`}
                 >
                   {f.label}
-                  <span className={`text-[10px] font-bold px-1 rounded ${
-                    testerAppFilter === f.id ? "opacity-80" : "opacity-60"
-                  }`}>{f.count}</span>
+                  <span
+                    className={`text-[10px] font-bold px-1 rounded ${
+                      testerAppFilter === f.id ? "opacity-80" : "opacity-60"
+                    }`}
+                  >
+                    {f.count}
+                  </span>
                 </button>
               ))}
             </div>
@@ -923,7 +935,7 @@ function DashboardContent() {
                 />
                 {searchTesterQuery && (
                   <button
-                    onClick={() => setSearchTesterQuery("")} 
+                    onClick={() => setSearchTesterQuery("")}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 text-xs cursor-pointer"
                   >
                     ✕
@@ -935,7 +947,9 @@ function DashboardContent() {
                 className="p-2 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10 rounded-xl cursor-pointer shrink-0"
                 title="Odśwież zgłoszenia"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingTesterApps ? "animate-spin" : ""}`} />
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${isLoadingTesterApps ? "animate-spin" : ""}`}
+                />
               </button>
             </div>
           </div>
@@ -1142,13 +1156,27 @@ function DashboardContent() {
             <div className="flex flex-wrap items-center gap-1.5">
               {[
                 { id: "all", label: "Wszyscy", count: usersList.length },
-                { id: "creator", label: "Twórcy", count: usersList.filter((u) => u.role === "creator").length },
-                { id: "tester", label: "Testerzy", count: usersList.filter((u) => u.role === "tester").length },
-                { id: "admin", label: "Administratorzy", count: usersList.filter((u) => u.role === "admin").length },
+                {
+                  id: "creator",
+                  label: "Twórcy",
+                  count: usersList.filter((u) => u.role === "creator").length,
+                },
+                {
+                  id: "tester",
+                  label: "Testerzy",
+                  count: usersList.filter((u) => u.role === "tester").length,
+                },
+                {
+                  id: "admin",
+                  label: "Administratorzy",
+                  count: usersList.filter((u) => u.role === "admin").length,
+                },
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setUserRoleFilter(tab.id as typeof userRoleFilter)}
+                  onClick={() =>
+                    setUserRoleFilter(tab.id as typeof userRoleFilter)
+                  }
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer flex items-center gap-1.5 ${
                     userRoleFilter === tab.id
                       ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
@@ -1156,9 +1184,13 @@ function DashboardContent() {
                   }`}
                 >
                   {tab.label}
-                  <span className={`text-[10px] font-bold px-1 rounded ${
-                    userRoleFilter === tab.id ? "opacity-80" : "opacity-60"
-                  }`}>{tab.count}</span>
+                  <span
+                    className={`text-[10px] font-bold px-1 rounded ${
+                      userRoleFilter === tab.id ? "opacity-80" : "opacity-60"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
                 </button>
               ))}
             </div>
@@ -1207,7 +1239,10 @@ function DashboardContent() {
                 </thead>
                 <tbody className="divide-y divide-stone-100 dark:divide-white/10">
                   {filteredUsers.map((u) => (
-                    <tr key={u.id} className="hover:bg-stone-50/60 dark:hover:bg-white/5 transition-colors">
+                    <tr
+                      key={u.id}
+                      className="hover:bg-stone-50/60 dark:hover:bg-white/5 transition-colors"
+                    >
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2.5">
                           <div
@@ -1220,7 +1255,9 @@ function DashboardContent() {
                             <p className="font-semibold text-stone-900 dark:text-white">
                               {u.name || u.email || "Użytkownik"}
                             </p>
-                            <p className="text-[10px] text-stone-400">{u.email}</p>
+                            <p className="text-[10px] text-stone-400">
+                              {u.email}
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -1241,7 +1278,9 @@ function DashboardContent() {
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              u.status === "active" ? "bg-emerald-500" : "bg-stone-400"
+                              u.status === "active"
+                                ? "bg-emerald-500"
+                                : "bg-stone-400"
                             }`}
                           />
                           {u.status === "active" ? "Aktywny" : "Zablokowany"}
@@ -1264,7 +1303,10 @@ function DashboardContent() {
                             aria-label={`Usuń użytkownika ${u.name}`}
                             className="p-1.5 min-h-[30px] min-w-[30px] flex items-center justify-center rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-500 hover:text-rose-700 cursor-pointer transition-colors"
                           >
-                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                            <Trash2
+                              className="w-3.5 h-3.5"
+                              aria-hidden="true"
+                            />
                           </button>
                         </div>
                       </td>
@@ -1284,18 +1326,34 @@ function DashboardContent() {
         </div>
 
         {/* TAB 5: MOJE POMYSŁY & TESTY */}
-        <div className={activeTab === "my-ideas" ? "block space-y-4" : "hidden"}>
+        <div
+          className={activeTab === "my-ideas" ? "block space-y-4" : "hidden"}
+        >
           {/* Pasek filtrów i narzędzi – zsynchronizowany z pozostałymi zakładkami */}
           <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs">
             <div className="flex flex-wrap items-center gap-1.5">
               {[
-                { id: "all", label: "Wszystkie moje", count: myCreatedIdeas.length + myTestingIdeas.length },
-                { id: "created", label: "Moje pomysły", count: myCreatedIdeas.length },
-                { id: "testing", label: "Udział w testach", count: myTestingIdeas.length },
+                {
+                  id: "all",
+                  label: "Wszystkie moje",
+                  count: myCreatedIdeas.length + myTestingIdeas.length,
+                },
+                {
+                  id: "created",
+                  label: "Moje pomysły",
+                  count: myCreatedIdeas.length,
+                },
+                {
+                  id: "testing",
+                  label: "Udział w testach",
+                  count: myTestingIdeas.length,
+                },
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setMyIdeasFilter(tab.id as typeof myIdeasFilter)}
+                  onClick={() =>
+                    setMyIdeasFilter(tab.id as typeof myIdeasFilter)
+                  }
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer flex items-center gap-1.5 ${
                     myIdeasFilter === tab.id
                       ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
@@ -1303,9 +1361,13 @@ function DashboardContent() {
                   }`}
                 >
                   {tab.label}
-                  <span className={`text-[10px] font-bold px-1 rounded ${
-                    myIdeasFilter === tab.id ? "opacity-80" : "opacity-60"
-                  }`}>{tab.count}</span>
+                  <span
+                    className={`text-[10px] font-bold px-1 rounded ${
+                      myIdeasFilter === tab.id ? "opacity-80" : "opacity-60"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
                 </button>
               ))}
             </div>
@@ -1347,7 +1409,9 @@ function DashboardContent() {
                 <div className="p-3.5 px-4 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Lightbulb className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                    <span className="text-xs font-bold text-stone-900 dark:text-white">Moje Zgłoszone Pomysły</span>
+                    <span className="text-xs font-bold text-stone-900 dark:text-white">
+                      Moje Zgłoszone Pomysły
+                    </span>
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-400">
                       {filteredMyCreatedIdeas.length}
                     </span>
@@ -1359,7 +1423,9 @@ function DashboardContent() {
 
               {filteredMyCreatedIdeas.length === 0 ? (
                 <div className="p-12 text-center text-xs text-stone-500 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs">
-                  {searchMyIdeasQuery ? "Brak zgłoszonych pomysłów pasujących do wyszukiwania." : "Brak zgłoszonych pomysłów przez to konto."}
+                  {searchMyIdeasQuery
+                    ? "Brak zgłoszonych pomysłów pasujących do wyszukiwania."
+                    : "Brak zgłoszonych pomysłów przez to konto."}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1383,7 +1449,9 @@ function DashboardContent() {
                 <div className="p-3.5 px-4 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-stone-500 dark:text-stone-400" />
-                    <span className="text-xs font-bold text-stone-900 dark:text-white">Mój Udział w Testach</span>
+                    <span className="text-xs font-bold text-stone-900 dark:text-white">
+                      Mój Udział w Testach
+                    </span>
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-400">
                       {filteredMyTestingIdeas.length}
                     </span>
@@ -1393,7 +1461,9 @@ function DashboardContent() {
 
               {filteredMyTestingIdeas.length === 0 ? (
                 <div className="p-12 text-center text-xs text-stone-500 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 shadow-2xs">
-                  {searchMyIdeasQuery ? "Brak testowanych projektów pasujących do wyszukiwania." : "Nie bierzesz udziału w żadnych testach prototypów."}
+                  {searchMyIdeasQuery
+                    ? "Brak testowanych projektów pasujących do wyszukiwania."
+                    : "Nie bierzesz udziału w żadnych testach prototypów."}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1405,7 +1475,9 @@ function DashboardContent() {
                       isTester={true}
                       onChat={(e) => {
                         e.stopPropagation();
-                        router.push(`/chat?topic=${encodeURIComponent(`Testy projektu: ${idea.title}`)}`);
+                        router.push(
+                          `/chat?topic=${encodeURIComponent(`Testy projektu: ${idea.title}`)}`,
+                        );
                       }}
                     />
                   ))}

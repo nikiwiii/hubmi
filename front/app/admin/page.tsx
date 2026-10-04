@@ -16,7 +16,9 @@ function AdminRedirect() {
   return (
     <div className="flex items-center justify-center h-96 text-stone-400">
       <RefreshCw className="w-5 h-5 animate-spin mr-2" />
-      <span className="text-sm font-medium">Przekierowywanie do Panelu Zarządzania...</span>
+      <span className="text-sm font-medium">
+        Przekierowywanie do Panelu Zarządzania...
+      </span>
     </div>
   );
 }

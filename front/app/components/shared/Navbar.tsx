@@ -9,6 +9,7 @@ import {
   MessageCircle,
   User as UserIcon,
   LogIn,
+  LogOut,
   Type,
   BookOpen,
   Search,
@@ -21,6 +22,8 @@ import {
   Home,
   ChevronDown,
   Check,
+  Shield,
+  LayoutDashboard,
 } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { useApp } from "../../context/AppContext";
@@ -43,6 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const {
+    setCurrentUser,
     fontSizeLevel,
     toggleFontSize,
     isDarkMode,
@@ -56,21 +60,30 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
   const appearanceRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (appearanceRef.current && !appearanceRef.current.contains(e.target as Node)) {
         setIsAppearanceOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Close on Escape
+  // Close dropdowns on Escape key
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsAppearanceOpen(false);
+      if (e.key === "Escape") {
+        setIsAppearanceOpen(false);
+        setIsProfileOpen(false);
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -109,8 +122,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     fontSizeLevel === "huge"
       ? "200% (A++)"
       : fontSizeLevel === "large"
-      ? "150% (A+)"
-      : "100% (A)";
+        ? "150% (A+)"
+        : "100% (A)";
 
   const fontShort =
     fontSizeLevel === "huge" ? "A++" : fontSizeLevel === "large" ? "A+" : "A";
@@ -165,11 +178,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   type="button"
                   onClick={() => navigateTo(link.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className={`h-8 px-3.5 rounded-xl text-sm font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${
-                    isActive
+                  className={`h-8 px-3.5 rounded-xl text-sm font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${isActive
                       ? "bg-white dark:bg-stone-900 text-stone-950 dark:text-white shadow-2xs font-bold"
                       : "text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10"
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </button>
@@ -188,11 +200,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-label="Ustawienia wyglądu"
                 aria-expanded={isAppearanceOpen}
                 aria-haspopup="menu"
-                className={`h-8 px-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-stone-900 ${
-                  hasActiveAppearance || isAppearanceOpen
+                className={`h-8 px-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-stone-900 ${hasActiveAppearance || isAppearanceOpen
                     ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 border-stone-900 dark:border-white shadow-sm"
                     : "bg-white dark:bg-[#1C1E23] text-stone-800 dark:text-stone-200 border-stone-300 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 shadow-2xs"
-                }`}
+                  }`}
               >
                 <Eye className="w-3.5 h-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">Wygląd</span>
@@ -277,11 +288,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                     </div>
                     <span
-                      className={`text-[11px] font-black px-1.5 py-0.5 rounded-lg ${
-                        fontSizeLevel !== "normal"
+                      className={`text-[11px] font-black px-1.5 py-0.5 rounded-lg ${fontSizeLevel !== "normal"
                           ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
                           : "bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300"
-                      }`}
+                        }`}
                     >
                       {fontShort}
                     </span>
@@ -316,28 +326,149 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* User Profile or Login */}
             {currentUser ? (
-              <button
-                type="button"
-                onClick={() => navigateTo("dashboard")}
-                title="Przejdź do profilu użytkownika"
-                aria-label={`Profil użytkownika ${currentUser.name || currentUser.email || "Konto"}`}
-                className="h-8 flex items-center gap-2 pl-2.5 pr-1 rounded-xl bg-white dark:bg-[#1C1E23] border border-stone-300 dark:border-white/15 hover:border-stone-400 dark:hover:border-white/30 cursor-pointer transition-colors shadow-2xs"
-              >
-                <span className="hidden sm:inline-block text-xs font-semibold text-stone-800 dark:text-stone-200 truncate max-w-28">
-                  {currentUser.name || currentUser.email || "Konto"}
-                </span>
-                <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold text-stone-800 shrink-0"
-                  style={{
-                    backgroundColor: currentUser.avatarBg || "#A4B3F6",
-                  }}
-                  aria-hidden="true"
+              <div ref={profileRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileOpen((v) => !v)}
+                  title="Menu profilu użytkownika"
+                  aria-label={`Profil użytkownika ${currentUser.name || currentUser.email || "Konto"}`}
+                  aria-expanded={isProfileOpen}
+                  aria-haspopup="menu"
+                  className={`h-8 flex items-center gap-2 pl-2.5 pr-2 rounded-xl bg-white dark:bg-[#1C1E23] border border-stone-300 dark:border-white/15 hover:border-stone-400 dark:hover:border-white/30 cursor-pointer transition-colors shadow-2xs ${
+                    isProfileOpen
+                      ? "ring-2 ring-stone-400 dark:ring-stone-600 border-stone-400"
+                      : ""
+                  }`}
                 >
-                  {(currentUser.name || currentUser.email || "U")
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-              </button>
+                  <span className="hidden sm:inline-block text-xs font-semibold text-stone-800 dark:text-stone-200 truncate max-w-28">
+                    {currentUser.name || currentUser.email || "Konto"}
+                  </span>
+                  <div
+                    className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold text-stone-800 shrink-0 shadow-2xs"
+                    style={{
+                      backgroundColor: currentUser.avatarBg || "#A4B3F6",
+                    }}
+                    aria-hidden="true"
+                  >
+                    {(currentUser.name || currentUser.email || "U")
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-stone-500 dark:text-stone-400 transition-transform ${
+                      isProfileOpen ? "rotate-180" : ""
+                    }`}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {/* Profile Dropdown Menu */}
+                {isProfileOpen && (
+                  <div
+                    role="menu"
+                    aria-label="Menu profilu"
+                    className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-[#1C1E23] border border-stone-200/80 dark:border-white/10 rounded-2xl shadow-xl z-50 overflow-hidden"
+                  >
+                    {/* User Summary Header */}
+                    <div className="px-3.5 py-3 border-b border-stone-100 dark:border-white/10 bg-stone-50/60 dark:bg-white/[0.02]">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-stone-800 shrink-0 shadow-2xs"
+                          style={{
+                            backgroundColor: currentUser.avatarBg || "#A4B3F6",
+                          }}
+                        >
+                          {(currentUser.name || currentUser.email || "U")
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
+                            {currentUser.name || "Użytkownik"}
+                          </div>
+                          <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate mt-0.5">
+                            {currentUser.email}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5 flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-bold text-stone-400 dark:text-stone-500 tracking-wider">
+                          Rola w serwisie
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                            currentUser.role === "admin"
+                              ? "bg-amber-100 text-amber-900 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/50"
+                              : currentUser.role === "expert"
+                              ? "bg-blue-100 text-blue-900 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-300/60 dark:border-blue-700/50"
+                              : "bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300 border border-stone-200 dark:border-stone-700"
+                          }`}
+                        >
+                          {currentUser.role === "admin" ? (
+                            <>
+                              <Shield className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+                              <span>Administrator</span>
+                            </>
+                          ) : currentUser.role === "expert" ? (
+                            <span>Ekspert</span>
+                          ) : (
+                            <span>Użytkownik</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Navigation Items */}
+                    <div className="p-1 space-y-0.5">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          navigateTo("dashboard");
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-white/10 transition-colors text-left cursor-pointer"
+                      >
+                        <LayoutDashboard className="w-4 h-4 text-stone-500 dark:text-stone-400 shrink-0" />
+                        <span>Mój panel i pomysły</span>
+                      </button>
+
+                      {currentUser.role === "admin" && (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            navigateTo("admin");
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors text-left cursor-pointer"
+                        >
+                          <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span>Panel Administratora</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Logout Option */}
+                    <div className="p-1 border-t border-stone-100 dark:border-white/10">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          setCurrentUser(null);
+                          router.push("/auth");
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0" />
+                        <span>Wyloguj się</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <button
                 type="button"
@@ -381,11 +512,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={() => navigateTo(item.id)}
                 aria-current={isActive ? "page" : undefined}
-                className={`min-w-[40px] min-h-[44px] flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 dark:focus-visible:ring-white ${
-                  isActive
+                className={`min-w-[40px] min-h-[44px] flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 dark:focus-visible:ring-white ${isActive
                     ? "text-stone-950 dark:text-white font-bold"
                     : "text-stone-700 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
                 <span className="text-[10px] leading-tight font-medium">

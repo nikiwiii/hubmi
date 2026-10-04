@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { useRouter } from "next/navigation";
 import {
   User,
   Idea,
@@ -9,15 +15,16 @@ import {
   InnovationRecord,
   InstitutionProfile,
   ServiceCardResponse,
-} from '../lib/types';
-import { setCurrentUser as setStoredCurrentUser } from '../lib/auth';
+} from "../lib/types";
+import { setCurrentUser as setStoredCurrentUser } from "../lib/auth";
 import {
   getIdeas,
   saveIdeas,
   addIdea as storeAddIdea,
   updateIdea as storeUpdateIdea,
-} from '../lib/ideasStore';
-import { EMPTY_PROFILE } from '../lib/middleman';
+  canUserDeleteIdea,
+} from "../lib/ideasStore";
+import { EMPTY_PROFILE } from "../lib/middleman";
 import {
   getStoredInnovations,
   saveStoredInnovations,
@@ -25,7 +32,7 @@ import {
   getStoredMiddlemanDraft,
   saveStoredMiddlemanDraft,
   clearStoredMiddlemanDraft,
-} from '../lib/innovationsStore';
+} from "../lib/innovationsStore";
 import {
   fetchIdeasFromBackend,
   createIdeaOnBackend,
@@ -36,9 +43,9 @@ import {
   setAuthToken,
   getAuthToken,
   searchInnovations,
-} from '../lib/api';
+} from "../lib/api";
 
-export type MiddlemanStep = 'pick' | 'view' | 'profile' | 'result';
+export type MiddlemanStep = "pick" | "view" | "profile" | "result";
 
 interface AppContextType {
   currentUser: User | null;
@@ -48,20 +55,23 @@ interface AppContextType {
   isLoadingUser: boolean;
   isLargeFont: boolean;
   toggleFontSize: () => void;
-  fontSizeLevel: 'normal' | 'large' | 'huge';
-  setFontSizeLevel: (level: 'normal' | 'large' | 'huge') => void;
+  fontSizeLevel: "normal" | "large" | "huge";
+  setFontSizeLevel: (level: "normal" | "large" | "huge") => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   isHighContrast: boolean;
   toggleHighContrast: () => void;
   isSoundEnabled: boolean;
   toggleSound: () => void;
-  vote: (id: string, type: 'like' | 'dislike') => Promise<void>;
+  vote: (id: string, type: "like" | "dislike") => Promise<void>;
   toggleTesting: (id: string) => Promise<void>;
   addIdea: (ideaData: any) => Promise<Idea>;
   addPublishedIdea: (idea: Idea) => void;
   deleteIdea: (id: string) => Promise<void>;
-  updateIdeaStatus: (id: string, status: 'active' | 'testing' | 'archived' | 'pending' | 'rejected') => Promise<void>;
+  updateIdeaStatus: (
+    id: string,
+    status: "active" | "testing" | "archived" | "pending" | "rejected",
+  ) => Promise<void>;
   navigate: (screen: ScreenId | string) => void;
   selectIdea: (idea: Idea) => void;
   openChatWithAuthor: (authorId: string) => void;
@@ -80,7 +90,9 @@ interface AppContextType {
   selectedInnovation: InnovationRecord | null;
   setSelectedInnovation: (inn: InnovationRecord | null) => void;
   institutionProfile: InstitutionProfile;
-  setInstitutionProfile: React.Dispatch<React.SetStateAction<InstitutionProfile>>;
+  setInstitutionProfile: React.Dispatch<
+    React.SetStateAction<InstitutionProfile>
+  >;
   serviceCardResult: ServiceCardResponse | null;
   setServiceCardResult: (result: ServiceCardResponse | null) => void;
   pickerQuery: string;
@@ -98,7 +110,9 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const router = useRouter();
   // null on the first render so the server HTML matches the client. The session is read after mount.
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
@@ -106,46 +120,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   // Accessibility states
-  const [fontSizeLevel, setFontSizeLevelState] = useState<'normal' | 'large' | 'huge'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('minno_font_size_level');
-      if (saved === 'large' || saved === 'huge') return saved;
+  const [fontSizeLevel, setFontSizeLevelState] = useState<
+    "normal" | "large" | "huge"
+  >(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("minno_font_size_level");
+      if (saved === "large" || saved === "huge") return saved;
     }
-    return 'normal';
+    return "normal";
   });
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('minno_dark_mode') === 'true';
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("minno_dark_mode") === "true";
     }
     return false;
   });
   const [isHighContrast, setIsHighContrast] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('minno_high_contrast') === 'true';
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("minno_high_contrast") === "true";
     }
     return false;
   });
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('minno_sound_enabled') !== 'false';
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("minno_sound_enabled") !== "false";
     }
     return true;
   });
 
-  const isLargeFont = fontSizeLevel !== 'normal';
+  const isLargeFont = fontSizeLevel !== "normal";
 
-  const setFontSizeLevel = (level: 'normal' | 'large' | 'huge') => {
+  const setFontSizeLevel = (level: "normal" | "large" | "huge") => {
     setFontSizeLevelState(level);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('minno_font_size_level', level);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("minno_font_size_level", level);
     }
   };
 
   const toggleDarkMode = () => {
     setIsDarkMode((prev) => {
       const next = !prev;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('minno_dark_mode', String(next));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("minno_dark_mode", String(next));
       }
       return next;
     });
@@ -154,43 +170,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleHighContrast = () => {
     setIsHighContrast((prev) => {
       const next = !prev;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('minno_high_contrast', String(next));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("minno_high_contrast", String(next));
       }
       return next;
     });
   };
 
-
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === "undefined") return;
     const root = document.documentElement;
     if (isDarkMode) {
-      root.classList.add('dark');
-      document.body.classList.add('dark');
+      root.classList.add("dark");
+      document.body?.classList.add("dark");
     } else {
-      root.classList.remove('dark');
-      document.body.classList.remove('dark');
+      root.classList.remove("dark");
+      document.body?.classList.remove("dark");
     }
   }, [isDarkMode]);
 
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === "undefined") return;
     const root = document.documentElement;
     if (isHighContrast) {
-      root.classList.add('high-contrast');
-      document.body.classList.add('high-contrast');
+      root.classList.add("high-contrast");
+      document.body?.classList.add("high-contrast");
     } else {
-      root.classList.remove('high-contrast');
-      document.body.classList.remove('high-contrast');
+      root.classList.remove("high-contrast");
+      document.body?.classList.remove("high-contrast");
     }
   }, [isHighContrast]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.classList.remove("font-scale-large", "font-scale-huge");
+    document.body?.classList.remove("font-scale-large", "font-scale-huge");
+    if (fontSizeLevel === "large") {
+      root.classList.add("font-scale-large");
+      document.body?.classList.add("font-scale-large");
+    } else if (fontSizeLevel === "huge") {
+      root.classList.add("font-scale-huge");
+      document.body?.classList.add("font-scale-huge");
+    }
+  }, [fontSizeLevel]);
 
   const toggleSound = () => {
     setIsSoundEnabled((prev) => {
       const next = !prev;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('minno_sound_enabled', String(next));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("minno_sound_enabled", String(next));
       }
       return next;
     });
@@ -206,25 +235,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Middleman (Innowacja -> Usługa) stan z pamięcią podręczną
   const initialDraft = getStoredMiddlemanDraft();
   const [middlemanStep, setMiddlemanStepState] = useState<MiddlemanStep>(
-    initialDraft?.step || 'pick'
+    initialDraft?.step || "pick",
   );
-  const [selectedInnovation, setSelectedInnovationState] = useState<InnovationRecord | null>(
-    initialDraft?.selectedInnovation || null
-  );
-  const [institutionProfile, setInstitutionProfile] = useState<InstitutionProfile>(
-    initialDraft?.profile || EMPTY_PROFILE
-  );
-  const [serviceCardResult, setServiceCardResultState] = useState<ServiceCardResponse | null>(
-    initialDraft?.result || null
-  );
+  const [selectedInnovation, setSelectedInnovationState] =
+    useState<InnovationRecord | null>(initialDraft?.selectedInnovation || null);
+  const [institutionProfile, setInstitutionProfile] =
+    useState<InstitutionProfile>(initialDraft?.profile || EMPTY_PROFILE);
+  const [serviceCardResult, setServiceCardResultState] =
+    useState<ServiceCardResponse | null>(initialDraft?.result || null);
   const [pickerQuery, setPickerQueryState] = useState<string>(
-    initialDraft?.pickerQuery || ''
+    initialDraft?.pickerQuery || "",
   );
   const [pickerPage, setPickerPageState] = useState<number>(
-    initialDraft?.pickerPage || 1
+    initialDraft?.pickerPage || 1,
   );
   const [middlemanRefineText, setMiddlemanRefineTextState] = useState<string>(
-    initialDraft?.refineText || ''
+    initialDraft?.refineText || "",
   );
 
   // Matching Chat Turn history
@@ -251,44 +277,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     middlemanRefineText,
   ]);
 
-  const loadInnovations = useCallback(async (forceRefresh = false): Promise<InnovationRecord[]> => {
-    if (!forceRefresh && innovations.length > 0) {
-      return innovations;
-    }
-    setIsLoadingInnovations(true);
-    setInnovationsError(null);
-    try {
-      const data = await searchInnovations('');
-      if (data && data.length > 0) {
-        setInnovations(data);
-        saveStoredInnovations(data);
-        setSelectedInnovationState((current) => {
-          if (!current) return current;
-          const fresh = data.find((d) => d.id === current.id);
-          return fresh ? { ...current, ...fresh } : current;
-        });
-        return data;
+  const loadInnovations = useCallback(
+    async (forceRefresh = false): Promise<InnovationRecord[]> => {
+      if (!forceRefresh && innovations.length > 0) {
+        return innovations;
       }
-      return innovations;
-    } catch (err: any) {
-      const msg = err?.message || 'Nie udało się pobrać bazy innowacji.';
-      setInnovationsError(msg);
-      return innovations;
-    } finally {
-      setIsLoadingInnovations(false);
-    }
-  }, [innovations]);
+      setIsLoadingInnovations(true);
+      setInnovationsError(null);
+      try {
+        const data = await searchInnovations("");
+        if (data && data.length > 0) {
+          setInnovations(data);
+          saveStoredInnovations(data);
+          setSelectedInnovationState((current) => {
+            if (!current) return current;
+            const fresh = data.find((d) => d.id === current.id);
+            return fresh ? { ...current, ...fresh } : current;
+          });
+          return data;
+        }
+        return innovations;
+      } catch (err: any) {
+        const msg = err?.message || "Nie udało się pobrać bazy innowacji.";
+        setInnovationsError(msg);
+        return innovations;
+      } finally {
+        setIsLoadingInnovations(false);
+      }
+    },
+    [innovations],
+  );
 
-  const searchLocalInnovations = useCallback((query: string): InnovationRecord[] => {
-    return filterInnovations(innovations, query);
-  }, [innovations]);
+  const searchLocalInnovations = useCallback(
+    (query: string): InnovationRecord[] => {
+      return filterInnovations(innovations, query);
+    },
+    [innovations],
+  );
 
   const resetMiddleman = () => {
-    setMiddlemanStepState('pick');
+    setMiddlemanStepState("pick");
     setSelectedInnovationState(null);
     setInstitutionProfile(EMPTY_PROFILE);
     setServiceCardResultState(null);
-    setMiddlemanRefineTextState('');
+    setMiddlemanRefineTextState("");
     clearStoredMiddlemanDraft();
   };
 
@@ -304,7 +336,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIdeas(local);
       }
     } catch (e) {
-      console.warn('Failed to load ideas from backend:', e);
+      console.warn("Failed to load ideas from backend:", e);
       setIdeas(getIdeas());
     } finally {
       setIsLoadingIdeas(false);
@@ -336,7 +368,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         }
       } catch (err) {
-        console.warn('Błąd weryfikacji profilu użytkownika:', err);
+        console.warn("Błąd weryfikacji profilu użytkownika:", err);
       } finally {
         setIsLoadingUser(false);
       }
@@ -359,9 +391,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const handleVote = async (id: string, type: 'like' | 'dislike') => {
+  const handleVote = async (id: string, type: "like" | "dislike") => {
     if (!currentUser) {
-      router.push('/auth');
+      router.push("/auth");
       return;
     }
 
@@ -372,20 +404,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         let likes = item.likes;
         let dislikes = item.dislikes;
-        let userVote: 'like' | 'dislike' | null = type;
+        let userVote: "like" | "dislike" | null = type;
 
         if (item.userVote === type) {
           // Cofnięcie polubienia / głosu (toggle off)
           userVote = null;
-          if (type === 'like') likes = Math.max(0, likes - 1);
-          if (type === 'dislike') dislikes = Math.max(0, dislikes - 1);
+          if (type === "like") likes = Math.max(0, likes - 1);
+          if (type === "dislike") dislikes = Math.max(0, dislikes - 1);
         } else {
           // Zmiana z przeciwnego
-          if (item.userVote === 'like') likes = Math.max(0, likes - 1);
-          if (item.userVote === 'dislike') dislikes = Math.max(0, dislikes - 1);
+          if (item.userVote === "like") likes = Math.max(0, likes - 1);
+          if (item.userVote === "dislike") dislikes = Math.max(0, dislikes - 1);
 
-          if (type === 'like') likes += 1;
-          if (type === 'dislike') dislikes += 1;
+          if (type === "like") likes += 1;
+          if (type === "dislike") dislikes += 1;
         }
 
         return {
@@ -411,19 +443,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 dislikes: res.dislikes,
                 userVote: res.active ? type : null,
               }
-            : item
+            : item,
         );
         saveIdeas(next);
         return next;
       });
     } catch (e) {
-      console.warn('Backend vote note:', e);
+      console.warn("Backend vote note:", e);
     }
   };
 
   const handleToggleTesting = async (id: string) => {
     if (!currentUser) {
-      router.push('/auth');
+      router.push("/auth");
       return;
     }
 
@@ -436,7 +468,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const newList = exists
           ? item.testersList.filter((e) => e !== email)
           : [...item.testersList, email];
-        const count = exists ? Math.max(0, item.testersCount - 1) : item.testersCount + 1;
+        const count = exists
+          ? Math.max(0, item.testersCount - 1)
+          : item.testersCount + 1;
 
         return {
           ...item,
@@ -449,7 +483,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     try {
-      const res = await toggleIdeaReaction(id, 'volunteer');
+      const res = await toggleIdeaReaction(id, "volunteer");
       setIdeas((prev) => {
         const next = prev.map((item) =>
           item.id === id
@@ -460,13 +494,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   ? Array.from(new Set([...item.testersList, email]))
                   : item.testersList.filter((e) => e !== email),
               }
-            : item
+            : item,
         );
         saveIdeas(next);
         return next;
       });
     } catch (e) {
-      console.warn('Backend volunteer note:', e);
+      console.warn("Backend volunteer note:", e);
     }
   };
 
@@ -485,7 +519,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       router.push(`/discover/${created.id}`);
       return created;
     } catch (e) {
-      console.warn('Backend create fallback to local:', e);
+      console.warn("Backend create fallback to local:", e);
       const created = storeAddIdea(newIdeaData, ideas);
       setIdeas((prev) => {
         const next = [created, ...prev];
@@ -507,10 +541,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleDeleteIdea = async (id: string) => {
+    const targetIdea = ideas.find((i) => i.id === id);
+    if (
+      targetIdea &&
+      currentUser &&
+      !canUserDeleteIdea(targetIdea, currentUser)
+    ) {
+      throw new Error(
+        "Brak uprawnień. Tylko autor lub administrator może usunąć tę propozycję.",
+      );
+    }
     try {
       await deleteIdeaOnBackend(id);
     } catch (e) {
-      console.warn('Backend delete note:', e);
+      console.warn("Backend delete note:", e);
     }
     setIdeas((prev) => {
       const next = prev.filter((item) => item.id !== id);
@@ -521,20 +565,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const handleUpdateIdeaStatus = async (
     id: string,
-    status: 'active' | 'testing' | 'archived' | 'pending' | 'rejected'
+    status: "active" | "testing" | "archived" | "pending" | "rejected",
   ) => {
     try {
       const updatedIdea = await updateIdeaStatusBackend(id, status);
       setIdeas((prev) => prev.map((i) => (i.id === id ? updatedIdea : i)));
     } catch (e) {
-      console.warn('Backend status update fallback:', e);
+      console.warn("Backend status update fallback:", e);
       const updated = storeUpdateIdea(id, { status: status as any });
       setIdeas(updated);
     }
   };
 
   const handleNavigate = (screen: ScreenId | string) => {
-    const path = screen === 'discover' ? '/' : `/${screen}`;
+    const path = screen === "discover" ? "/" : `/${screen}`;
     router.push(path);
   };
 
@@ -547,9 +591,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleFontSize = () => {
-    if (fontSizeLevel === 'normal') setFontSizeLevel('large');
-    else if (fontSizeLevel === 'large') setFontSizeLevel('huge');
-    else setFontSizeLevel('normal');
+    if (fontSizeLevel === "normal") setFontSizeLevel("large");
+    else if (fontSizeLevel === "large") setFontSizeLevel("huge");
+    else setFontSizeLevel("normal");
   };
 
   return (
@@ -613,17 +657,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     >
       <div
         className={`min-h-screen flex flex-col transition-colors duration-150 ${
-          fontSizeLevel === 'huge'
-            ? 'font-scale-huge'
-            : fontSizeLevel === 'large'
-            ? 'font-scale-large'
-            : ''
+          fontSizeLevel === "huge"
+            ? "font-scale-huge"
+            : fontSizeLevel === "large"
+              ? "font-scale-large"
+              : ""
         } ${
           isHighContrast
-            ? 'high-contrast bg-black text-white'
+            ? "high-contrast bg-black text-white"
             : isDarkMode
-            ? 'dark bg-[#141518] text-[#F3F4F6]'
-            : 'bg-[#F7F6F1] text-stone-900'
+              ? "dark bg-[#141518] text-[#F3F4F6]"
+              : "bg-[#F7F6F1] text-stone-900"
         }`}
       >
         {children}
@@ -635,7 +679,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 export const useApp = () => {
   const context = useContext(AppContext);
   if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
+    throw new Error("useApp must be used within an AppProvider");
   }
   return context;
 };

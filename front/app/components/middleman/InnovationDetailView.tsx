@@ -13,7 +13,7 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { InnovationRecord } from "../../lib/types";
-import { getYoutubeEmbedUrl } from "../../lib/middleman";
+import { getYoutubeEmbedUrl, getInnovationCategoryStyle } from "../../lib/middleman";
 import { fetchInnovationById } from "../../lib/api";
 
 interface InnovationDetailViewProps {
@@ -46,21 +46,28 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
   }, [innovation.id, innovation.video_url]);
 
   const embedUrl = getYoutubeEmbedUrl(activeVideoUrl);
+  const style = getInnovationCategoryStyle(
+    innovation.category,
+    innovation.target_group || innovation.title,
+  );
 
   return (
     <div className="space-y-5 animate-in fade-in duration-200">
       {/* Karta: Wybrana innowacja */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-[#FAF4E5] border border-[#E7DAC0]">
-        <div className="space-y-0.5">
-          <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-            Wybrana innowacja
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl ${style.cardBg} border ${style.border}`}>
+        <div className="space-y-1">
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${style.badgeBg}`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${style.accentDot}`} />
+            <span>{style.label}</span>
           </span>
-          <h1 className="text-base sm:text-lg font-bold text-stone-900">
+          <h1 className="text-base sm:text-lg font-bold text-stone-900 dark:text-white pt-0.5">
             {innovation.title}
           </h1>
           {innovation.target_group && (
-            <p className="text-xs text-stone-600 flex items-center gap-1.5 pt-0.5">
-              <Users2 className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+            <p className="text-xs text-stone-600 dark:text-stone-300 flex items-center gap-1.5">
+              <Users2 className="w-3.5 h-3.5 shrink-0 text-stone-500 dark:text-stone-400" />
               <span>{innovation.target_group}</span>
             </p>
           )}
@@ -71,7 +78,7 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
               href={innovation.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 hover:text-stone-900 bg-white border border-black/10 hover:bg-stone-50 transition-colors shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 dark:text-stone-200 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 transition-colors shadow-2xs"
             >
               <span>Karta w bazie ROPS</span>
               <ExternalLink className="w-3.5 h-3.5 text-stone-400" />
@@ -80,7 +87,7 @@ export const InnovationDetailView: React.FC<InnovationDetailViewProps> = ({
           <button
             type="button"
             onClick={onBack}
-            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs transition-colors"
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 text-stone-700 dark:text-stone-200 cursor-pointer shadow-2xs transition-colors"
           >
             Zmień innowację
           </button>

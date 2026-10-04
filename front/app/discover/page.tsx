@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { IdeaCard } from "../components/shared/IdeaCard";
+import { DeleteIdeaModal } from "../components/shared/DeleteIdeaModal";
 import { CustomSelect, SelectOption } from "../components/shared/CustomSelect";
 import {
   Search,
@@ -76,6 +77,7 @@ export default function DiscoverPage() {
     selectIdea,
     vote,
     toggleTesting,
+    deleteIdea,
     navigate,
     isLoadingIdeas,
     refreshIdeas,
@@ -87,7 +89,10 @@ export default function DiscoverPage() {
     "popular",
   );
 
-  // Modale: Partnerstwo oraz Przypisywanie mentora
+  // Modale: Usuwanie propozycji, Partnerstwo oraz Przypisywanie mentora
+  const [deleteModalIdea, setDeleteModalIdea] = useState<Idea | null>(null);
+  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+
   const [partnerModalIdea, setPartnerModalIdea] = useState<Idea | null>(null);
   const [partnerName, setPartnerName] = useState("");
   const [partnerType, setPartnerType] = useState(
@@ -239,13 +244,21 @@ export default function DiscoverPage() {
               type="button"
               onClick={() => setSearchQuery("")}
               aria-label="Wyczyść pole wyszukiwania"
-              className="min-h-[28px] min-w-[28px] flex items-center justify-center absolute right-3 p-1 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white cursor-pointer"
+              className="min-h-[28px] min-w-[28px] flex items-center justify-center absolute right-3 p-1 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
         </div>
       </div>
+
+      {/* Powiadomienie o usunięciu propozycji */}
+      {deleteNotice && (
+        <div className="flex items-center gap-2 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs font-semibold animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span>{deleteNotice}</span>
+        </div>
+      )}
 
       {/* Categories & Filter Bar with Partner Switch */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -264,11 +277,10 @@ export default function DiscoverPage() {
                 aria-selected={isSelected}
                 aria-label={`Kategoria: ${cat}`}
                 onClick={() => setSelectedCategory(cat)}
-                className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  isSelected
+                className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${isSelected
                     ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 font-bold"
-                    : "bg-white dark:bg-white/5 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-white/10 border border-stone-200/80 dark:border-white/10"
-                }`}
+                    : "bg-white dark:bg-[#1C1E23] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-white/10 border border-stone-200/80 dark:border-white/10"
+                  }`}
               >
                 {cat}
               </button>
@@ -282,13 +294,12 @@ export default function DiscoverPage() {
             aria-checked={onlyLookingForPartner}
             aria-label="Filtruj tylko projekty poszukujące partnerstwa"
             onClick={() => setOnlyLookingForPartner(!onlyLookingForPartner)}
-            className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-              onlyLookingForPartner
-                ? "bg-amber-200/90 text-amber-950 border border-amber-300 shadow-2xs"
-                : "bg-white text-stone-700 hover:bg-stone-50 border border-stone-200/80"
-            }`}
+            className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${onlyLookingForPartner
+                ? "bg-amber-200/90 dark:bg-amber-400/20 text-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-500/30 shadow-2xs"
+                : "bg-white dark:bg-[#1C1E23] text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/10 border border-stone-200/80 dark:border-white/10"
+              }`}
           >
-            <Handshake className="w-3.5 h-3.5 text-amber-800" aria-hidden="true" />
+            <Handshake className="w-3.5 h-3.5 text-amber-800 dark:text-amber-300" aria-hidden="true" />
             <span>Szukają partnera</span>
           </button>
         </div>
@@ -311,15 +322,15 @@ export default function DiscoverPage() {
           ))}
         </div>
       ) : filteredIdeas.length === 0 ? (
-        <div className="bg-white rounded-2xl p-10 text-center border border-stone-200">
-          <p className="text-base font-semibold text-stone-800">Brak wyników</p>
+        <div className="bg-white dark:bg-[#1C1E23] rounded-2xl p-10 text-center border border-stone-200 dark:border-white/10">
+          <p className="text-base font-semibold text-stone-800 dark:text-stone-200">Brak wyników</p>
           <button
             onClick={() => {
               setSearchQuery("");
               setSelectedCategory("Wszystkie");
               setOnlyLookingForPartner(false);
             }}
-            className="mt-3 px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-medium cursor-pointer"
+            className="mt-3 px-4 py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-950 rounded-xl text-xs font-medium cursor-pointer"
           >
             Wyczyść filtry
           </button>
@@ -358,6 +369,7 @@ export default function DiscoverPage() {
                   e.stopPropagation();
                   navigate("chat");
                 }}
+                onDelete={(target) => setDeleteModalIdea(target)}
               />
             );
           })}
@@ -581,6 +593,19 @@ export default function DiscoverPage() {
           </div>
         </div>
       )}
+
+      {/* Modal potwierdzenia usunięcia propozycji (dla Autora lub Administratora) */}
+      <DeleteIdeaModal
+        idea={deleteModalIdea}
+        isOpen={Boolean(deleteModalIdea)}
+        onClose={() => setDeleteModalIdea(null)}
+        currentUser={currentUser}
+        onConfirm={async (idea) => {
+          await deleteIdea(idea.id);
+          setDeleteNotice(`Pomyślnie usunięto propozycję „${idea.title}”.`);
+          setTimeout(() => setDeleteNotice(null), 4000);
+        }}
+      />
     </div>
   );
 }

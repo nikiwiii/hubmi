@@ -32,6 +32,7 @@ import {
   BUDGET_OPTIONS,
   EMPTY_PROFILE,
   errorMessage,
+  getInnovationCategoryStyle,
   institutionDisplayName,
   serviceCardToText,
 } from "../lib/middleman";
@@ -141,17 +142,29 @@ function SelectedInnovation({
   innovation: InnovationRecord;
   onChange?: () => void;
 }) {
+  const style = getInnovationCategoryStyle(
+    innovation.category,
+    innovation.target_group || innovation.title,
+  );
+
   return (
-    <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[#FAF4E5] border border-[#E7DAC0]">
-      <div className="space-y-0.5">
-        <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-          Wybrana innowacja
+    <div
+      className={`print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl ${style.cardBg} border ${style.border}`}
+    >
+      <div className="space-y-1">
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${style.badgeBg}`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${style.accentDot}`} />
+          <span>{style.label}</span>
         </span>
-        <p className="text-base font-bold text-stone-900">{innovation.title}</p>
+        <p className="text-base font-bold text-stone-900 dark:text-white pt-0.5">
+          {innovation.title}
+        </p>
         {innovation.target_group && (
-          <p className="text-xs text-stone-600 flex items-center gap-1.5">
-            <Users2 className="w-3.5 h-3.5" />
-            {innovation.target_group}
+          <p className="text-xs text-stone-600 dark:text-stone-300 flex items-center gap-1.5">
+            <Users2 className="w-3.5 h-3.5 shrink-0 text-stone-500 dark:text-stone-400" />
+            <span>{innovation.target_group}</span>
           </p>
         )}
       </div>
@@ -160,7 +173,7 @@ function SelectedInnovation({
           <button
             type="button"
             onClick={onChange}
-            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs"
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 text-stone-700 dark:text-stone-200 cursor-pointer shadow-2xs"
           >
             Zmień innowację
           </button>
@@ -437,7 +450,7 @@ function MiddlemanContent() {
             <button
               type="button"
               onClick={handleBackToView}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white border border-black/10 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-stone-700 dark:text-stone-200 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 transition-colors shadow-2xs cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Wróć do opisu innowacji</span>
@@ -449,10 +462,10 @@ function MiddlemanContent() {
                   href={innovation.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white border border-black/10 hover:bg-stone-50 transition-colors shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-stone-700 dark:text-stone-200 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 transition-colors shadow-2xs"
                 >
                   <span>Karta w bazie ROPS</span>
-                  <ExternalLink className="w-3 h-3 text-stone-400" />
+                  <ExternalLink className="w-3 h-3 text-stone-400 dark:text-stone-400" />
                 </a>
               )}
             </div>
@@ -474,14 +487,14 @@ function MiddlemanContent() {
       {(step === "view" || step === "profile") &&
         !innovation &&
         !isLoadingInnovation && (
-          <div className="text-center py-12 bg-white rounded-2xl border border-black/5 p-8 space-y-4">
-            <p className="text-base font-semibold text-stone-800">
+          <div className="text-center py-12 bg-white dark:bg-[#1C1E23] rounded-2xl border border-black/5 dark:border-white/10 p-8 space-y-4">
+            <p className="text-base font-semibold text-stone-800 dark:text-stone-200">
               Nie wybrano jeszcze innowacji społecznej.
             </p>
             <button
               type="button"
               onClick={handleBackToPick}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 dark:bg-amber-400 text-white dark:text-stone-950 font-semibold cursor-pointer"
             >
               <span>Przejdź do katalogu innowacji</span>
               <ArrowRight className="w-4 h-4" />
@@ -494,7 +507,7 @@ function MiddlemanContent() {
           <div className="print:hidden flex flex-wrap items-center gap-2">
             <button
               onClick={() => setStep("profile")}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 text-stone-700 dark:text-stone-200 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               Zmień dane instytucji
@@ -503,12 +516,12 @@ function MiddlemanContent() {
               <button
                 type="button"
                 onClick={handleBackToView}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 text-stone-700 dark:text-stone-200 cursor-pointer"
               >
                 {innovation.video_url ? (
-                  <Video className="w-4 h-4 text-red-600" />
+                  <Video className="w-4 h-4 text-red-600 dark:text-red-400" />
                 ) : (
-                  <FileText className="w-4 h-4 text-stone-600" />
+                  <FileText className="w-4 h-4 text-stone-600 dark:text-stone-400" />
                 )}
                 <span>
                   Oryginalna innowacja {innovation.video_url ? "& wideo" : ""}
@@ -517,17 +530,17 @@ function MiddlemanContent() {
             )}
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 text-stone-700 dark:text-stone-200 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               Drukuj / zapisz jako PDF
             </button>
             <button
               onClick={handleCopy}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 text-stone-700 dark:text-stone-200 cursor-pointer"
             >
               {copied ? (
-                <Check className="w-4 h-4 text-emerald-600" />
+                <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               ) : (
                 <Copy className="w-4 h-4" />
               )}
@@ -535,9 +548,9 @@ function MiddlemanContent() {
             </button>
             <button
               onClick={handleStartOver}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-black/10 hover:bg-stone-50 text-stone-700 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 text-stone-700 dark:text-stone-200 cursor-pointer"
             >
-              <RotateCcw className="w-4 h-4 text-stone-400" />
+              <RotateCcw className="w-4 h-4 text-stone-400 dark:text-stone-400" />
               <span>Nowa innowacja</span>
             </button>
           </div>
