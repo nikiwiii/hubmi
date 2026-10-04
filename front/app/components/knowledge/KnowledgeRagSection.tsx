@@ -37,11 +37,14 @@ import {
   ChevronRight,
   ShieldCheck,
   ShieldAlert,
-  Info
+  Info,
 } from "lucide-react";
 import { searchKnowledgeRag } from "../../lib/api";
 import { executeClientKnowledgeRag } from "../../lib/knowledgeRagFallback";
-import { KnowledgeRagResponse, KnowledgeRagMatchedReport } from "../../lib/types";
+import {
+  KnowledgeRagResponse,
+  KnowledgeRagMatchedReport,
+} from "../../lib/types";
 
 interface KnowledgeRagSectionProps {
   initialQuery?: string;
@@ -92,13 +95,18 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [ragResult, setRagResult] = useState<KnowledgeRagResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"analysis" | "charts" | "reports" | "innovations">("analysis");
+  const [activeTab, setActiveTab] = useState<
+    "analysis" | "charts" | "reports" | "innovations"
+  >("analysis");
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const handleSearch = async (queryText?: string, explicitPowiatId?: string) => {
+  const handleSearch = async (
+    queryText?: string,
+    explicitPowiatId?: string,
+  ) => {
     const q = (queryText !== undefined ? queryText : query).trim();
     if (!q) return;
 
@@ -173,7 +181,8 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 font-medium mt-1">
-                Zadaj pytanie naturalnym językiem – wyszukaj dane, wykresy i raporty dla dowolnego powiatu Małopolski.
+                Zadaj pytanie naturalnym językiem – wyszukaj dane, wykresy i
+                raporty dla dowolnego powiatu Małopolski.
               </p>
             </div>
           </div>
@@ -203,7 +212,7 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="np. szukam czegoś o osobach na wózkach w powiecie krakowskim..."
+              placeholder="np. projekt dla osób niepełnosprawnych w powiecie krakowskim..."
               className="w-full pl-12 pr-32 py-4 text-sm sm:text-base font-medium text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 bg-transparent focus:outline-none"
             />
             {query && (
@@ -280,12 +289,16 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
       {/* WYNIKI RAG */}
       {ragResult && !isLoading && (
         <>
-          {ragResult.guardrail_status && ragResult.guardrail_status !== "PASSED" ? (
+          {ragResult.guardrail_status &&
+          ragResult.guardrail_status !== "PASSED" ? (
             <div className="p-6 sm:p-8 space-y-6 animate-in fade-in duration-300">
               <div className="p-6 sm:p-7 rounded-2xl bg-amber-50/90 border border-amber-300 text-amber-950 space-y-5 shadow-xs">
                 <div className="flex items-start gap-4">
                   <div className="p-2.5 rounded-xl bg-amber-200/90 text-amber-950 shrink-0 mt-0.5">
-                    <ShieldAlert className="w-6 h-6 text-amber-900" aria-hidden="true" />
+                    <ShieldAlert
+                      className="w-6 h-6 text-amber-900"
+                      aria-hidden="true"
+                    />
                   </div>
                   <div className="space-y-1.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -308,10 +321,12 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 <div className="pt-4 border-t border-amber-200/80 space-y-3">
                   <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-amber-800" />
-                    Przykładowe pytania, które możesz zadać w bazie analitycznej:
+                    Przykładowe pytania, które możesz zadać w bazie
+                    analitycznej:
                   </span>
                   <div className="flex flex-wrap gap-2">
-                    {(ragResult.suggested_queries && ragResult.suggested_queries.length > 0
+                    {(ragResult.suggested_queries &&
+                    ragResult.suggested_queries.length > 0
                       ? ragResult.suggested_queries
                       : SAMPLE_QUERIES
                     ).map((suggested, sIdx) => (
@@ -339,7 +354,9 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-stone-200 shadow-2xs">
                     <MapPin className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span className="text-xs font-semibold text-stone-500">Wykryty obszar:</span>
+                    <span className="text-xs font-semibold text-stone-500">
+                      Wykryty obszar:
+                    </span>
                     <span className="text-xs font-bold text-stone-900">
                       {ragResult.detected_powiat.display_name}
                     </span>
@@ -385,7 +402,9 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                       <span className="text-2xl sm:text-3xl font-extrabold text-stone-900">
                         {primaryReport.latest_value}
                       </span>
-                      <span className="text-sm font-bold text-stone-500">{primaryReport.unit}</span>
+                      <span className="text-sm font-bold text-stone-500">
+                        {primaryReport.unit}
+                      </span>
                     </div>
                     <span className="text-[11px] text-stone-400 block">
                       Najnowsze dane ({primaryReport.latest_year})
@@ -400,7 +419,9 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                       <span className="text-2xl sm:text-3xl font-extrabold text-stone-900">
                         {primaryReport.region_avg}
                       </span>
-                      <span className="text-sm font-bold text-stone-500">{primaryReport.unit}</span>
+                      <span className="text-sm font-bold text-stone-500">
+                        {primaryReport.unit}
+                      </span>
                     </div>
                     <span className="text-[11px] text-stone-400 block">
                       Dla całego regionu (22 powiaty)
@@ -413,16 +434,21 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                     </span>
                     <div className="flex items-baseline gap-1.5">
                       <span
-                        className={`text-2xl sm:text-3xl font-extrabold ${isPositiveDelta ? "text-emerald-700" : "text-rose-700"
-                          }`}
+                        className={`text-2xl sm:text-3xl font-extrabold ${
+                          isPositiveDelta ? "text-emerald-700" : "text-rose-700"
+                        }`}
                       >
                         {isPositiveDelta ? "+" : ""}
                         {primaryReport.delta}
                       </span>
-                      <span className="text-sm font-bold text-stone-500">{primaryReport.unit}</span>
+                      <span className="text-sm font-bold text-stone-500">
+                        {primaryReport.unit}
+                      </span>
                     </div>
                     <span className="text-[11px] text-stone-400 block">
-                      Od {primaryReport.time_series[0]?.year || "początku pomiarów"}
+                      Od{" "}
+                      {primaryReport.time_series[0]?.year ||
+                        "początku pomiarów"}
                     </span>
                   </div>
 
@@ -450,10 +476,11 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 <div className="flex items-center gap-2 border-b border-stone-200 pb-3 overflow-x-auto">
                   <button
                     onClick={() => setActiveTab("analysis")}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${activeTab === "analysis"
-                      ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
-                      : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
-                      }`}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      activeTab === "analysis"
+                        ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                        : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
+                    }`}
                   >
                     <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                     <span>Synteza Analityczna AI</span>
@@ -461,10 +488,11 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
 
                   <button
                     onClick={() => setActiveTab("charts")}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${activeTab === "charts"
-                      ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
-                      : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
-                      }`}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      activeTab === "charts"
+                        ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                        : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
+                    }`}
                   >
                     <BarChart3 className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                     <span>Wykresy i Szeregi Czasowe</span>
@@ -472,24 +500,30 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
 
                   <button
                     onClick={() => setActiveTab("reports")}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${activeTab === "reports"
-                      ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
-                      : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
-                      }`}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      activeTab === "reports"
+                        ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                        : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
+                    }`}
                   >
                     <FileText className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-                    <span>Raporty i Kartogramy ({ragResult.matched_reports.length})</span>
+                    <span>
+                      Raporty i Kartogramy ({ragResult.matched_reports.length})
+                    </span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab("innovations")}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${activeTab === "innovations"
-                      ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
-                      : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
-                      }`}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      activeTab === "innovations"
+                        ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                        : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white bg-stone-100 dark:bg-white/5"
+                    }`}
                   >
                     <Lightbulb className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-                    <span>Innowacje ROPS ({ragResult.matched_innovations.length})</span>
+                    <span>
+                      Innowacje ROPS ({ragResult.matched_innovations.length})
+                    </span>
                   </button>
                 </div>
 
@@ -501,7 +535,10 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                         <div className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-800">
                           <Sparkles className="w-3.5 h-3.5" />
                         </div>
-                        <span>Wnioski i Interpretacja Danych dla: {ragResult.detected_powiat.display_name}</span>
+                        <span>
+                          Wnioski i Interpretacja Danych dla:{" "}
+                          {ragResult.detected_powiat.display_name}
+                        </span>
                       </div>
                       <span className="text-[11px] text-stone-400 font-medium">
                         Źródło: ROPS Kraków & GUS
@@ -512,13 +549,45 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          h1: ({ ...props }) => <h3 className="text-base font-bold text-stone-900 mt-4 mb-2" {...props} />,
-                          h2: ({ ...props }) => <h3 className="text-base font-bold text-stone-900 mt-4 mb-2" {...props} />,
-                          h3: ({ ...props }) => <h4 className="text-sm font-bold text-stone-900 mt-3 mb-1.5" {...props} />,
-                          p: ({ ...props }) => <p className="mb-2.5 leading-relaxed text-stone-800" {...props} />,
-                          ul: ({ ...props }) => <ul className="list-disc list-outside pl-5 space-y-1.5 my-2.5 text-stone-800" {...props} />,
-                          li: ({ ...props }) => <li className="leading-relaxed" {...props} />,
-                          strong: ({ ...props }) => <strong className="font-semibold text-stone-950" {...props} />,
+                          h1: ({ ...props }) => (
+                            <h3
+                              className="text-base font-bold text-stone-900 mt-4 mb-2"
+                              {...props}
+                            />
+                          ),
+                          h2: ({ ...props }) => (
+                            <h3
+                              className="text-base font-bold text-stone-900 mt-4 mb-2"
+                              {...props}
+                            />
+                          ),
+                          h3: ({ ...props }) => (
+                            <h4
+                              className="text-sm font-bold text-stone-900 mt-3 mb-1.5"
+                              {...props}
+                            />
+                          ),
+                          p: ({ ...props }) => (
+                            <p
+                              className="mb-2.5 leading-relaxed text-stone-800"
+                              {...props}
+                            />
+                          ),
+                          ul: ({ ...props }) => (
+                            <ul
+                              className="list-disc list-outside pl-5 space-y-1.5 my-2.5 text-stone-800"
+                              {...props}
+                            />
+                          ),
+                          li: ({ ...props }) => (
+                            <li className="leading-relaxed" {...props} />
+                          ),
+                          strong: ({ ...props }) => (
+                            <strong
+                              className="font-semibold text-stone-950"
+                              {...props}
+                            />
+                          ),
                         }}
                       >
                         {ragResult.ai_synthesis}
@@ -531,150 +600,192 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                 {activeTab === "charts" && (
                   <div className="space-y-6 animate-in fade-in duration-200">
                     {/* WYKRES 1: LINIOWY SZEREG CZASOWY */}
-                    {ragResult.chart_data.trend_series && ragResult.chart_data.trend_series.length > 0 && (
-                      <div className="p-6 bg-white border border-stone-200 rounded-2xl shadow-2xs space-y-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
-                          <div>
-                            <h4 className="text-base font-bold text-stone-900">
-                              {ragResult.chart_data.report_title} – Trend wieloletni
-                            </h4>
-                            <p className="text-xs text-stone-500">
-                              Porównanie wartości w {ragResult.detected_powiat.display_name} ze średnią regionalną Małopolski
-                            </p>
+                    {ragResult.chart_data.trend_series &&
+                      ragResult.chart_data.trend_series.length > 0 && (
+                        <div className="p-6 bg-white border border-stone-200 rounded-2xl shadow-2xs space-y-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
+                            <div>
+                              <h4 className="text-base font-bold text-stone-900">
+                                {ragResult.chart_data.report_title} – Trend
+                                wieloletni
+                              </h4>
+                              <p className="text-xs text-stone-500">
+                                Porównanie wartości w{" "}
+                                {ragResult.detected_powiat.display_name} ze
+                                średnią regionalną Małopolski
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs font-semibold">
+                              <span className="flex items-center gap-1.5 text-stone-900">
+                                <span className="w-3 h-3 rounded-full bg-stone-900" />
+                                <span>
+                                  {ragResult.detected_powiat.display_name}
+                                </span>
+                              </span>
+                              <span className="flex items-center gap-1.5 text-stone-400">
+                                <span className="w-3 h-3 rounded-full bg-amber-500" />
+                                <span>Średnia Małopolski</span>
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 text-xs font-semibold">
-                            <span className="flex items-center gap-1.5 text-stone-900">
-                              <span className="w-3 h-3 rounded-full bg-stone-900" />
-                              <span>{ragResult.detected_powiat.display_name}</span>
-                            </span>
-                            <span className="flex items-center gap-1.5 text-stone-400">
-                              <span className="w-3 h-3 rounded-full bg-amber-500" />
-                              <span>Średnia Małopolski</span>
-                            </span>
-                          </div>
-                        </div>
 
-                        <div className="h-72 w-full pt-2">
-                          {isMounted && (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <LineChart
-                                data={ragResult.chart_data.trend_series}
-                                margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
-                              >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f0ece1" vertical={false} />
-                                <XAxis
-                                  dataKey="year"
-                                  tick={{ fill: "#78716c", fontSize: 12 }}
-                                  tickLine={false}
-                                  axisLine={{ stroke: "#e7e5e4" }}
-                                />
-                                <YAxis
-                                  tick={{ fill: "#78716c", fontSize: 12 }}
-                                  tickLine={false}
-                                  axisLine={false}
-                                  unit={` ${ragResult.chart_data.unit}`}
-                                />
-                                <Tooltip
-                                  formatter={(value: any, name: any) => [
-                                    `${value} ${ragResult.chart_data.unit}`,
-                                    name === "powiatValue"
-                                      ? ragResult.detected_powiat.display_name
-                                      : "Średnia Małopolski",
-                                  ]}
-                                  contentStyle={{
-                                    backgroundColor: "#ffffff",
-                                    borderRadius: "12px",
-                                    border: "1px solid #e7e5e4",
-                                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                                    fontSize: "12px",
+                          <div className="h-72 w-full pt-2">
+                            {isMounted && (
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                  data={ragResult.chart_data.trend_series}
+                                  margin={{
+                                    top: 10,
+                                    right: 20,
+                                    left: -10,
+                                    bottom: 0,
                                   }}
-                                />
-                                <Line
-                                  type="monotone"
-                                  dataKey="powiatValue"
-                                  name="powiatValue"
-                                  stroke="#1c1917"
-                                  strokeWidth={3}
-                                  dot={{ r: 4, fill: "#1c1917", strokeWidth: 2, stroke: "#fff" }}
-                                  activeDot={{ r: 6 }}
-                                />
-                                <Line
-                                  type="monotone"
-                                  dataKey="regionAvg"
-                                  name="regionAvg"
-                                  stroke="#f59e0b"
-                                  strokeWidth={2}
-                                  strokeDasharray="5 5"
-                                  dot={{ r: 3, fill: "#f59e0b" }}
-                                />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          )}
+                                >
+                                  <CartesianGrid
+                                    strokeDasharray="3 3"
+                                    stroke="#f0ece1"
+                                    vertical={false}
+                                  />
+                                  <XAxis
+                                    dataKey="year"
+                                    tick={{ fill: "#78716c", fontSize: 12 }}
+                                    tickLine={false}
+                                    axisLine={{ stroke: "#e7e5e4" }}
+                                  />
+                                  <YAxis
+                                    tick={{ fill: "#78716c", fontSize: 12 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    unit={` ${ragResult.chart_data.unit}`}
+                                  />
+                                  <Tooltip
+                                    formatter={(value: any, name: any) => [
+                                      `${value} ${ragResult.chart_data.unit}`,
+                                      name === "powiatValue"
+                                        ? ragResult.detected_powiat.display_name
+                                        : "Średnia Małopolski",
+                                    ]}
+                                    contentStyle={{
+                                      backgroundColor: "#ffffff",
+                                      borderRadius: "12px",
+                                      border: "1px solid #e7e5e4",
+                                      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                                      fontSize: "12px",
+                                    }}
+                                  />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="powiatValue"
+                                    name="powiatValue"
+                                    stroke="#1c1917"
+                                    strokeWidth={3}
+                                    dot={{
+                                      r: 4,
+                                      fill: "#1c1917",
+                                      strokeWidth: 2,
+                                      stroke: "#fff",
+                                    }}
+                                    activeDot={{ r: 6 }}
+                                  />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="regionAvg"
+                                    name="regionAvg"
+                                    stroke="#f59e0b"
+                                    strokeWidth={2}
+                                    strokeDasharray="5 5"
+                                    dot={{ r: 3, fill: "#f59e0b" }}
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* WYKRES 2: SŁUPKOWY PORÓWNAWCZY (POWIAT vs REGION) */}
-                    {ragResult.chart_data.comparison_bars && ragResult.chart_data.comparison_bars.length > 0 && (
-                      <div className="p-6 bg-white border border-stone-200 rounded-2xl shadow-2xs space-y-4">
-                        <div className="border-b border-stone-100 pb-3">
-                          <h4 className="text-base font-bold text-stone-900">
-                            Porównanie powiatów w {ragResult.chart_data.latest_year} r.
-                          </h4>
-                          <p className="text-xs text-stone-500">
-                            Pozycja {ragResult.detected_powiat.display_name} na tle wybranych powiatów regionu ({ragResult.chart_data.unit})
-                          </p>
-                        </div>
+                    {ragResult.chart_data.comparison_bars &&
+                      ragResult.chart_data.comparison_bars.length > 0 && (
+                        <div className="p-6 bg-white border border-stone-200 rounded-2xl shadow-2xs space-y-4">
+                          <div className="border-b border-stone-100 pb-3">
+                            <h4 className="text-base font-bold text-stone-900">
+                              Porównanie powiatów w{" "}
+                              {ragResult.chart_data.latest_year} r.
+                            </h4>
+                            <p className="text-xs text-stone-500">
+                              Pozycja {ragResult.detected_powiat.display_name}{" "}
+                              na tle wybranych powiatów regionu (
+                              {ragResult.chart_data.unit})
+                            </p>
+                          </div>
 
-                        <div className="h-64 w-full pt-2">
-                          {isMounted && (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart
-                                data={ragResult.chart_data.comparison_bars}
-                                margin={{ top: 10, right: 20, left: -10, bottom: 25 }}
-                              >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f0ece1" vertical={false} />
-                                <XAxis
-                                  dataKey="name"
-                                  tick={{ fill: "#78716c", fontSize: 11 }}
-                                  tickLine={false}
-                                  axisLine={{ stroke: "#e7e5e4" }}
-                                  angle={-20}
-                                  textAnchor="end"
-                                />
-                                <YAxis
-                                  tick={{ fill: "#78716c", fontSize: 12 }}
-                                  tickLine={false}
-                                  axisLine={false}
-                                  unit={` ${ragResult.chart_data.unit}`}
-                                />
-                                <Tooltip
-                                  formatter={(value: any) => [`${value} ${ragResult.chart_data.unit}`, "Wartość wskaźnika"]}
-                                  contentStyle={{
-                                    backgroundColor: "#ffffff",
-                                    borderRadius: "12px",
-                                    border: "1px solid #e7e5e4",
-                                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                                    fontSize: "12px",
+                          <div className="h-64 w-full pt-2">
+                            {isMounted && (
+                              <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                  data={ragResult.chart_data.comparison_bars}
+                                  margin={{
+                                    top: 10,
+                                    right: 20,
+                                    left: -10,
+                                    bottom: 25,
                                   }}
-                                />
-                                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                                  {ragResult.chart_data.comparison_bars.map((entry, index) => {
-                                    const isCurrent = entry.powiatId === ragResult.detected_powiat.id;
-                                    return (
-                                      <Cell
-                                        key={`cell-${index}`}
-                                        fill={isCurrent ? "#1c1917" : "#d6d3d1"}
-                                      />
-                                    );
-                                  })}
-                                </Bar>
-                              </BarChart>
-                            </ResponsiveContainer>
-                          )}
+                                >
+                                  <CartesianGrid
+                                    strokeDasharray="3 3"
+                                    stroke="#f0ece1"
+                                    vertical={false}
+                                  />
+                                  <XAxis
+                                    dataKey="name"
+                                    tick={{ fill: "#78716c", fontSize: 11 }}
+                                    tickLine={false}
+                                    axisLine={{ stroke: "#e7e5e4" }}
+                                    angle={-20}
+                                    textAnchor="end"
+                                  />
+                                  <YAxis
+                                    tick={{ fill: "#78716c", fontSize: 12 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    unit={` ${ragResult.chart_data.unit}`}
+                                  />
+                                  <Tooltip
+                                    formatter={(value: any) => [
+                                      `${value} ${ragResult.chart_data.unit}`,
+                                      "Wartość wskaźnika",
+                                    ]}
+                                    contentStyle={{
+                                      backgroundColor: "#ffffff",
+                                      borderRadius: "12px",
+                                      border: "1px solid #e7e5e4",
+                                      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                                      fontSize: "12px",
+                                    }}
+                                  />
+                                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                                    {ragResult.chart_data.comparison_bars.map(
+                                      (entry, index) => {
+                                        const isCurrent =
+                                          entry.powiatId ===
+                                          ragResult.detected_powiat.id;
+                                        return (
+                                          <Cell
+                                            key={`cell-${index}`}
+                                            fill={
+                                              isCurrent ? "#1c1917" : "#d6d3d1"
+                                            }
+                                          />
+                                        );
+                                      },
+                                    )}
+                                  </Bar>
+                                </BarChart>
+                              </ResponsiveContainer>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 )}
 
@@ -716,13 +827,17 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                               </div>
                               <div className="flex items-center justify-between text-stone-400">
                                 <span>Średnia Małopolski:</span>
-                                <span>{report.region_avg} {report.unit}</span>
+                                <span>
+                                  {report.region_avg} {report.unit}
+                                </span>
                               </div>
                             </div>
                           </div>
 
                           <button
-                            onClick={() => router.push(`/knowledge/${report.id}`)}
+                            onClick={() =>
+                              router.push(`/knowledge/${report.id}`)
+                            }
                             className="w-full py-2 px-3 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                           >
                             <span>Otwórz kartogram i mapę 22 powiatów</span>
@@ -764,14 +879,21 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
 
                             {inn.funding_info && (
                               <div className="pt-2 text-[11px] text-stone-500 font-medium">
-                                <strong className="text-stone-700">Dofinansowanie:</strong> {inn.funding_info}
+                                <strong className="text-stone-700">
+                                  Dofinansowanie:
+                                </strong>{" "}
+                                {inn.funding_info}
                               </div>
                             )}
                           </div>
 
                           <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
                             <button
-                              onClick={() => router.push(`/propose?problem=${encodeURIComponent(query)}`)}
+                              onClick={() =>
+                                router.push(
+                                  `/propose?problem=${encodeURIComponent(query)}`,
+                                )
+                              }
                               className="text-xs font-semibold text-stone-700 hover:text-stone-950 underline cursor-pointer"
                             >
                               Zgłoś podobny projekt
@@ -800,7 +922,6 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                         </div>
                       ))}
                     </div>
-
                   </div>
                 )}
               </div>
@@ -811,4 +932,3 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
     </div>
   );
 };
-
