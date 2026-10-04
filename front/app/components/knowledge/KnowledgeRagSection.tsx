@@ -31,9 +31,7 @@ import {
   ExternalLink,
   CheckCircle2,
   Building2,
-  UserCheck,
   X,
-  MessageCircle,
   Lightbulb,
   FileText,
   ChevronRight,
@@ -812,37 +810,6 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
                   ))}
                 </div>
 
-                {/* KARTA EKSPERTA ROPS */}
-                {ragResult.matched_expert && (
-                  <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-amber-200 text-amber-900 flex items-center justify-center font-bold shrink-0">
-                        <UserCheck className="w-6 h-6 text-amber-800" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h5 className="text-sm font-bold text-stone-900">
-                            {ragResult.matched_expert.name}
-                          </h5>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">
-                            Ekspert ROPS
-                          </span>
-                        </div>
-                        <p className="text-xs text-stone-600 font-medium">
-                          {ragResult.matched_expert.title} – {ragResult.matched_expert.specialization}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => router.push(ragResult.matched_expert?.chat_url || "/chat")}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer shrink-0 shadow-xs"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span>Skonsultuj bezpłatnie</span>
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>

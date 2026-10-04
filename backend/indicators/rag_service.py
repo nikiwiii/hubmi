@@ -8,7 +8,6 @@ from typing import Dict, Any, List, Optional, Tuple
 from config import GROQ_API_KEY, GROQ_MODEL
 from supabase_client import DatabaseRepository
 from matching.embeddings import compute_embedding, cosine_similarity, compute_lexical_overlap, strip_accents
-from matching.service import EXPERTS_DIRECTORY, DEFAULT_EXPERT
 
 logger = logging.getLogger("hubmi.indicators.rag")
 
@@ -376,8 +375,7 @@ class KnowledgeRagService:
         3. Oblicza semantyczne i leksykalne podobieństwo zapytania do KAŻDEGO z 17 wskaźników ROPS.
         4. Pobiera dane historyczne i pozycję wykrytego powiatu dla NAJLEPIEJ pasujących wskaźników.
         5. Wyszukuje semantycznie dopasowane innowacje ze 115 projektów ROPS.
-        6. Dobiera dedykowanego eksperta merytorycznego ROPS.
-        7. Generuje syntezę analityczną przez LLM Groq (lub inteligentny generator deterministyczny).
+        6. Generuje syntezę analityczną przez LLM Groq (lub inteligentny generator deterministyczny).
         """
         all_data = load_indicators_data()
 
@@ -606,16 +604,12 @@ class KnowledgeRagService:
         all_innovations = DatabaseRepository.get_all_innovations()
         matched_innovations = cls._match_innovations_semantically(query_vector, query, all_innovations)
 
-        # 7. DOBÓR DEDYKOWANEGO EKSPERTA MERYTORYCZNEGO ROPS
-        matched_expert = cls._pick_domain_expert(query)
-
-        # 8. GENEROWANIE SYNTEZY AI (Groq lub inteligentny fallback)
+        # 7. GENEROWANIE SYNTEZY AI (Groq lub inteligentny fallback)
         ai_synthesis = cls._generate_ai_synthesis(
             query=query,
             powiat_name=powiat_display_name,
             reports=reports_summary,
-            innovations=matched_innovations,
-            expert=matched_expert
+            innovations=matched_innovations
         )
 
         detected_topics = list({r["category"] for r in reports_summary})
@@ -637,7 +631,7 @@ class KnowledgeRagService:
             "matched_reports": reports_summary,
             "chart_data": chart_data,
             "matched_innovations": matched_innovations,
-            "matched_expert": matched_expert,
+            "matched_expert": None,
             "suggested_queries": SUGGESTED_RAG_QUERIES
         }
 
@@ -711,43 +705,13 @@ class KnowledgeRagService:
         return scored[:4]
 
     @classmethod
-    def _pick_domain_expert(cls, query: str) -> Dict[str, Any]:
-        """Dobiera eksperta ROPS odpowiadającego tematyce zapytania."""
-        q_clean = strip_accents_flexible(query)
-        best_exp = DEFAULT_EXPERT
-        best_matches = 0
-        # Specjalne reguły dla kluczowych domen tematycznych
-        if any(w in q_clean for w in ["wozk", "niepelnosprawn", "ruchow", "inwalid", "barier", "dostepn"]):
-            for exp in EXPERTS_DIRECTORY:
-                if "Zieliński" in exp.get("name", ""):
-                    best_exp = exp
-                    best_matches = 99
-                    break
-
-        if best_matches < 99:
-            for exp in EXPERTS_DIRECTORY:
-                matches = sum(1 for kw in exp["keywords"] if strip_accents_flexible(kw) in q_clean)
-                if matches > best_matches:
-                    best_matches = matches
-                    best_exp = exp
-
-        topic_clean = re.sub(r"[^a-zA-Z0-9\s]", "", query)[:40].replace(" ", "-")
-        return {
-            "name": best_exp["name"],
-            "title": best_exp["title"],
-            "department": best_exp["department"],
-            "specialization": best_exp["specialization"],
-            "chat_url": f"/chat?topic=Konsultacja-{topic_clean}"
-        }
-
-    @classmethod
     def _generate_ai_synthesis(
         cls,
         query: str,
         powiat_name: str,
         reports: List[Dict[str, Any]],
         innovations: List[Dict[str, Any]],
-        expert: Dict[str, Any]
+        expert: Optional[Dict[str, Any]] = None
     ) -> str:
         """Generuje syntezę RAG w języku polskim z odwołaniem do liczb i innowacji."""
         stats_lines = []
@@ -777,7 +741,6 @@ class KnowledgeRagService:
                     f"{chr(10).join(stats_lines)}\n\n"
                     f"POWIĄZANE INNOWACJE SPOŁECZNE ROPS KRAKÓW:\n"
                     f"{chr(10).join(inn_lines)}\n\n"
-                    f"EKSPERT DS. WSPARCIA: {expert['name']} ({expert['specialization']}).\n\n"
                     f"ZADANIE:\n"
                     f"Sformułuj rzetelną, przejrzystą i profesjonalną odpowiedź w formacie Markdown dla użytkownika. "
                     f"W odpowiedzi:\n"
@@ -785,6 +748,7 @@ class KnowledgeRagService:
                     f"2. Zacytuj dokładne liczby ze wskaźników powyżej (procenty, pozycję w regionie).\n"
                     f"3. Przedstaw praktyczne wnioski i wyzwania w tym obszarze.\n"
                     f"4. Zaproponuj wskazane innowacje społeczne ROPS jako gotowe rozwiązania.\n"
+                    f"BEZWZGLĘDNY ZAKAZ: Pod żadnym pozorem nie podawaj żadnych danych kontaktowych, nazwisk ani imion ekspertów ROPS Kraków. Raport ma skupiać się wyłącznie na danych statystycznych, diagnozie oraz innowacjach społecznych.\n"
                     f"Styl: profesjonalny, oparty na twardych danych. Pisz wyłącznie po polsku."
                 )
 
@@ -820,8 +784,7 @@ class KnowledgeRagService:
             f"wynosi **{p_val} {p_unit}** przy średniej wojewódzkiej **{p_avg} {p_unit}** "
             f"(co plasuje powiat na **{p_rank}. pozycji** w Małopolsce).\n"
             f"2. **Dopasowane innowacje społeczne**: W panelu innowacji poniżej wytypowano projekty z bazy ROPS Kraków "
-            f"odpowiadające na to zagadnienie, gotowe do wdrożenia w lokalnych samorządach i organizacjach pozarządowych.\n"
-            f"3. **Wsparcie doradcze**: Możesz skonsultować ten problem bezpośrednio z ekspertem ROPS: **{expert['name']}** ({expert['specialization']})."
+            f"odpowiadające na to zagadnienie, gotowe do wdrożenia w lokalnych samorządach i organizacjach pozarządowych."
         )
 
         return deterministic_synthesis
