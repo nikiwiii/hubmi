@@ -26,6 +26,7 @@ import {
   ArrowUpRight,
   ArrowUp,
   User,
+  Video,
 } from "lucide-react";
 import { VoiceDictationPopup, useSpeechToText } from "../components/voice";
 import { useApp } from "../context/AppContext";
@@ -49,6 +50,7 @@ function MatchingContent() {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasAutoSentRef = useRef(false);
 
   // Stan dyktowania głosowego
   const [initialTextBeforeDictation, setInitialTextBeforeDictation] =
@@ -180,9 +182,10 @@ function MatchingContent() {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  // Jeśli w URL podano parametr ?q=, wykonaj automatyczne wyszukiwanie
+  // Jeśli w URL podano parametr ?q=, wykonaj automatyczne wyszukiwanie jednokrotnie
   useEffect(() => {
-    if (initialQuery.trim()) {
+    if (initialQuery.trim() && !hasAutoSentRef.current) {
+      hasAutoSentRef.current = true;
       handleSendMessage(initialQuery.trim());
     }
   }, [initialQuery]);
@@ -405,6 +408,20 @@ function MatchingContent() {
                                     <ExternalLink className="w-3.5 h-3.5" />
                                   </a>
                                 )}
+
+                                {turn.matchResponse.top_solution.video_url && (
+                                  <a
+                                    href={turn.matchResponse.top_solution.video_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-all shadow-2xs"
+                                    title="Zobacz filmik YouTube"
+                                  >
+                                    <Video className="w-3.5 h-3.5" />
+                                    <span>Wideo (YouTube)</span>
+                                    <ExternalLink className="w-3 h-3" />
+                                  </a>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -535,17 +552,31 @@ function MatchingContent() {
                                           <span>Dostosuj w Innowacjach</span>
                                           <ArrowRight className="w-3 h-3" />
                                         </Link>
-                                        {alt.url && (
-                                          <a
-                                            href={alt.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-stone-500 hover:text-stone-800"
-                                            title="Dokumentacja ROPS"
-                                          >
-                                            <ExternalLink className="w-3.5 h-3.5" />
-                                          </a>
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                          {alt.video_url && (
+                                            <a
+                                              href={alt.video_url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="inline-flex items-center gap-1 font-semibold text-red-600 hover:text-red-700"
+                                              title="Obejrzyj wideo na YouTube"
+                                            >
+                                              <Video className="w-3.5 h-3.5" />
+                                              <span>Wideo</span>
+                                            </a>
+                                          )}
+                                          {alt.url && (
+                                            <a
+                                              href={alt.url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-stone-500 hover:text-stone-800"
+                                              title="Dokumentacja ROPS"
+                                            >
+                                              <ExternalLink className="w-3.5 h-3.5" />
+                                            </a>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
                                   ),

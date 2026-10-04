@@ -1,8 +1,11 @@
 import sys
 import io
 
-# Wymuszenie kodowania UTF-8 dla Windows console
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+if __name__ == "__main__" and hasattr(sys.stdout, "buffer"):
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    except Exception:
+        pass
 
 from fastapi.testclient import TestClient
 from main import app
@@ -95,5 +98,13 @@ close_res = client.patch(
 )
 assert close_res.status_code == 200
 print("Status zaktualizowany na:", close_res.json()["status"])
+
+print("\n=== 9. Czyszczenie danych testowych (DELETE /conversations/{id}) ===")
+del_res = client.delete(
+    f"/api/chat/conversations/{conv_id}",
+    headers=admin_headers
+)
+assert del_res.status_code == 204
+print("Pomyślnie usunięto testową konwersację z bazy.")
 
 print("\nWSZYSTKIE TESTY KOMUNIKATORA EKSPERTÓW ROPS KRAKÓW I POLLINGU CO 3S PRZESZŁY POMYŚLNIE!")

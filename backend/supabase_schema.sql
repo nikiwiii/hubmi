@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS public.innovations (
   authors VARCHAR(255),
   funding_info TEXT,
   url TEXT,
+  video_url TEXT,
   file_source VARCHAR(255),
   embedding VECTOR(384),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -99,6 +100,7 @@ CREATE TABLE IF NOT EXISTS public.innovations (
 
 ALTER TABLE public.innovations ADD COLUMN IF NOT EXISTS funding_info TEXT;
 ALTER TABLE public.innovations ADD COLUMN IF NOT EXISTS file_source VARCHAR(255);
+ALTER TABLE public.innovations ADD COLUMN IF NOT EXISTS video_url TEXT;
 
 ALTER TABLE public.innovations
   ALTER COLUMN embedding TYPE vector(384)
@@ -120,6 +122,7 @@ RETURNS TABLE (
   target_group varchar,
   funding_info text,
   url text,
+  video_url text,
   file_source varchar,
   similarity float
 )
@@ -133,6 +136,7 @@ AS $$
     innovations.target_group,
     innovations.funding_info,
     innovations.url,
+    innovations.video_url,
     innovations.file_source,
     1 - (innovations.embedding <=> query_embedding) AS similarity
   FROM innovations

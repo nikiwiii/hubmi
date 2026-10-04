@@ -40,6 +40,40 @@ interface PowiatLineChartProps {
   onSelectPowiat: (powiatId: string) => void;
 }
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string | number;
+  unit?: string;
+}
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, unit }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-stone-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl border border-white/10 text-xs space-y-1.5 min-w-[200px]">
+        <div className="font-bold text-amber-400 text-sm border-b border-white/10 pb-1">
+          Rok {label}
+        </div>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-1.5 text-stone-300">
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="truncate max-w-[130px]">{entry.name}:</span>
+            </span>
+            <span className="font-bold text-stone-100">
+              {formatResearchValue(entry.value)} {unit || ''}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
   research,
   selectedPowiatId,
@@ -131,38 +165,11 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
   }
 
   const isPositiveTrend = activeSeries.delta >= 0;
+  const isPercent = research.unit === '%' || research.unit.toLowerCase() === 'procent';
   const powiatPctChange =
     activeSeries.startValue && activeSeries.startValue !== 0
       ? (((activeSeries.endValue - activeSeries.startValue) / activeSeries.startValue) * 100).toFixed(1)
       : null;
-
-  // Custom Tooltip dla Recharts
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-stone-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl border border-white/10 text-xs space-y-1.5 min-w-[200px]">
-          <div className="font-bold text-amber-400 text-sm border-b border-white/10 pb-1">
-            Rok {label}
-          </div>
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-1.5 text-stone-300">
-                <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: entry.color }}
-                />
-                <span className="truncate max-w-[130px]">{entry.name}:</span>
-              </span>
-              <span className="font-bold text-stone-100">
-                {formatResearchValue(entry.value)} {research.unit}
-              </span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs p-5 sm:p-6 space-y-6">
@@ -204,12 +211,15 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
             <Calendar className="w-3.5 h-3.5 text-stone-400 shrink-0" aria-hidden="true" />
           </div>
           <div className="mt-2.5">
-            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
-              {formatResearchValue(activeSeries.startValue)}
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none flex items-baseline">
+              <span>{formatResearchValue(activeSeries.startValue)}</span>
+              {isPercent && <span className="text-lg sm:text-xl font-bold text-stone-600 ml-0.5">%</span>}
             </div>
-            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
-              {research.unit}
-            </div>
+            {!isPercent && (
+              <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+                {research.unit}
+              </div>
+            )}
           </div>
         </div>
 
@@ -222,12 +232,15 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
             <Activity className="w-3.5 h-3.5 text-stone-400 shrink-0" aria-hidden="true" />
           </div>
           <div className="mt-2.5">
-            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none">
-              {formatResearchValue(activeSeries.endValue)}
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight leading-none flex items-baseline">
+              <span>{formatResearchValue(activeSeries.endValue)}</span>
+              {isPercent && <span className="text-lg sm:text-xl font-bold text-stone-600 ml-0.5">%</span>}
             </div>
-            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
-              {research.unit}
-            </div>
+            {!isPercent && (
+              <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+                {research.unit}
+              </div>
+            )}
           </div>
         </div>
 
@@ -250,15 +263,20 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
           </div>
           <div className="mt-2.5">
             <div
-              className={`text-2xl sm:text-3xl font-black tracking-tight leading-none ${
+              className={`text-2xl sm:text-3xl font-black tracking-tight leading-none flex items-baseline ${
                 isPositiveTrend ? 'text-emerald-700' : 'text-rose-700'
               }`}
             >
-              {activeSeries.delta > 0 ? `+${formatResearchValue(activeSeries.delta)}` : formatResearchValue(activeSeries.delta)}
+              <span>
+                {activeSeries.delta > 0 ? `+${formatResearchValue(activeSeries.delta)}` : formatResearchValue(activeSeries.delta)}
+              </span>
+              {isPercent && <span className="text-lg sm:text-xl font-bold ml-0.5">%</span>}
             </div>
-            <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
-              {research.unit}
-            </div>
+            {!isPercent && (
+              <div className="text-xs font-medium text-stone-500 mt-1.5 truncate" title={research.unit}>
+                {research.unit}
+              </div>
+            )}
           </div>
         </div>
 
@@ -308,7 +326,7 @@ export const PowiatLineChart: React.FC<PowiatLineChartProps> = ({
               }}
               domain={['auto', 'auto']}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip unit={research.unit} />} />
             <Legend
               wrapperStyle={{ paddingTop: 16 }}
               iconType="circle"

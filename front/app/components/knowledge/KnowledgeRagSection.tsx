@@ -100,13 +100,6 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
     setIsMounted(true);
   }, []);
 
-  // Automatyczne uruchomienie RAG przy wejściu z parametrem lub domyślnym zapytaniem
-  useEffect(() => {
-    if (initialQuery && initialQuery.trim()) {
-      handleSearch(initialQuery);
-    }
-  }, [initialQuery]);
-
   const handleSearch = async (queryText?: string, explicitPowiatId?: string) => {
     const q = (queryText !== undefined ? queryText : query).trim();
     if (!q) return;
@@ -134,13 +127,20 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
         if (fallbackRes.detected_powiat?.id) {
           setSelectedPowiatId(fallbackRes.detected_powiat.id);
         }
-      } catch (fallbackErr) {
+      } catch {
         setError("Wystąpił błąd podczas analizy zapytania. Spróbuj ponownie.");
       }
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Automatyczne uruchomienie RAG przy wejściu z parametrem lub domyślnym zapytaniem
+  useEffect(() => {
+    if (initialQuery && initialQuery.trim()) {
+      handleSearch(initialQuery);
+    }
+  }, [initialQuery]);
 
   const handlePowiatChange = (newPowiatId: string) => {
     setSelectedPowiatId(newPowiatId);

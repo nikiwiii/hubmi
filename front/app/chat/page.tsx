@@ -6,7 +6,6 @@ import {
   ChatMessage,
   ChatContact,
   BackendConversation,
-  RopsExpert,
 } from "../lib/types";
 import {
   INITIAL_CONTACTS,
@@ -19,7 +18,8 @@ import {
   pollConversationMessages,
   sendConversationMessage,
   startExpertConversation,
-  fetchExpertsDirectory,
+  updateConversationStatus,
+  deleteConversation,
 } from "../lib/api";
 import {
   Send,
@@ -28,16 +28,28 @@ import {
   Shield,
   RefreshCw,
   Lock,
-  GraduationCap,
-  Sparkles,
-  X,
-  Mail,
-  Building2,
+  Search,
+  Tag,
   CheckCircle2,
-  ArrowRight,
-  Wifi,
+  Trash2,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
+
+function formatChatTime(dateStr?: string) {
+  if (!dateStr) return "Teraz";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    if (isToday) {
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+    return d.toLocaleDateString([], { day: "2-digit", month: "2-digit" });
+  } catch {
+    return dateStr;
+  }
+}
 
 function ChatContent() {
   const { currentUser, isLoadingUser } = useApp();
@@ -46,7 +58,7 @@ function ChatContent() {
   const recipientFromUrl = searchParams?.get("recipient");
   const topicFromUrl = searchParams?.get("topic");
 
-  // ── ALL HOOKS FIRST (Rules of Hooks) ──────────────────────────────────────
+  // ── HOOKS & STATE ──────────────────────────────────────────────────────────
   const [backendConversations, setBackendConversations] = useState<
     BackendConversation[]
   >([]);
@@ -56,11 +68,13 @@ function ChatContent() {
   );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">(
+    "all",
+  );
   const [isCreatingNewThread, setIsCreatingNewThread] = useState(
     Boolean(topicFromUrl),
   );
-  const [isExpertsModalOpen, setIsExpertsModalOpen] = useState(false);
-  const [experts, setExperts] = useState<RopsExpert[]>([]);
   const [newTopic, setNewTopic] = useState(topicFromUrl || "");
   const [newInitialMsg, setNewInitialMsg] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -88,13 +102,6 @@ function ChatContent() {
     }
   }, [recipientFromUrl, topicFromUrl]);
 
-  // Pobierz katalog ekspertów ROPS
-  useEffect(() => {
-    fetchExpertsDirectory()
-      .then((data) => setExperts(data))
-      .catch((err) => console.warn("Katalog ekspertów:", err));
-  }, []);
-
   // 1. Load backend conversations on mount
   useEffect(() => {
     if (!currentUser) return;
@@ -103,7 +110,7 @@ function ChatContent() {
         const convs = await fetchConversations();
         let allConvs = convs || [];
 
-        // Jeśli w URL jest recipient, a nie ma go na pobranej liście, dociągnij go bezpośrednio
+        // Jeśli w URL jest recipient, a nie ma go na liście, dociągnij bezpośrednio
         if (
           recipientFromUrl &&
           !allConvs.some((c) => c.id === recipientFromUrl)
@@ -118,31 +125,49 @@ function ChatContent() {
           }
         }
 
-        if (allConvs.length > 0) {
-          setBackendConversations(allConvs);
-          const mappedContacts: ChatContact[] = allConvs.map((c) => ({
-            id: c.id,
-            name: isExpertOrAdmin
-              ? `${c.user_name} (${c.topic})`
-              : c.assigned_admin_name || "Ekspert ROPS Kraków",
-            role: c.topic || "Konsultacje innowacji społecznych",
-            avatarBg: isExpertOrAdmin ? "#A4B3F6" : "#F5E85A",
-            lastMessage: c.last_message || "Rozpoczęto rozmowę",
-            lastMessageTime: c.last_message_at
-              ? new Date(c.last_message_at).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "Teraz",
-            unreadCount: isExpertOrAdmin ? c.unread_by_admin : c.unread_by_user,
-            isOnline: true,
-          }));
+        // Deduplikacja wg unikalnego ID
+        const uniqueMap = new Map<string, BackendConversation>();
+        allConvs.forEach((c) => uniqueMap.set(c.id, c));
+        const uniqueConvs = Array.from(uniqueMap.values());
+
+        if (uniqueConvs.length > 0) {
+          setBackendConversations(uniqueConvs);
+          const mappedContacts: ChatContact[] = uniqueConvs.map((c) => {
+            const displayName = isExpertOrAdmin
+              ? c.user_name || "Mieszkaniec"
+              : c.assigned_admin_name || "Ekspert ROPS Kraków";
+            const topicLabel =
+              c.topic ||
+              (c.idea_title
+                ? `Projekt: ${c.idea_title}`
+                : "Konsultacje innowacji");
+
+            return {
+              id: c.id,
+              name: displayName,
+              userName: c.user_name || "Mieszkaniec",
+              topic: topicLabel,
+              status: c.status,
+              ideaTitle: c.idea_title,
+              role: topicLabel,
+              avatarBg: isExpertOrAdmin ? "#E0E7FF" : "#F5E85A",
+              lastMessage: c.last_message || "Rozpoczęto rozmowę",
+              lastMessageTime: formatChatTime(c.last_message_at),
+              unreadCount: isExpertOrAdmin
+                ? c.unread_by_admin
+                : c.unread_by_user,
+              isOnline: true,
+            };
+          });
           setContacts(mappedContacts);
-          if (!recipientFromUrl) {
-            setActiveContactId(mappedContacts[0].id);
-          } else {
-            setActiveContactId(recipientFromUrl);
-          }
+
+          setActiveContactId((prev) => {
+            if (prev && uniqueConvs.some((c) => c.id === prev)) return prev;
+            return mappedContacts[0].id;
+          });
+        } else {
+          setBackendConversations([]);
+          setContacts([]);
         }
       } catch (err) {
         console.warn("Backend chat note (using local demo threads):", err);
@@ -151,11 +176,10 @@ function ChatContent() {
     loadConversations();
   }, [currentUser, isExpertOrAdmin, recipientFromUrl]);
 
-  // 2. SUPABASE REALTIME: WebSocket na żywo zamiast odpytywania co 3s
+  // 2. POLLING: Pobieranie wiadomości z aktywnego wątku co 3 sekundy
   useEffect(() => {
     if (!currentUser || !activeContactId) return;
 
-    // Załaduj stan początkowy wiadomości dla aktywnego kontaktu
     const loadMessagesInitially = async () => {
       const isBackendConv = backendConversations.some(
         (c) => c.id === activeContactId,
@@ -194,7 +218,6 @@ function ChatContent() {
 
     loadMessagesInitially();
 
-    // Regularne odpytywanie backendu co 3 sekundy pobierające nowe wiadomości
     const pollInterval = setInterval(loadMessagesInitially, 3000);
 
     return () => {
@@ -207,7 +230,7 @@ function ChatContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  // ── EARLY RETURNS (after all hooks) ───────────────────────────────────────
+  // ── EARLY RETURNS ──────────────────────────────────────────────────────────
   if (isLoadingUser) {
     return (
       <div className="flex items-center justify-center h-96 text-stone-400">
@@ -270,6 +293,19 @@ function ChatContent() {
             },
           ];
         });
+
+        // Zaktualizuj preview na liście kontaktów
+        setContacts((prev) =>
+          prev.map((c) =>
+            c.id === activeContactId
+              ? {
+                  ...c,
+                  lastMessage: text.trim(),
+                  lastMessageTime: "Teraz",
+                }
+              : c,
+          ),
+        );
         return;
       } catch (e) {
         console.warn("Backend send failed, using local fallback:", e);
@@ -302,18 +338,37 @@ function ChatContent() {
         initial_message: newInitialMsg.trim() || undefined,
       });
 
+      const displayName = isExpertOrAdmin
+        ? created.user_name || "Mieszkaniec"
+        : created.assigned_admin_name || "Ekspert ROPS Kraków";
+      const topicLabel =
+        created.topic ||
+        (created.idea_title
+          ? `Projekt: ${created.idea_title}`
+          : "Konsultacje innowacji");
+
       const newContact: ChatContact = {
         id: created.id,
-        name: created.assigned_admin_name || "Ekspert ROPS Kraków",
-        role: created.topic,
-        avatarBg: "#F5E85A",
+        name: displayName,
+        userName: created.user_name || "Mieszkaniec",
+        topic: topicLabel,
+        status: created.status,
+        ideaTitle: created.idea_title,
+        role: topicLabel,
+        avatarBg: isExpertOrAdmin ? "#E0E7FF" : "#F5E85A",
         lastMessage: created.last_message || "Otwarto nowy wątek",
         lastMessageTime: "Teraz",
         isOnline: true,
       };
 
-      setBackendConversations((prev) => [created, ...prev]);
-      setContacts((prev) => [newContact, ...prev]);
+      setBackendConversations((prev) => [
+        created,
+        ...prev.filter((c) => c.id !== created.id),
+      ]);
+      setContacts((prev) => [
+        newContact,
+        ...prev.filter((c) => c.id !== created.id),
+      ]);
       setActiveContactId(created.id);
       setIsCreatingNewThread(false);
       setNewTopic("");
@@ -323,35 +378,71 @@ function ChatContent() {
     }
   };
 
-  const handleStartConsultationWithExpert = async (expert: RopsExpert) => {
+  const handleToggleStatus = async (convId: string, currentStatus?: string) => {
+    const newStatus = currentStatus === "closed" ? "open" : "closed";
     try {
-      const created = await startExpertConversation({
-        topic: `Konsultacja: ${expert.name} (${expert.specialization.slice(0, 35)}...)`,
-        initial_message: `Dzień dobry, chciałbym skonsultować założenia innowacji w obszarze: ${expert.specialization}.`,
-      });
-
-      const newContact: ChatContact = {
-        id: created.id,
-        name: `${expert.name} (${expert.title})`,
-        role: expert.department,
-        avatarBg: expert.avatar_bg || "#FAF4E5",
-        lastMessage: created.last_message || "Rozpoczęto konsultację",
-        lastMessageTime: "Teraz",
-        isOnline: true,
-      };
-
-      setBackendConversations((prev) => [created, ...prev]);
-      setContacts((prev) => [newContact, ...prev]);
-      setActiveContactId(created.id);
-      setIsExpertsModalOpen(false);
+      const updated = await updateConversationStatus(convId, newStatus);
+      setBackendConversations((prev) =>
+        prev.map((c) => (c.id === convId ? updated : c)),
+      );
+      setContacts((prev) =>
+        prev.map((c) =>
+          c.id === convId ? { ...c, status: updated.status } : c,
+        ),
+      );
     } catch (err: any) {
-      alert(err?.message || "Nie udało się otworzyć czatu z ekspertem.");
+      alert(err?.message || "Nie udało się zmienić statusu.");
     }
   };
 
+  const handleDeleteConversation = async (
+    convId: string,
+    e?: React.MouseEvent,
+  ) => {
+    if (e) e.stopPropagation();
+    if (
+      !confirm(
+        "Czy na pewno chcesz usunąć tę rozmowę wraz ze wszystkimi wiadomościami?",
+      )
+    ) {
+      return;
+    }
+    try {
+      await deleteConversation(convId);
+      setBackendConversations((prev) => prev.filter((c) => c.id !== convId));
+      setContacts((prev) => {
+        const next = prev.filter((c) => c.id !== convId);
+        if (activeContactId === convId) {
+          setActiveContactId(next[0]?.id || "");
+        }
+        return next;
+      });
+    } catch (err: any) {
+      alert(err?.message || "Nie udało się usunąć rozmowy.");
+    }
+  };
+
+  // Filtrowanie listy kontaktów / wątków
+  const filteredContacts = contacts.filter((contact) => {
+    const query = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      !query ||
+      contact.name.toLowerCase().includes(query) ||
+      (contact.topic && contact.topic.toLowerCase().includes(query)) ||
+      (contact.lastMessage &&
+        contact.lastMessage.toLowerCase().includes(query));
+
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "open" && contact.status !== "closed") ||
+      (statusFilter === "closed" && contact.status === "closed");
+
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-4">
-      {/* Top Banner */}
+      {/* Top Banner (Przycisk wyboru mentorów został usunięty na życzenie) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-2xl border border-stone-200/80 shadow-2xs gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#EFE5C6] flex items-center justify-center text-stone-900 font-bold shrink-0">
@@ -370,103 +461,16 @@ function ChatContent() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Przycisk Katalogu Ekspertów ROPS */}
-          <button
-            type="button"
-            onClick={() => setIsExpertsModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200/80 text-stone-800 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-black/5"
-          >
-            <GraduationCap className="w-4 h-4 text-stone-700" />
-            <span>Katalog Ekspertów ROPS</span>
-          </button>
-
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setIsCreatingNewThread(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Nowa wiadomość</span>
           </button>
         </div>
       </div>
-
-      {/* Modal Katalogu Ekspertów i Mentorów ROPS */}
-      {isExpertsModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-black/5 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-stone-900 text-white flex items-center justify-center">
-                  <GraduationCap className="w-4 h-4 text-[#EFE5C6]" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-stone-900">
-                    Katalog Ekspertów i Mentorów ROPS Kraków
-                  </h3>
-                  <p className="text-xs text-stone-500">
-                    Wybierz eksperta dziedzinowego do indywidualnej konsultacji
-                    lub mentoringu projektu.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsExpertsModalOpen(false)}
-                className="p-1 rounded-lg text-stone-400 hover:text-stone-800 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-              {experts.map((exp) => (
-                <div
-                  key={exp.id}
-                  className="p-4 rounded-2xl border border-black/6 bg-[#FAF9F5] hover:bg-white hover:border-black/15 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-stone-900">
-                        {exp.name}
-                      </h4>
-                      <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                        Dostępny mentor
-                      </span>
-                    </div>
-                    <p className="text-xs font-medium text-stone-700">
-                      {exp.title} •{" "}
-                      <span className="text-stone-500">{exp.department}</span>
-                    </p>
-                    <p className="text-[11px] text-stone-600 pt-1">
-                      <strong>Specjalizacja:</strong> {exp.specialization}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleStartConsultationWithExpert(exp)}
-                    className="shrink-0 flex items-center justify-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-xl transition-all shadow-2xs cursor-pointer"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Napisz do eksperta</span>
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end pt-2 border-t border-black/5">
-              <button
-                type="button"
-                onClick={() => setIsExpertsModalOpen(false)}
-                className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-semibold cursor-pointer"
-              >
-                Zamknij
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* New Thread Modal */}
       {isCreatingNewThread && (
@@ -523,58 +527,123 @@ function ChatContent() {
         </div>
       )}
 
-      {/* Clean Messenger Container */}
-      <div className="grid grid-cols-1 md:grid-cols-12 bg-white rounded-2xl border border-black/6 shadow-sm overflow-hidden h-155">
+      {/* Main Messenger Container */}
+      <div className="grid grid-cols-1 md:grid-cols-12 bg-white rounded-2xl border border-stone-200/90 shadow-sm overflow-hidden min-h-[580px] h-[calc(100vh-230px)] max-h-[780px]">
         {/* Left Column: Contacts List */}
-        <div className="md:col-span-4 border-r border-stone-100 bg-[#FAF9F5] flex flex-col">
-          <div className="p-3 border-b border-stone-100 bg-white/50 text-[11px] font-bold text-stone-400 uppercase tracking-wider flex items-center justify-between">
-            <span>Aktywne dialogi ({contacts.length})</span>
+        <div className="md:col-span-4 border-r border-stone-200/80 bg-[#FAF9F5] flex flex-col min-w-0">
+          {/* Header & Search */}
+          <div className="p-3 border-b border-stone-200/80 bg-white/70 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-stone-800">
+                Wątki dialogu ({filteredContacts.length})
+              </span>
+            </div>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Szukaj osoby lub tematu..."
+                className="w-full pl-8 pr-3 py-1.5 bg-stone-100/80 border border-stone-200/70 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:border-stone-400 transition-all"
+              />
+            </div>
+            {/* Filter chips */}
+            <div className="flex items-center gap-1 pt-0.5">
+              {(["all", "open", "closed"] as const).map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setStatusFilter(filter)}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors cursor-pointer ${
+                    statusFilter === filter
+                      ? "bg-stone-900 text-white"
+                      : "text-stone-600 hover:bg-stone-200/60"
+                  }`}
+                >
+                  {filter === "all"
+                    ? "Wszystkie"
+                    : filter === "open"
+                      ? "Otwarte"
+                      : "Zakończone"}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex-1 overflow-y-auto divide-y divide-stone-100/80">
-            {contacts.length === 0 ? (
+
+          {/* Conversations list */}
+          <div className="flex-1 overflow-y-auto divide-y divide-stone-200/60">
+            {filteredContacts.length === 0 ? (
               <div className="p-6 text-center text-stone-400">
                 <MessageCircle className="w-8 h-8 mx-auto mb-2 text-stone-300 stroke-[1.5]" />
                 <p className="text-xs font-semibold text-stone-600">
-                  Brak aktywnych dialogów
+                  Brak pasujących rozmów
                 </p>
                 <p className="text-[11px] text-stone-400 mt-1">
-                  Kliknij przycisk powyżej, aby napisać do eksperta.
+                  {searchQuery
+                    ? "Zmień kryteria wyszukiwania."
+                    : "Kliknij 'Nowa wiadomość', aby rozpocząć dialog."}
                 </p>
               </div>
             ) : (
-              contacts.map((contact) => {
+              filteredContacts.map((contact) => {
                 const isSelected = contact.id === activeContactId;
                 return (
                   <button
                     key={contact.id}
                     onClick={() => setActiveContactId(contact.id)}
-                    className={`w-full p-3.5 flex items-center gap-3 text-left transition-colors cursor-pointer ${
-                      isSelected ? "bg-stone-200/50" : "hover:bg-stone-100/60"
+                    className={`w-full p-3 flex items-start gap-3 text-left transition-all cursor-pointer relative group ${
+                      isSelected
+                        ? "bg-white border-l-4 border-stone-900 shadow-2xs"
+                        : "hover:bg-white/60"
                     }`}
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-stone-800 shrink-0 text-sm relative"
+                      className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-stone-800 shrink-0 text-xs relative shadow-2xs mt-0.5"
                       style={{ backgroundColor: contact.avatarBg || "#F5E85A" }}
                     >
                       {contact.name?.charAt(0) || "?"}
                       {contact.isOnline && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-600 border border-white" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-600 border-2 border-white" />
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold text-stone-900 truncate">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="text-xs font-bold text-stone-900 truncate">
                           {contact.name}
                         </p>
-                        <span className="text-[10px] text-stone-400">
+                        <span className="text-[10px] text-stone-400 shrink-0">
                           {contact.lastMessageTime}
                         </span>
                       </div>
-                      <p className="text-xs text-stone-500 truncate mt-0.5">
+
+                      {/* Temat jako czytelny badge */}
+                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-stone-700 bg-stone-200/70 px-1.5 py-0.5 rounded truncate max-w-[200px]">
+                          <Tag className="w-2.5 h-2.5 text-stone-500 shrink-0" />
+                          <span className="truncate">
+                            {contact.topic || "Konsultacja"}
+                          </span>
+                        </span>
+                        {contact.status === "closed" && (
+                          <span className="text-[9px] font-semibold text-stone-400 bg-stone-100 px-1 py-0.5 rounded shrink-0">
+                            Zamknięte
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Ostatnia wiadomość */}
+                      <p className="text-xs text-stone-500 truncate mt-1 leading-snug">
                         {contact.lastMessage}
                       </p>
                     </div>
+
+                    {Boolean(contact.unreadCount && contact.unreadCount > 0) && (
+                      <span className="shrink-0 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-1">
+                        {contact.unreadCount}
+                      </span>
+                    )}
                   </button>
                 );
               })
@@ -583,7 +652,7 @@ function ChatContent() {
         </div>
 
         {/* Right Column: Active Conversation */}
-        <div className="md:col-span-8 flex flex-col h-full bg-white">
+        <div className="md:col-span-8 flex flex-col h-full bg-white min-w-0">
           {!activeContact ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-stone-400">
               <div className="w-14 h-14 rounded-2xl bg-[#FAF9F5] border border-stone-200/60 flex items-center justify-center text-stone-400 mb-3 shadow-2xs">
@@ -593,8 +662,8 @@ function ChatContent() {
                 Brak aktywnego dialogu
               </h3>
               <p className="text-xs text-stone-500 max-w-sm mb-5 leading-relaxed">
-                Nie masz jeszcze otwartych rozmów. Rozpocznij bezpośredni dialog
-                z ekspertami ROPS Kraków, aby omówić pomysł lub zadać pytanie.
+                Wybierz wątek z listy po lewej stronie lub rozpocznij nowe
+                zapytanie do ekspertów ROPS Kraków.
               </p>
               <button
                 onClick={() => setIsCreatingNewThread(true)}
@@ -607,38 +676,91 @@ function ChatContent() {
           ) : (
             <>
               {/* Header */}
-              <div className="px-5 py-3.5 border-b border-stone-100 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+              <div className="px-5 py-3 border-b border-stone-200/80 bg-stone-50/50 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-xs text-stone-800"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-stone-800 text-sm shadow-2xs shrink-0"
                     style={{
                       backgroundColor: activeContact.avatarBg || "#F5E85A",
                     }}
                   >
                     {activeContact.name?.charAt(0) || "?"}
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-stone-900 leading-tight">
-                      {activeContact.name}
-                    </h4>
-                    <p className="text-[11px] text-stone-400">
-                      {activeContact.role}
-                    </p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-sm font-bold text-stone-900 leading-tight">
+                        {activeContact.name}
+                      </h4>
+                      <span
+                        className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          activeContact.status === "closed"
+                            ? "bg-stone-200 text-stone-600"
+                            : "bg-emerald-100 text-emerald-800"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            activeContact.status === "closed"
+                              ? "bg-stone-400"
+                              : "bg-emerald-500 animate-pulse"
+                          }`}
+                        />
+                        {activeContact.status === "closed"
+                          ? "Zamknięta"
+                          : "Aktywny dialog"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Tag className="w-3 h-3 text-stone-400 shrink-0" />
+                      <span className="text-xs text-stone-600 font-medium truncate max-w-sm sm:max-w-md">
+                        {activeContact.topic || "Konsultacja innowacji społecznych"}
+                      </span>
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleToggleStatus(activeContact.id, activeContact.status)
+                    }
+                    title={
+                      activeContact.status === "closed"
+                        ? "Wznów wątek"
+                        : "Zakończ wątek"
+                    }
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-stone-200 hover:bg-stone-100 text-stone-700 text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-2xs"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-stone-500" />
+                    <span>
+                      {activeContact.status === "closed"
+                        ? "Wznów wątek"
+                        : "Zakończ wątek"}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteConversation(activeContact.id, e)}
+                    title="Usuń tę rozmowę"
+                    className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-rose-100"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
               {/* Messages Stream */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-[#FCFBF8]">
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#FCFBF8]">
                 {messages.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
                     <MessageCircle className="w-8 h-8 mb-2 stroke-1 text-stone-300" />
                     <p className="text-sm font-medium text-stone-500">
-                      Napisz do eksperta ({activeContact.name})
+                      Napisz do rozmówcy ({activeContact.name})
                     </p>
-                    <p className="text-xs text-stone-400 mt-1">
-                      Wiadomości synchronizowane są automatycznie przez API
-                      backendu i bazę danych.
+                    <p className="text-xs text-stone-400 mt-1 max-w-xs">
+                      Rozmowa jest synchronizowana na żywo. Odpowiedzi pojawią
+                      się tutaj automatycznie.
                     </p>
                   </div>
                 ) : (
@@ -647,18 +769,25 @@ function ChatContent() {
                     return (
                       <div
                         key={m.id}
-                        className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
+                        className={`flex flex-col ${
+                          isMe ? "items-end" : "items-start"
+                        }`}
                       >
+                        <div className="flex items-center gap-1.5 mb-1 px-1">
+                          <span className="text-[11px] font-semibold text-stone-500">
+                            {isMe ? "Ty" : m.senderName}
+                          </span>
+                        </div>
                         <div
-                          className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm font-medium leading-relaxed ${
+                          className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-2xs ${
                             isMe
-                              ? "bg-stone-900 text-white rounded-br-xs"
-                              : "bg-stone-100 text-stone-900 rounded-bl-xs"
+                              ? "bg-stone-900 text-white rounded-tr-xs"
+                              : "bg-white border border-stone-200/90 text-stone-900 rounded-tl-xs"
                           }`}
                         >
                           <p className="whitespace-pre-wrap">{m.text}</p>
                           <div
-                            className={`flex items-center gap-1 text-[10px] font-mono mt-1 ${
+                            className={`flex items-center gap-1 text-[10px] mt-1.5 ${
                               isMe
                                 ? "text-stone-300 justify-end"
                                 : "text-stone-400"
@@ -675,7 +804,7 @@ function ChatContent() {
               </div>
 
               {/* Input Bar */}
-              <div className="p-3 border-t border-stone-100 bg-white">
+              <div className="p-3 border-t border-stone-200/80 bg-white">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -687,13 +816,13 @@ function ChatContent() {
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Wpisz wiadomość..."
-                    className="flex-1 px-4 py-2.5 bg-stone-50 border border-stone-200/80 rounded-xl text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 transition-colors"
+                    placeholder="Wpisz wiadomość... (Enter, aby wysłać)"
+                    className="flex-1 px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
                   />
                   <button
                     type="submit"
                     disabled={!inputText.trim()}
-                    className="p-2.5 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl transition-colors cursor-pointer"
+                    className="p-2.5 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl transition-colors cursor-pointer shrink-0"
                   >
                     <Send className="w-4 h-4" />
                   </button>

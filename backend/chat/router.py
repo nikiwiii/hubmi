@@ -151,6 +151,25 @@ def update_conversation_status(
         is_admin=is_admin
     )
 
+@router.delete(
+    "/conversations/{conversation_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Usuń konwersację (dla autora lub administratora)"
+)
+def delete_conversation(
+    conversation_id: str,
+    user_payload: dict = Depends(get_current_user_payload)
+):
+    """Trwale usuwa konwersację i jej wiadomości."""
+    user_id = user_payload["sub"]
+    is_admin = user_payload.get("role") in ("admin", "expert")
+    ChatService.delete_conversation(
+        conv_id=conversation_id,
+        current_user_id=user_id,
+        is_admin=is_admin
+    )
+    return None
+
 ROPS_EXPERTS = [
     {
         "id": "expert-anna-kowalska",

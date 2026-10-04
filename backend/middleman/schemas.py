@@ -140,4 +140,5 @@ class ServiceCardResponse(BaseModel):
     innovation_id: str
     innovation_title: str
     innovation_url: Optional[str] = None
+    innovation_video_url: Optional[str] = None
     card: ServiceCard
