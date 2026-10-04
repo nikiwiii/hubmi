@@ -1,37 +1,151 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { IdeaCard } from "../components/shared/IdeaCard";
-import { DeleteIdeaModal } from "../components/shared/DeleteIdeaModal";
-import { GrantCallsPanel } from "../components/grants/GrantCallsPanel";
-import { Lightbulb, Users, Plus, RefreshCw, LogOut, Shield, CheckCircle2 } from "lucide-react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { User, UserRole, TesterApplication } from "../lib/types";
+import { getUsers, saveUsers } from "../lib/auth";
+import { RefreshCw } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { Idea } from "../lib/types";
+import { fetchAllCalls } from "../lib/grantsApi";
+import {
+  fetchTesterApplications,
+  updateTesterApplicationStatus,
+} from "../lib/api";
 
-export default function DashboardPage() {
+import { DashboardHeader } from "../components/dashboard/DashboardHeader";
+import {
+  DashboardTabsNav,
+  DashboardTab,
+} from "../components/dashboard/DashboardTabsNav";
+import { AdminCallsTab } from "../components/grants/AdminCallsTab";
+import { DashboardIdeasTab } from "../components/dashboard/DashboardIdeasTab";
+import { DashboardTestersTab } from "../components/dashboard/DashboardTestersTab";
+import { DashboardUsersTab } from "../components/dashboard/DashboardUsersTab";
+import { DashboardMyIdeasTab } from "../components/dashboard/DashboardMyIdeasTab";
+import { UserEditModal } from "../components/dashboard/UserEditModal";
+
+function DashboardContent() {
   const {
     currentUser,
     setCurrentUser,
     ideas,
     selectIdea,
-    openChatWithAuthor,
     navigate,
     isLargeFont,
     toggleFontSize,
     deleteIdea,
+    updateIdeaStatus,
     isLoadingUser,
   } = useApp();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [deleteModalIdea, setDeleteModalIdea] = useState<Idea | null>(null);
-  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+  // Aktywna zakładka w panelu zarządzania
+  const initialTabParam = searchParams.get("tab") as DashboardTab | null;
+  const [activeTab, setActiveTab] = useState<DashboardTab>(
+    initialTabParam &&
+      ["calls", "ideas", "testers", "users", "my-ideas"].includes(
+        initialTabParam,
+      )
+      ? initialTabParam
+      : "calls",
+  );
 
+  // Synchronizacja parametru ?tab w adresie URL
+  useEffect(() => {
+    const tabParam = searchParams.get("tab") as DashboardTab | null;
+    if (
+      tabParam &&
+      ["calls", "ideas", "testers", "users", "my-ideas"].includes(tabParam)
+    ) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: DashboardTab) => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", tab);
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
+
+  // Stan użytkowników (CRUD)
+  const [usersList, setUsersList] = useState<User[]>([]);
+
+  // Stan zgłoszeń testerów
+  const [testerApps, setTesterApps] = useState<TesterApplication[]>([]);
+  const [isLoadingTesterApps, setIsLoadingTesterApps] = useState(false);
+
+  // Licznik naborów
+  const [callsCount, setCallsCount] = useState(0);
+
+  // Komunikaty zwrotne (Feedback)
+  const [adminFeedback, setAdminFeedback] = useState<string>("");
+
+  // Modal tworzenia / edycji użytkownika
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [formName, setFormName] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formRole, setFormRole] = useState<UserRole>("creator");
+  const [formStatus, setFormStatus] = useState<"active" | "blocked">("active");
+  const [formBio, setFormBio] = useState("");
+
+  // Auth guard
   useEffect(() => {
     if (!isLoadingUser && !currentUser) {
       router.push("/auth");
     }
   }, [currentUser, isLoadingUser, router]);
+
+  // Ładowanie listy użytkowników
+  useEffect(() => {
+    setUsersList(getUsers());
+  }, []);
+
+  // Ładowanie zgłoszeń testerów
+  const loadTesterApps = async () => {
+    setIsLoadingTesterApps(true);
+    try {
+      const apps = await fetchTesterApplications(undefined, undefined, true);
+      setTesterApps(apps);
+    } catch {
+      // fallback
+    } finally {
+      setIsLoadingTesterApps(false);
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoadingTesterApps(true);
+    fetchTesterApplications()
+      .then((apps) => {
+        if (!cancelled) setTesterApps(apps);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setIsLoadingTesterApps(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Ładowanie naborów
+  useEffect(() => {
+    let cancelled = false;
+    fetchAllCalls()
+      .then((calls) => {
+        if (!cancelled) setCallsCount(calls.length);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleLogout = () => {
     setCurrentUser(null);
@@ -42,7 +156,9 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center h-96 text-stone-400">
         <RefreshCw className="w-5 h-5 animate-spin mr-2" />
-        <span className="text-sm font-medium">Wczytywanie profilu...</span>
+        <span className="text-sm font-medium">
+          Wczytywanie profilu i panelu...
+        </span>
       </div>
     );
   }
@@ -53,177 +169,302 @@ export default function DashboardPage() {
 
   const user = currentUser;
 
+  // Filtrowanie pomysłów użytkownika
   const myCreatedIdeas = ideas.filter(
     (i) =>
-      i.authorEmail.toLowerCase() === user.email.toLowerCase() ||
+      i.authorEmail?.toLowerCase() === user.email?.toLowerCase() ||
       i.authorId === user.id,
   );
 
   const myTestingIdeas = ideas.filter((i) =>
-    i.testersList.includes(user.email),
+    i.testersList?.includes(user.email),
   );
 
+  // Liczniki powiadomień i statusów
+  const pendingIdeasCount = ideas.filter((i) => i.status === "pending").length;
+  const pendingTesterAppsCount = testerApps.filter(
+    (a) => a.status === "pending",
+  ).length;
+  const approvedTesterAppsCount = testerApps.filter(
+    (a) => a.status === "approved",
+  ).length;
+
+  // Handlery dla użytkowników
+  const openCreateModal = () => {
+    setEditingUserId(null);
+    setFormName("");
+    setFormEmail("");
+    setFormRole("creator");
+    setFormStatus("active");
+    setFormBio("");
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (u: User) => {
+    setEditingUserId(u.id);
+    setFormName(u.name);
+    setFormEmail(u.email);
+    setFormRole(u.role);
+    setFormStatus(u.status);
+    setFormBio(u.bio || "");
+    setIsModalOpen(true);
+  };
+
+  const handleSaveUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName.trim() || !formEmail.trim()) return;
+
+    if (editingUserId) {
+      const updated = usersList.map((u) => {
+        if (u.id !== editingUserId) return u;
+        return {
+          ...u,
+          name: formName.trim(),
+          email: formEmail.trim(),
+          role: formRole,
+          status: formStatus,
+          bio: formBio.trim(),
+        };
+      });
+      setUsersList(updated);
+      saveUsers(updated);
+      setAdminFeedback(`Zaktualizowano dane użytkownika: ${formName}`);
+    } else {
+      const newUser: User = {
+        id: `user-${Date.now()}`,
+        name: formName.trim(),
+        email: formEmail.trim(),
+        role: formRole,
+        avatarBg:
+          formRole === "admin"
+            ? "#EFE5C6"
+            : formRole === "tester"
+              ? "#CAD7CE"
+              : "#D2D8EE",
+        createdAt: new Date().toISOString().split("T")[0],
+        status: formStatus,
+        bio: formBio.trim() || "Nowy użytkownik.",
+      };
+      const updated = [newUser, ...usersList];
+      setUsersList(updated);
+      saveUsers(updated);
+      setAdminFeedback(`Utworzono konto: ${newUser.name}`);
+    }
+
+    setIsModalOpen(false);
+  };
+
+  const handleDeleteUser = (id: string, name: string) => {
+    if (confirm(`Czy na pewno usunąć użytkownika "${name}"?`)) {
+      const updated = usersList.filter((u) => u.id !== id);
+      setUsersList(updated);
+      saveUsers(updated);
+      setAdminFeedback(`Usunięto użytkownika: ${name}`);
+    }
+  };
+
+  const handleApproveIdea = async (ideaId: string, ideaTitle: string) => {
+    try {
+      await updateIdeaStatus(ideaId, "active");
+      setAdminFeedback(
+        `Zaakceptowano i opublikowano pomysł "${ideaTitle}". Autor otrzymał powiadomienie.`,
+      );
+    } catch (err: unknown) {
+      setAdminFeedback(
+        err instanceof Error ? err.message : "Błąd akceptacji pomysłu.",
+      );
+    }
+  };
+
+  const handleRejectIdea = async (ideaId: string, ideaTitle: string) => {
+    try {
+      await updateIdeaStatus(ideaId, "rejected");
+      setAdminFeedback(`Odrzucono pomysł "${ideaTitle}".`);
+    } catch (err: unknown) {
+      setAdminFeedback(
+        err instanceof Error ? err.message : "Błąd odrzucenia pomysłu.",
+      );
+    }
+  };
+
+  const handleUpdateIdeaStatus = async (
+    ideaId: string,
+    status: "active" | "pending" | "testing" | "rejected" | "archived",
+  ) => {
+    try {
+      await updateIdeaStatus(ideaId, status);
+      setAdminFeedback(`Zmieniono status pomysłu na: ${status}`);
+    } catch (err: unknown) {
+      setAdminFeedback(
+        err instanceof Error ? err.message : "Błąd zmiany statusu pomysłu.",
+      );
+    }
+  };
+
+  const handleApproveTester = async (
+    appId: string,
+    userName: string,
+    ideaTitle: string,
+  ) => {
+    try {
+      await updateTesterApplicationStatus(appId, "approved");
+      setTesterApps((prev) =>
+        prev.map((a) => (a.id === appId ? { ...a, status: "approved" } : a)),
+      );
+      setAdminFeedback(
+        `Zaakceptowano ${userName} jako testera dla "${ideaTitle}". Wysłano powiadomienie.`,
+      );
+    } catch (err: unknown) {
+      setAdminFeedback(
+        err instanceof Error ? err.message : "Błąd akceptacji testera.",
+      );
+    }
+  };
+
+  const handleRejectTester = async (appId: string, userName: string) => {
+    try {
+      await updateTesterApplicationStatus(appId, "rejected");
+      setTesterApps((prev) =>
+        prev.map((a) => (a.id === appId ? { ...a, status: "rejected" } : a)),
+      );
+      setAdminFeedback(`Odrzucono wniosek testera: ${userName}.`);
+    } catch (err: unknown) {
+      setAdminFeedback(
+        err instanceof Error ? err.message : "Błąd odrzucenia testera.",
+      );
+    }
+  };
+
   return (
-    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6">
-      {/* Powiadomienie o usunięciu propozycji */}
-      {deleteNotice && (
-        <div className="flex items-center gap-2 p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs font-semibold animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span>{deleteNotice}</span>
+    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-5">
+      {/* 1. Header profilu i szybkich akcji */}
+      <DashboardHeader
+        user={user}
+        isLargeFont={isLargeFont}
+        toggleFontSize={toggleFontSize}
+        onNavigatePropose={() => navigate("propose")}
+        onNavigateTesting={() => router.push("/testing")}
+        onLogout={handleLogout}
+        adminFeedback={adminFeedback}
+        onDismissFeedback={() => setAdminFeedback("")}
+      />
+
+      {/* 2. Pasek zakładek */}
+      <DashboardTabsNav
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        callsCount={callsCount}
+        pendingIdeasCount={pendingIdeasCount}
+        totalIdeasCount={ideas.length}
+        pendingTesterAppsCount={pendingTesterAppsCount}
+        totalTesterAppsCount={testerApps.length}
+        usersCount={usersList.length}
+        myIdeasCount={myCreatedIdeas.length + myTestingIdeas.length}
+      />
+
+      {/* 3. Zawartość zakładek */}
+      <div>
+        {/* TAB 1: NABORY I WNIOSKI */}
+        <div className={activeTab === "calls" ? "block" : "hidden"}>
+          <AdminCallsTab
+            onFeedback={(msg) => setAdminFeedback(msg)}
+            onCount={(count) => setCallsCount(count)}
+          />
         </div>
-      )}
 
-      {/* Profile Header */}
-      <div className="bg-white dark:bg-[#1C1E23] rounded-3xl p-6 border border-black/5 dark:border-white/10 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-stone-800 shrink-0"
-            style={{ backgroundColor: user.avatarBg || '#A4B3F6' }}
-          >
-            {(user.name || user.email || 'U').charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-stone-900 dark:text-white leading-tight">
-                {user.name || user.email || 'Użytkownik'}
-              </span>
-              <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-full bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300">
-                {user.role}
-              </span>
-            </div>
-            <p className="text-xs text-stone-600 dark:text-stone-400 mt-0.5">{user.email}</p>
-          </div>
+        {/* TAB 2: MODERACJA POMYSŁÓW */}
+        <div className={activeTab === "ideas" ? "block" : "hidden"}>
+          <DashboardIdeasTab
+            ideas={ideas}
+            pendingIdeasCount={pendingIdeasCount}
+            onApproveIdea={handleApproveIdea}
+            onRejectIdea={handleRejectIdea}
+            onUpdateIdeaStatus={handleUpdateIdeaStatus}
+            onDeleteIdea={(ideaId, ideaTitle) => {
+              if (
+                confirm(
+                  `Czy na pewno usunąć pomysł "${ideaTitle}"? Ta operacja jest nieodwracalna.`,
+                )
+              ) {
+                deleteIdea(ideaId);
+                setAdminFeedback(`Usunięto pomysł "${ideaTitle}".`);
+              }
+            }}
+            onViewIdea={(ideaId) => {
+              const idea = ideas.find((i) => i.id === ideaId);
+              if (idea) selectIdea(idea);
+            }}
+          />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {user.role === "admin" && (
-            <button
-              type="button"
-              onClick={() => navigate("admin")}
-              aria-label="Przejdź do panelu administratora"
-              className="min-h-[38px] flex items-center gap-1.5 px-3.5 py-2 bg-[#EFE5C6] dark:bg-amber-400/20 hover:bg-[#E7DAC0] dark:hover:bg-amber-400/30 text-stone-900 dark:text-amber-200 border border-stone-300/80 dark:border-amber-400/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-              title="Przejdź do panelu administratora"
-            >
-              <Shield className="w-3.5 h-3.5 text-stone-800 dark:text-amber-300" aria-hidden="true" />
-              <span>Panel Admina</span>
-            </button>
-          )}
+        {/* TAB 3: ZGŁOSZENIA TESTERÓW */}
+        <div className={activeTab === "testers" ? "block" : "hidden"}>
+          <DashboardTestersTab
+            testerApps={testerApps}
+            isLoadingTesterApps={isLoadingTesterApps}
+            pendingTesterAppsCount={pendingTesterAppsCount}
+            approvedTesterAppsCount={approvedTesterAppsCount}
+            onReload={loadTesterApps}
+            onApproveTester={handleApproveTester}
+            onRejectTester={handleRejectTester}
+            onViewIdea={(ideaId) => {
+              const idea = ideas.find((i) => i.id === ideaId);
+              if (idea) selectIdea(idea);
+            }}
+          />
+        </div>
 
-          <button
-            type="button"
-            onClick={() => navigate("propose")}
-            aria-label="Zaproponuj nowy pomysł"
-            className="min-h-[38px] flex items-center gap-1.5 px-4 py-2 bg-stone-900 dark:bg-white hover:bg-stone-800 dark:hover:bg-stone-100 text-white dark:text-stone-950 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Nowy pomysł</span>
-          </button>
+        {/* TAB 4: UŻYTKOWNICY I UPRAWNIENIA */}
+        <div className={activeTab === "users" ? "block" : "hidden"}>
+          <DashboardUsersTab
+            usersList={usersList}
+            onOpenCreateModal={openCreateModal}
+            onOpenEditModal={openEditModal}
+            onDeleteUser={handleDeleteUser}
+          />
+        </div>
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            aria-label="Wyloguj się z profilu"
-            title="Wyloguj się z serwisu MiNNO"
-            className="min-h-[38px] flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 dark:bg-white/10 hover:bg-red-50 dark:hover:bg-red-950/40 text-stone-700 dark:text-stone-300 hover:text-red-700 dark:hover:text-red-300 border border-stone-200 dark:border-white/10 hover:border-red-200 dark:hover:border-red-800/60 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400 group-hover:text-red-600" aria-hidden="true" />
-            <span>Wyloguj</span>
-          </button>
+        {/* TAB 5: MOJE POMYSŁY & TESTY */}
+        <div className={activeTab === "my-ideas" ? "block" : "hidden"}>
+          <DashboardMyIdeasTab
+            myCreatedIdeas={myCreatedIdeas}
+            myTestingIdeas={myTestingIdeas}
+            selectIdea={selectIdea}
+            userEmail={user.email}
+          />
         </div>
       </div>
 
-      {/* Accessibility Font Toggle Bar */}
-      <div className="bg-stone-50 dark:bg-white/5 rounded-2xl px-5 py-3 border border-stone-200/60 dark:border-white/10 flex items-center justify-between text-xs">
-        <span className="font-semibold text-stone-800 dark:text-stone-200">
-          Wielkość czcionki w aplikacji (WCAG):
-        </span>
-        <button
-          type="button"
-          onClick={toggleFontSize}
-          aria-label={isLargeFont ? "Zmień na czcionkę standardową" : "Włącz powiększoną czcionkę (A+)"}
-          aria-pressed={isLargeFont}
-          className="min-h-[34px] px-3.5 py-1.5 bg-white dark:bg-white/10 border border-stone-300 dark:border-white/15 rounded-lg text-xs font-bold text-stone-900 dark:text-white hover:bg-stone-100 dark:hover:bg-white/20 cursor-pointer shadow-2xs transition-colors"
-        >
-          {isLargeFont ? "Powiększona (A+)" : "Standardowa (A)"}
-        </button>
-      </div>
-
-      {/* SECTION 1: MY CREATED IDEAS */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
-            <Lightbulb className="w-4 h-4 text-stone-600 dark:text-stone-400" />
-            <span>Moje Pomysły ({myCreatedIdeas.length})</span>
-          </h2>
-        </div>
-
-        <GrantCallsPanel myIdeas={myCreatedIdeas} />
-
-        {myCreatedIdeas.length === 0 ? (
-          <div className="bg-white dark:bg-[#1C1E23] rounded-2xl p-6 border border-stone-200 dark:border-white/10 text-center text-xs text-stone-500 dark:text-stone-400">
-            Brak zgłoszonych pomysłów.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {myCreatedIdeas.map((idea) => (
-              <IdeaCard
-                key={idea.id}
-                idea={idea}
-                onClick={() => selectIdea(idea)}
-                isTester={idea.testersList.includes(user.email)}
-                onDelete={(target) => setDeleteModalIdea(target)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* SECTION 2: MY TESTING PARTICIPATIONS */}
-      <div className="space-y-4">
-        <h2 className="text-base font-bold text-stone-900 dark:text-white flex items-center gap-1.5">
-          <Users className="w-4 h-4 text-stone-600 dark:text-stone-400" />
-          <span>Moje Testy ({myTestingIdeas.length})</span>
-        </h2>
-
-        {myTestingIdeas.length === 0 ? (
-          <div className="bg-white dark:bg-[#1C1E23] rounded-2xl p-6 border border-stone-200 dark:border-white/10 text-center text-xs text-stone-500 dark:text-stone-400">
-            Nie bierzesz udziału w żadnych testach.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {myTestingIdeas.map((idea) => (
-              <IdeaCard
-                key={idea.id}
-                idea={idea}
-                onClick={() => selectIdea(idea)}
-                isTester={true}
-                onChat={(e) => {
-                  e.stopPropagation();
-                  router.push(
-                    `/chat?topic=${encodeURIComponent(`Testy projektu: ${idea.title}`)}`,
-                  );
-                }}
-                onDelete={(target) => setDeleteModalIdea(target)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-
-
-      {/* Modal potwierdzenia usunięcia propozycji */}
-      <DeleteIdeaModal
-        idea={deleteModalIdea}
-        isOpen={Boolean(deleteModalIdea)}
-        onClose={() => setDeleteModalIdea(null)}
-        currentUser={currentUser}
-        onConfirm={async (idea) => {
-          await deleteIdea(idea.id);
-          setDeleteNotice(`Pomyślnie usunięto propozycję „${idea.title}”.`);
-          setTimeout(() => setDeleteNotice(null), 4000);
-        }}
+      {/* Modal edycji / tworzenia użytkownika */}
+      <UserEditModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        editingUserId={editingUserId}
+        formName={formName}
+        setFormName={setFormName}
+        formEmail={formEmail}
+        setFormEmail={setFormEmail}
+        formRole={formRole}
+        setFormRole={setFormRole}
+        formStatus={formStatus}
+        setFormStatus={setFormStatus}
+        onSave={handleSaveUser}
       />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-96 text-stone-400">
+          <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+          <span className="text-sm font-medium">Wczytywanie dashboardu...</span>
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

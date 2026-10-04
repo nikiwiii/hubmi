@@ -84,33 +84,39 @@ export function PdfPreviewModal({ applicationId, title, onClose }: Props) {
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-stone-900/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col border border-stone-200 shadow-xl">
-        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-stone-100">
-          <h3 className="text-sm font-bold text-stone-900 truncate">{title || "Wniosek"} – PDF</h3>
+      <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-2xs" onClick={onClose} />
+      <div className="relative bg-white dark:bg-[#1C1E23] rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col border border-stone-200 dark:border-white/10 shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-stone-100 dark:border-white/10">
+          <h3 className="text-sm font-bold text-stone-900 dark:text-white truncate">{title || "Wniosek"} – PDF</h3>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => downloadBlobUrl && downloadUrl(downloadBlobUrl, pdfFileName(applicationId, title))}
               disabled={!downloadBlobUrl}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 text-white rounded-lg text-xs font-semibold disabled:opacity-40 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 dark:bg-white text-white dark:text-stone-950 rounded-xl text-xs font-semibold disabled:opacity-40 cursor-pointer shadow-2xs hover:bg-stone-800 dark:hover:bg-stone-100 transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               Pobierz
             </button>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 cursor-pointer" aria-label="Zamknij podgląd">
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-white/10 text-stone-500 cursor-pointer"
+              aria-label="Zamknij podgląd"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
-        <div className="relative flex-1 min-h-0 bg-stone-200">
+        <div className="relative flex-1 min-h-0 bg-stone-100 dark:bg-[#14161A]">
           {rendering && !error && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 text-xs text-stone-500">
+            <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 text-xs text-stone-500 dark:text-stone-400">
               <Loader2 className="w-4 h-4 animate-spin" />
               Generowanie PDF...
             </div>
           )}
           {error && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center text-xs text-rose-700 p-6 text-center">{error}</div>
+            <div className="absolute inset-0 z-10 flex items-center justify-center text-xs text-rose-700 dark:text-rose-400 p-6 text-center">
+              {error}
+            </div>
           )}
           <div ref={pagesRef} className="h-full overflow-y-auto p-4 space-y-3" />
         </div>

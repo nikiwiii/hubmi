@@ -117,51 +117,164 @@ async function call<T>(method: string, path: string, body?: unknown, fallback = 
   return res.json();
 }
 
+// ----- in-memory cache for calls & applications -----
+
+let cachedAllCalls: GrantCall[] | null = null;
+let cachedOpenCalls: GrantCall[] | null = null;
+let cachedMyApplications: GrantApplication[] | null = null;
+const cachedCallApplications: Record<string, GrantApplication[] | undefined> = {};
+
+let pendingAllCallsPromise: Promise<GrantCall[]> | null = null;
+let pendingOpenCallsPromise: Promise<GrantCall[]> | null = null;
+let pendingMyApplicationsPromise: Promise<GrantApplication[]> | null = null;
+const pendingCallApplicationsPromise: Record<string, Promise<GrantApplication[]> | undefined> = {};
+
+export function invalidateGrantsCache(): void {
+  cachedAllCalls = null;
+  cachedOpenCalls = null;
+  cachedMyApplications = null;
+  for (const key of Object.keys(cachedCallApplications)) {
+    delete cachedCallApplications[key];
+  }
+}
+
 // ----- calls -----
 
-export const fetchOpenCalls = () => call<GrantCall[]>('GET', '/calls/open');
-export const fetchAllCalls = () => call<GrantCall[]>('GET', '/calls');
+export const fetchOpenCalls = (forceRefresh = false): Promise<GrantCall[]> => {
+  if (!forceRefresh && cachedOpenCalls !== null) {
+    return Promise.resolve(cachedOpenCalls);
+  }
+  if (pendingOpenCallsPromise) {
+    return pendingOpenCallsPromise;
+  }
+  pendingOpenCallsPromise = call<GrantCall[]>('GET', '/calls/open')
+    .then((data) => {
+      cachedOpenCalls = data;
+      return data;
+    })
+    .finally(() => {
+      pendingOpenCallsPromise = null;
+    });
+  return pendingOpenCallsPromise;
+};
+
+export const fetchAllCalls = (forceRefresh = false): Promise<GrantCall[]> => {
+  if (!forceRefresh && cachedAllCalls !== null) {
+    return Promise.resolve(cachedAllCalls);
+  }
+  if (pendingAllCallsPromise) {
+    return pendingAllCallsPromise;
+  }
+  pendingAllCallsPromise = call<GrantCall[]>('GET', '/calls')
+    .then((data) => {
+      cachedAllCalls = data;
+      return data;
+    })
+    .finally(() => {
+      pendingAllCallsPromise = null;
+    });
+  return pendingAllCallsPromise;
+};
+
 export const fetchCall = (id: string) => call<GrantCall>('GET', `/calls/${id}`);
 
-export function createCall(data: { title: string; description: string; starts_at: string; ends_at: string; template: File }) {
+export async function createCall(data: { title: string; description: string; starts_at: string; ends_at: string; template: File }) {
   const form = new FormData();
   form.append('title', data.title);
   form.append('description', data.description);
   form.append('starts_at', data.starts_at);
   form.append('ends_at', data.ends_at);
   form.append('template', data.template);
-  return call<GrantCall>('POST', '/calls', form, 'Nie udało się utworzyć naboru.');
+  const result = await call<GrantCall>('POST', '/calls', form, 'Nie udało się utworzyć naboru.');
+  invalidateGrantsCache();
+  return result;
 }
 
-export const updateCall = (id: string, update: CallUpdate) =>
-  call<GrantCall>('PATCH', `/calls/${id}`, update, 'Nie udało się zapisać naboru.');
+export const updateCall = async (id: string, update: CallUpdate) => {
+  const result = await call<GrantCall>('PATCH', `/calls/${id}`, update, 'Nie udało się zapisać naboru.');
+  invalidateGrantsCache();
+  return result;
+};
 
-export const reextractCallFields = (id: string) =>
-  call<GrantCall>('POST', `/calls/${id}/extract-fields`, undefined, 'Nie udało się odczytać pól z PDF.');
+export const reextractCallFields = async (id: string) => {
+  const result = await call<GrantCall>('POST', `/calls/${id}/extract-fields`, undefined, 'Nie udało się odczytać pól z PDF.');
+  invalidateGrantsCache();
+  return result;
+};
 
-export const fetchCallApplications = (id: string) => call<GrantApplication[]>('GET', `/calls/${id}/applications`);
+export const fetchCallApplications = (id: string, forceRefresh = false): Promise<GrantApplication[]> => {
+  const existing = cachedCallApplications[id];
+  if (!forceRefresh && existing !== undefined) {
+    return Promise.resolve(existing);
+  }
+  const pending = pendingCallApplicationsPromise[id];
+  if (pending) {
+    return pending;
+  }
+  const promise = call<GrantApplication[]>('GET', `/calls/${id}/applications`)
+    .then((data) => {
+      cachedCallApplications[id] = data;
+      return data;
+    })
+    .finally(() => {
+      delete pendingCallApplicationsPromise[id];
+    });
+  pendingCallApplicationsPromise[id] = promise;
+  return promise;
+};
 
 // ----- applications -----
 
-export const createApplication = (callId: string, ideaId: string) =>
-  call<GrantApplication>(
+export const createApplication = async (callId: string, ideaId: string) => {
+  const result = await call<GrantApplication>(
     'POST',
     '/applications',
     { call_id: callId, idea_id: ideaId },
     'Nie udało się przygotować wniosku.',
   );
+  invalidateGrantsCache();
+  return result;
+};
 
-export const fetchMyApplications = () => call<GrantApplication[]>('GET', '/applications/mine');
+export const fetchMyApplications = (forceRefresh = false): Promise<GrantApplication[]> => {
+  if (!forceRefresh && cachedMyApplications !== null) {
+    return Promise.resolve(cachedMyApplications);
+  }
+  if (pendingMyApplicationsPromise) {
+    return pendingMyApplicationsPromise;
+  }
+  pendingMyApplicationsPromise = call<GrantApplication[]>('GET', '/applications/mine')
+    .then((data) => {
+      cachedMyApplications = data;
+      return data;
+    })
+    .finally(() => {
+      pendingMyApplicationsPromise = null;
+    });
+  return pendingMyApplicationsPromise;
+};
+
 export const fetchApplication = (id: string) => call<GrantApplication>('GET', `/applications/${id}`);
 
-export const saveApplication = (id: string, answers: Record<string, string>) =>
-  call<GrantApplication>('PATCH', `/applications/${id}`, { answers }, 'Nie udało się zapisać wniosku.');
+export const saveApplication = async (id: string, answers: Record<string, string>) => {
+  const result = await call<GrantApplication>('PATCH', `/applications/${id}`, { answers }, 'Nie udało się zapisać wniosku.');
+  if (cachedMyApplications) {
+    cachedMyApplications = cachedMyApplications.map((a) => (a.id === id ? { ...a, ...result } : a));
+  }
+  return result;
+};
 
-export const submitApplication = (id: string) =>
-  call<GrantApplication>('POST', `/applications/${id}/submit`, undefined, 'Nie udało się wysłać wniosku.');
+export const submitApplication = async (id: string) => {
+  const result = await call<GrantApplication>('POST', `/applications/${id}/submit`, undefined, 'Nie udało się wysłać wniosku.');
+  invalidateGrantsCache();
+  return result;
+};
 
-export const updateApplicationStatus = (id: string, status: ApplicationStatus, adminComment?: string) =>
-  call<GrantApplication>('PATCH', `/applications/${id}/status`, { status, admin_comment: adminComment });
+export const updateApplicationStatus = async (id: string, status: ApplicationStatus, adminComment?: string) => {
+  const result = await call<GrantApplication>('PATCH', `/applications/${id}/status`, { status, admin_comment: adminComment });
+  invalidateGrantsCache();
+  return result;
+};
 
 export const assistQuestion = (id: string, fieldId: string, history: AssistTurn[]) =>
   call<{ question: string | null; done: boolean }>(

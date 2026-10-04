@@ -681,15 +681,20 @@ export function subscribeToResearchData(listener: ResearchDataListener): () => v
 }
 
 let isFetchingLive = false;
+let lastLiveFetchTime = 0;
+const LIVE_RESEARCH_CACHE_TTL_MS = 5 * 60 * 1000; // 5 min
 
-export async function fetchLiveResearchData(): Promise<boolean> {
+export async function fetchLiveResearchData(forceRefresh = false): Promise<boolean> {
+  const now = Date.now();
+  if (!forceRefresh && lastLiveFetchTime > 0 && (now - lastLiveFetchTime < LIVE_RESEARCH_CACHE_TTL_MS)) {
+    return true;
+  }
   if (isFetchingLive) return false;
   isFetchingLive = true;
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     const res = await fetch(`${apiUrl}/api/indicators`, {
       headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store'
     });
     if (!res.ok) {
       isFetchingLive = false;
@@ -698,6 +703,7 @@ export async function fetchLiveResearchData(): Promise<boolean> {
     const json = await res.json();
     if (json.success && json.data && typeof json.data === 'object' && Object.keys(json.data).length > 0) {
       dynamicRawData = { ...dynamicRawData, ...json.data };
+      lastLiveFetchTime = Date.now();
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('hubmi_cached_indicators_v2', JSON.stringify(dynamicRawData));
