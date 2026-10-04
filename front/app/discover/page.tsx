@@ -277,11 +277,10 @@ export default function DiscoverPage() {
                 aria-selected={isSelected}
                 aria-label={`Kategoria: ${cat}`}
                 onClick={() => setSelectedCategory(cat)}
-                className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  isSelected
+                className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${isSelected
                     ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 font-bold"
                     : "bg-white dark:bg-[#1C1E23] text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-white/10 border border-stone-200/80 dark:border-white/10"
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -295,11 +294,10 @@ export default function DiscoverPage() {
             aria-checked={onlyLookingForPartner}
             aria-label="Filtruj tylko projekty poszukujące partnerstwa"
             onClick={() => setOnlyLookingForPartner(!onlyLookingForPartner)}
-            className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-              onlyLookingForPartner
+            className={`min-h-[32px] whitespace-nowrap px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${onlyLookingForPartner
                 ? "bg-amber-200/90 dark:bg-amber-400/20 text-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-500/30 shadow-2xs"
                 : "bg-white dark:bg-[#1C1E23] text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/10 border border-stone-200/80 dark:border-white/10"
-            }`}
+              }`}
           >
             <Handshake className="w-3.5 h-3.5 text-amber-800 dark:text-amber-300" aria-hidden="true" />
             <span>Szukają partnera</span>

@@ -231,7 +231,7 @@ def query_indicators_rag(req: IndicatorsRagRequest):
     Punkt wejścia dla RAG Raportów Społecznych:
     - Rozpoznaje powiat (np. Powiat Krakowski) i tematykę (np. niepełnosprawność ruchowa, wózki).
     - Zwraca dokładne dane liczbowe, pozycję w regionie, serie czasowe do wykresów oraz syntezę analityczną AI.
-    - Wzbogaca wyniki o powiązane innowacje z bazy ROPS Kraków oraz dedykowanego eksperta.
+    - Wzbogaca wyniki o powiązane innowacje z bazy ROPS Kraków.
     """
     try:
         result = KnowledgeRagService.execute_rag(

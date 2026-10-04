@@ -118,6 +118,17 @@ export default function DashboardPage() {
             <Plus className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Nowy pomysł</span>
           </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            aria-label="Wyloguj się z profilu"
+            title="Wyloguj się z serwisu MiNNO"
+            className="min-h-[38px] flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 dark:bg-white/10 hover:bg-red-50 dark:hover:bg-red-950/40 text-stone-700 dark:text-stone-300 hover:text-red-700 dark:hover:text-red-300 border border-stone-200 dark:border-white/10 hover:border-red-200 dark:hover:border-red-800/60 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400 group-hover:text-red-600" aria-hidden="true" />
+            <span>Wyloguj</span>
+          </button>
         </div>
       </div>
 
@@ -199,18 +210,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Logout Action Bar */}
-      <div className="pt-6 border-t border-stone-200/80 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3">
-        <button
-          type="button"
-          onClick={handleLogout}
-          aria-label="Wyloguj się z platformy"
-          className="min-h-[40px] flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/50 text-red-700 dark:text-rose-300 border border-red-300 dark:border-rose-900/60 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-        >
-          <LogOut className="w-4 h-4" aria-hidden="true" />
-          <span>Wyloguj się</span>
-        </button>
-      </div>
+
 
       {/* Modal potwierdzenia usunięcia propozycji */}
       <DeleteIdeaModal

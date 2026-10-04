@@ -675,6 +675,6 @@ Wskaźnik wiodący (*${primary?.title}*) w **${detectedPowiat.display_name}** wy
     matched_reports: matchedReports,
     chart_data: chartData,
     matched_innovations: profile.innovations,
-    matched_expert: profile.expert
+    matched_expert: null
   };
 }

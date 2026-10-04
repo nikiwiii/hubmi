@@ -123,7 +123,7 @@ export function voteIdea(id: string, type: 'like' | 'dislike', currentList?: Ide
   const current = currentList && currentList.length > 0 ? currentList : getIdeas();
   const updated = current.map(item => {
     if (item.id !== id) return item;
-    
+
     let likes = item.likes;
     let dislikes = item.dislikes;
     let userVote: 'like' | 'dislike' | null = type;
@@ -137,7 +137,7 @@ export function voteIdea(id: string, type: 'like' | 'dislike', currentList?: Ide
       // If switching from opposite
       if (item.userVote === 'like') likes = Math.max(0, likes - 1);
       if (item.userVote === 'dislike') dislikes = Math.max(0, dislikes - 1);
-      
+
       if (type === 'like') likes += 1;
       if (type === 'dislike') dislikes += 1;
     }
@@ -231,19 +231,11 @@ export function isUserIdeaAuthor(idea: Idea, user: any): boolean {
   ) {
     return true;
   }
-  if (
-    user.name &&
-    idea.authorName &&
-    user.name.trim().toLowerCase() === idea.authorName.trim().toLowerCase()
-  ) {
-    return true;
-  }
   return false;
 }
 
 export function isUserAdmin(user: any): boolean {
-  if (!user) return false;
-  return Boolean(user.role === 'admin' || user.isAdmin === true || user.role === 'administrator');
+  return Boolean(user && user.role === 'admin');
 }
 
 export function canUserDeleteIdea(idea: Idea, user: any): boolean {
