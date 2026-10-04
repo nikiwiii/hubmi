@@ -259,7 +259,6 @@ body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.b
   color: #ffffff !important;
   border-color: #facc15 !important;
 }
-}
 
 /* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */
 @media print {
