@@ -28,7 +28,7 @@ const POWIAT_SELECT_OPTIONS: SelectOption<string>[] = POWIAT_OPTIONS.map(
 );
 
 const inputClass =
-  "w-full px-3.5 py-2 bg-white border border-black/10 rounded-xl text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/15 focus:border-stone-900/30 transition-all";
+  "w-full px-3.5 py-2 bg-white dark:bg-[#1C1E23] border border-black/10 dark:border-white/15 rounded-xl text-sm text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-900/15 dark:focus:ring-white/20 focus:border-stone-900/30 dark:focus:border-white/30 transition-all";
 
 const Field: React.FC<{
   label: string;
@@ -38,7 +38,7 @@ const Field: React.FC<{
   <div className="space-y-1">
     <label
       htmlFor={htmlFor}
-      className="block text-xs sm:text-sm font-semibold text-stone-800"
+      className="block text-xs sm:text-sm font-semibold text-stone-800 dark:text-stone-200"
     >
       {label}
     </label>
@@ -70,8 +70,8 @@ function ChoiceChips<T extends string | number>({
             onClick={() => onChange(opt.value)}
             className={`px-3 py-1.5 rounded-lg border text-xs sm:text-sm transition-all cursor-pointer ${
               active
-                ? "bg-stone-900 text-white border-stone-900 font-semibold shadow-2xs"
-                : "bg-white text-stone-700 border-black/10 hover:border-black/25 font-normal"
+                ? "bg-stone-900 dark:bg-amber-400 text-white dark:text-stone-950 border-stone-900 dark:border-amber-400 font-semibold shadow-2xs"
+                : "bg-white dark:bg-[#1C1E23] text-stone-700 dark:text-stone-300 border-black/10 dark:border-white/15 hover:border-black/25 dark:hover:border-white/30 font-normal"
             }`}
           >
             {opt.label}
@@ -121,12 +121,12 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
 
   const errorText = (show: boolean, text: string) =>
     showErrors && show ? (
-      <p className="text-xs font-semibold text-red-700">{text}</p>
+      <p className="text-xs font-semibold text-red-700 dark:text-red-400">{text}</p>
     ) : null;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-white rounded-[24px] border border-black/5 p-5 sm:p-6 shadow-2xs space-y-4">
+      <div className="bg-white dark:bg-[#1C1E23] rounded-[24px] border border-black/5 dark:border-white/10 p-5 sm:p-6 shadow-2xs space-y-4">
         {/* 1. Typ instytucji & Powiat */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
           <Field label="Typ instytucji" htmlFor="mm-type">

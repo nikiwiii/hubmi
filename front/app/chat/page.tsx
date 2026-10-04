@@ -528,24 +528,24 @@ function ChatContent() {
       )}
 
       {/* Main Messenger Container */}
-      <div className="grid grid-cols-1 md:grid-cols-12 bg-white rounded-2xl border border-stone-200/90 shadow-sm overflow-hidden min-h-[580px] h-[calc(100vh-230px)] max-h-[780px]">
+      <div className="grid grid-cols-1 md:grid-cols-12 bg-white dark:bg-[#1C1E23] rounded-2xl border border-stone-200/90 dark:border-white/10 shadow-sm overflow-hidden min-h-[580px] h-[calc(100vh-230px)] max-h-[780px]">
         {/* Left Column: Contacts List */}
-        <div className="md:col-span-4 border-r border-stone-200/80 bg-[#FAF9F5] flex flex-col min-w-0">
+        <div className="md:col-span-4 border-r border-stone-200/80 dark:border-white/10 bg-[#FAF9F5] dark:bg-[#141518] flex flex-col min-w-0">
           {/* Header & Search */}
-          <div className="p-3 border-b border-stone-200/80 bg-white/70 space-y-2">
+          <div className="p-3 border-b border-stone-200/80 dark:border-white/10 bg-white/70 dark:bg-[#1C1E23] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-stone-800">
+              <span className="text-xs font-bold text-stone-800 dark:text-stone-200">
                 Wątki dialogu ({filteredContacts.length})
               </span>
             </div>
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Szukaj osoby lub tematu..."
-                className="w-full pl-8 pr-3 py-1.5 bg-stone-100/80 border border-stone-200/70 rounded-xl text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:border-stone-400 transition-all"
+                className="w-full pl-8 pr-3 py-1.5 bg-stone-100/80 dark:bg-[#24272F] border border-stone-200/70 dark:border-white/15 rounded-xl text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:bg-white dark:focus:bg-[#1C1E23] focus:border-stone-400 dark:focus:border-white/30 transition-all"
               />
             </div>
             {/* Filter chips */}
@@ -557,8 +557,8 @@ function ChatContent() {
                   onClick={() => setStatusFilter(filter)}
                   className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors cursor-pointer ${
                     statusFilter === filter
-                      ? "bg-stone-900 text-white"
-                      : "text-stone-600 hover:bg-stone-200/60"
+                      ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 font-bold"
+                      : "text-stone-600 dark:text-stone-400 hover:bg-stone-200/60 dark:hover:bg-white/10"
                   }`}
                 >
                   {filter === "all"
@@ -572,14 +572,14 @@ function ChatContent() {
           </div>
 
           {/* Conversations list */}
-          <div className="flex-1 overflow-y-auto divide-y divide-stone-200/60">
+          <div className="flex-1 overflow-y-auto divide-y divide-stone-200/60 dark:divide-white/10">
             {filteredContacts.length === 0 ? (
-              <div className="p-6 text-center text-stone-400">
-                <MessageCircle className="w-8 h-8 mx-auto mb-2 text-stone-300 stroke-[1.5]" />
-                <p className="text-xs font-semibold text-stone-600">
+              <div className="p-6 text-center text-stone-400 dark:text-stone-500">
+                <MessageCircle className="w-8 h-8 mx-auto mb-2 text-stone-300 dark:text-stone-600 stroke-[1.5]" />
+                <p className="text-xs font-semibold text-stone-600 dark:text-stone-400">
                   Brak pasujących rozmów
                 </p>
-                <p className="text-[11px] text-stone-400 mt-1">
+                <p className="text-[11px] text-stone-400 dark:text-stone-500 mt-1">
                   {searchQuery
                     ? "Zmień kryteria wyszukiwania."
                     : "Kliknij 'Nowa wiadomość', aby rozpocząć dialog."}
@@ -594,8 +594,8 @@ function ChatContent() {
                     onClick={() => setActiveContactId(contact.id)}
                     className={`w-full p-3 flex items-start gap-3 text-left transition-all cursor-pointer relative group ${
                       isSelected
-                        ? "bg-white border-l-4 border-stone-900 shadow-2xs"
-                        : "hover:bg-white/60"
+                        ? "bg-white dark:bg-[#24272F] border-l-4 border-stone-900 dark:border-white shadow-2xs"
+                        : "hover:bg-white/60 dark:hover:bg-white/5"
                     }`}
                   >
                     <div
@@ -604,37 +604,37 @@ function ChatContent() {
                     >
                       {contact.name?.charAt(0) || "?"}
                       {contact.isOnline && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-600 border-2 border-white" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-600 border-2 border-white dark:border-stone-900" />
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className="text-xs font-bold text-stone-900 truncate">
+                        <p className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
                           {contact.name}
                         </p>
-                        <span className="text-[10px] text-stone-400 shrink-0">
+                        <span className="text-[10px] text-stone-400 dark:text-stone-400 shrink-0">
                           {contact.lastMessageTime}
                         </span>
                       </div>
 
                       {/* Temat jako czytelny badge */}
                       <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-stone-700 bg-stone-200/70 px-1.5 py-0.5 rounded truncate max-w-[200px]">
-                          <Tag className="w-2.5 h-2.5 text-stone-500 shrink-0" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-stone-700 dark:text-stone-300 bg-stone-200/70 dark:bg-white/10 px-1.5 py-0.5 rounded truncate max-w-[200px]">
+                          <Tag className="w-2.5 h-2.5 text-stone-500 dark:text-stone-400 shrink-0" />
                           <span className="truncate">
                             {contact.topic || "Konsultacja"}
                           </span>
                         </span>
                         {contact.status === "closed" && (
-                          <span className="text-[9px] font-semibold text-stone-400 bg-stone-100 px-1 py-0.5 rounded shrink-0">
+                          <span className="text-[9px] font-semibold text-stone-400 dark:text-stone-400 bg-stone-100 dark:bg-white/5 px-1 py-0.5 rounded shrink-0">
                             Zamknięte
                           </span>
                         )}
                       </div>
 
                       {/* Ostatnia wiadomość */}
-                      <p className="text-xs text-stone-500 truncate mt-1 leading-snug">
+                      <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-1 leading-snug">
                         {contact.lastMessage}
                       </p>
                     </div>
@@ -652,22 +652,22 @@ function ChatContent() {
         </div>
 
         {/* Right Column: Active Conversation */}
-        <div className="md:col-span-8 flex flex-col h-full bg-white min-w-0">
+        <div className="md:col-span-8 flex flex-col h-full bg-white dark:bg-[#1C1E23] min-w-0">
           {!activeContact ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-stone-400">
-              <div className="w-14 h-14 rounded-2xl bg-[#FAF9F5] border border-stone-200/60 flex items-center justify-center text-stone-400 mb-3 shadow-2xs">
-                <MessageCircle className="w-7 h-7 text-stone-400 stroke-[1.5]" />
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-stone-400 dark:text-stone-500">
+              <div className="w-14 h-14 rounded-2xl bg-[#FAF9F5] dark:bg-[#141518] border border-stone-200/60 dark:border-white/10 flex items-center justify-center text-stone-400 dark:text-stone-500 mb-3 shadow-2xs">
+                <MessageCircle className="w-7 h-7 stroke-[1.5]" />
               </div>
-              <h3 className="text-base font-bold text-stone-900 mb-1">
+              <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 mb-1">
                 Brak aktywnego dialogu
               </h3>
-              <p className="text-xs text-stone-500 max-w-sm mb-5 leading-relaxed">
+              <p className="text-xs text-stone-500 dark:text-stone-400 max-w-sm mb-5 leading-relaxed">
                 Wybierz wątek z listy po lewej stronie lub rozpocznij nowe
                 zapytanie do ekspertów ROPS Kraków.
               </p>
               <button
                 onClick={() => setIsCreatingNewThread(true)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 bg-stone-900 dark:bg-amber-400 hover:bg-stone-800 dark:hover:bg-amber-300 text-white dark:text-stone-950 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Napisz wiadomość</span>
@@ -676,7 +676,7 @@ function ChatContent() {
           ) : (
             <>
               {/* Header */}
-              <div className="px-5 py-3 border-b border-stone-200/80 bg-stone-50/50 flex flex-wrap items-center justify-between gap-3">
+              <div className="px-5 py-3 border-b border-stone-200/80 dark:border-white/10 bg-stone-50/50 dark:bg-[#141518] flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-stone-800 text-sm shadow-2xs shrink-0"
@@ -688,14 +688,14 @@ function ChatContent() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-sm font-bold text-stone-900 leading-tight">
+                      <h4 className="text-sm font-bold text-stone-900 dark:text-white leading-tight">
                         {activeContact.name}
                       </h4>
                       <span
                         className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                           activeContact.status === "closed"
-                            ? "bg-stone-200 text-stone-600"
-                            : "bg-emerald-100 text-emerald-800"
+                            ? "bg-stone-200 dark:bg-white/10 text-stone-600 dark:text-stone-300"
+                            : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300"
                         }`}
                       >
                         <span
@@ -712,7 +712,7 @@ function ChatContent() {
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <Tag className="w-3 h-3 text-stone-400 shrink-0" />
-                      <span className="text-xs text-stone-600 font-medium truncate max-w-sm sm:max-w-md">
+                      <span className="text-xs text-stone-600 dark:text-stone-400 font-medium truncate max-w-sm sm:max-w-md">
                         {activeContact.topic || "Konsultacja innowacji społecznych"}
                       </span>
                     </div>
@@ -730,9 +730,9 @@ function ChatContent() {
                         ? "Wznów wątek"
                         : "Zakończ wątek"
                     }
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-stone-200 hover:bg-stone-100 text-stone-700 text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-2xs"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#24272F] border border-stone-200 dark:border-white/15 hover:bg-stone-100 dark:hover:bg-white/10 text-stone-700 dark:text-stone-200 text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-2xs"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-stone-500" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
                     <span>
                       {activeContact.status === "closed"
                         ? "Wznów wątek"
@@ -743,7 +743,7 @@ function ChatContent() {
                     type="button"
                     onClick={(e) => handleDeleteConversation(activeContact.id, e)}
                     title="Usuń tę rozmowę"
-                    className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-rose-100"
+                    className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-rose-100 dark:hover:border-rose-900"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -751,14 +751,14 @@ function ChatContent() {
               </div>
 
               {/* Messages Stream */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#FCFBF8]">
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#FCFBF8] dark:bg-[#141518]">
                 {messages.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
-                    <MessageCircle className="w-8 h-8 mb-2 stroke-1 text-stone-300" />
-                    <p className="text-sm font-medium text-stone-500">
+                  <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400 dark:text-stone-500">
+                    <MessageCircle className="w-8 h-8 mb-2 stroke-1 text-stone-300 dark:text-stone-600" />
+                    <p className="text-sm font-medium text-stone-500 dark:text-stone-400">
                       Napisz do rozmówcy ({activeContact.name})
                     </p>
-                    <p className="text-xs text-stone-400 mt-1 max-w-xs">
+                    <p className="text-xs text-stone-400 dark:text-stone-500 mt-1 max-w-xs">
                       Rozmowa jest synchronizowana na żywo. Odpowiedzi pojawią
                       się tutaj automatycznie.
                     </p>
@@ -774,23 +774,23 @@ function ChatContent() {
                         }`}
                       >
                         <div className="flex items-center gap-1.5 mb-1 px-1">
-                          <span className="text-[11px] font-semibold text-stone-500">
+                          <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
                             {isMe ? "Ty" : m.senderName}
                           </span>
                         </div>
                         <div
                           className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-2xs ${
                             isMe
-                              ? "bg-stone-900 text-white rounded-tr-xs"
-                              : "bg-white border border-stone-200/90 text-stone-900 rounded-tl-xs"
+                              ? "bg-stone-900 dark:bg-amber-400 text-white dark:text-stone-950 font-medium rounded-tr-xs"
+                              : "bg-white dark:bg-[#1C1E23] border border-stone-200/90 dark:border-white/15 text-stone-900 dark:text-stone-100 rounded-tl-xs"
                           }`}
                         >
                           <p className="whitespace-pre-wrap">{m.text}</p>
                           <div
                             className={`flex items-center gap-1 text-[10px] mt-1.5 ${
                               isMe
-                                ? "text-stone-300 justify-end"
-                                : "text-stone-400"
+                                ? "text-stone-300 dark:text-stone-800 justify-end"
+                                : "text-stone-400 dark:text-stone-400"
                             }`}
                           >
                             <span>{m.timestamp}</span>
@@ -804,7 +804,7 @@ function ChatContent() {
               </div>
 
               {/* Input Bar */}
-              <div className="p-3 border-t border-stone-200/80 bg-white">
+              <div className="p-3 border-t border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1C1E23]">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -817,12 +817,12 @@ function ChatContent() {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Wpisz wiadomość... (Enter, aby wysłać)"
-                    className="flex-1 px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+                    className="flex-1 px-4 py-2.5 bg-stone-50 dark:bg-[#141518] border border-stone-200 dark:border-white/15 rounded-xl text-sm text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:border-stone-900 dark:focus:border-white/40 focus:bg-white dark:focus:bg-[#141518] transition-colors"
                   />
                   <button
                     type="submit"
                     disabled={!inputText.trim()}
-                    className="p-2.5 bg-stone-900 hover:bg-stone-800 disabled:opacity-40 disabled:hover:bg-stone-900 text-white rounded-xl transition-colors cursor-pointer shrink-0"
+                    className="p-2.5 bg-stone-900 dark:bg-amber-400 hover:bg-stone-800 dark:hover:bg-amber-300 disabled:opacity-40 disabled:hover:bg-stone-900 text-white dark:text-stone-950 rounded-xl transition-colors cursor-pointer shrink-0"
                   >
                     <Send className="w-4 h-4" />
                   </button>

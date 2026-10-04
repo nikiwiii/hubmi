@@ -215,88 +215,100 @@ body.dark,
   color: #F3F4F6;
 }
 
+/* Dark mode container & card background overrides (replaces light/pastel/gradient backgrounds) */
 .dark header,
-.dark nav.bg-\[\#F7F6F1\]\/95,
-.dark nav.bg-\[\#F7F6F1\],
-.dark .bg-\[\#F7F6F1\],
-.dark .bg-\[\#F4F4F0\],
-.dark .bg-\[\#FAF9F5\] {
-  background-color: #141518 !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
+.dark nav,
+.dark main,
+.dark section,
+.dark article,
+.dark aside,
+.dark form,
 .dark div.bg-white,
 .dark article.bg-white,
 .dark section.bg-white,
 .dark nav.bg-white,
 .dark header.bg-white,
-.dark .bg-white {
+.dark .bg-white,
+.dark .bg-\[\#F7F6F1\],
+.dark .bg-\[\#F4F4F0\],
+.dark .bg-\[\#FAF9F5\],
+.dark .bg-\[\#FAF4E5\],
+.dark .bg-\[\#F5F5F0\],
+.dark [class*="bg-stone-50"],
+.dark [class*="bg-stone-100"],
+.dark [class*="bg-amber-50"],
+.dark [class*="bg-rose-50"],
+.dark [class*="bg-blue-50"],
+.dark [class*="bg-purple-50"],
+.dark [class*="bg-emerald-50"],
+.dark [class*="bg-teal-50"],
+.dark [class*="bg-indigo-50"],
+.dark [class*="from-white"],
+.dark [class*="from-\[\#FAF4E5\]"],
+.dark [class*="from-\[\#F9F8F5\]"],
+.dark [class*="from-\[\#FAF9F5\]"] {
   background-color: #1C1E23 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #F3F4F6;
 }
 
-.dark .bg-stone-50,
-.dark .bg-stone-100,
+/* Dark mode subtle inner cards / panels */
 .dark .bg-stone-50\/60,
 .dark .bg-stone-50\/70,
 .dark .bg-stone-50\/80,
 .dark .bg-stone-100\/90,
 .dark .bg-stone-200\/60,
 .dark .bg-stone-200\/70,
-.dark .bg-stone-200\/80 {
+.dark .bg-stone-200\/80,
+.dark .bg-stone-50,
+.dark .bg-stone-100,
+.dark .bg-\[\#FAF9F5\] {
   background-color: #24272F !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #E5E7EB;
 }
 
-/* Dark mode font color mappings - ensure we don't override explicit dark:text dark-colored classes on light buttons/chips */
-.dark .text-stone-900:not([class*="dark:text-stone-9"]):not([class*="dark:text-stone-8"]):not([class*="dark:text-black"]):not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *):not(.dark\:bg-white *),
-.dark .text-stone-950:not([class*="dark:text-stone-9"]):not([class*="dark:text-stone-8"]):not([class*="dark:text-black"]):not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *):not(.dark\:bg-white *),
-.dark .text-stone-800:not([class*="dark:text-stone-9"]):not([class*="dark:text-stone-8"]):not([class*="dark:text-black"]):not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *):not(.dark\:bg-white *) {
-  color: #F9FAFB !important;
+/* Dark mode override for inline-styled cards (e.g. knowledge catalog cards) */
+.dark [role="article"][style],
+.dark .group[style*="linear-gradient"],
+.dark div[style*="linear-gradient"],
+.dark div[style*="background:"] {
+  background: #1C1E23 !important;
+  background-color: #1C1E23 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #F3F4F6 !important;
 }
 
-.dark .text-stone-700:not([class*="dark:text-stone-9"]):not([class*="dark:text-stone-8"]):not([class*="dark:text-black"]):not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *):not(.dark\:bg-white *) {
+.dark [role="article"][style] *,
+.dark .group[style*="linear-gradient"] *,
+.dark div[style*="linear-gradient"] * {
+  color: #F3F4F6 !important;
+}
+
+.dark [role="article"][style] [style*="color:"],
+.dark .group[style*="linear-gradient"] [style*="color:"] {
   color: #E5E7EB !important;
 }
 
-.dark .text-stone-600:not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *),
-.dark .text-stone-500:not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *) {
+/* Dark mode typography */
+.dark .text-stone-900,
+.dark .text-stone-950,
+.dark .text-stone-800,
+.dark .text-stone-700 {
+  color: #F3F4F6 !important;
+}
+
+.dark .text-stone-600,
+.dark .text-stone-500 {
   color: #D1D5DB !important;
 }
 
-.dark .text-stone-400:not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *) {
+.dark .text-stone-400,
+.dark .text-stone-300 {
   color: #9CA3AF !important;
 }
 
-.dark .text-stone-300:not([class*="dark:bg-white"] *):not([class*="dark:bg-amber-"] *):not([class*="dark:bg-yellow-"] *) {
-  color: #CBD5E1 !important;
-}
-
-/* Explicit high-contrast dark text on light elements in dark mode */
-.dark [class*="dark:bg-white"] [class*="dark:text-stone-9"],
-.dark [class*="dark:bg-white"] [class*="dark:text-black"],
-.dark [class*="dark:bg-amber-300"] *,
-.dark [class*="dark:bg-amber-400"] *,
-.dark [class*="dark:bg-yellow-400"] *,
-.dark .dark\:text-stone-950,
-.dark .dark\:text-stone-900,
-.dark .dark\:text-black {
-  color: #111827 !important;
-}
-
-.dark .border-stone-100,
-.dark .border-stone-200,
-.dark .border-stone-200\/70,
-.dark .border-stone-200\/80,
-.dark .border-stone-200\/90,
-.dark .border-stone-300,
-.dark .border-black\/5,
-.dark .border-black\/10 {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
+/* Dark mode form controls */
 .dark input,
 .dark textarea,
 .dark select {
@@ -308,10 +320,11 @@ body.dark,
 .dark input::placeholder,
 .dark textarea::placeholder {
   color: #9CA3AF !important;
+  opacity: 1 !important;
 }
 
-.dark button:not(.bg-stone-900):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-yellow-400):not(.bg-amber-500):not(.bg-amber-600) {
-  border-color: rgba(255, 255, 255, 0.12) !important;
+.dark button:not(.bg-stone-900):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-yellow-400):not(.bg-amber-400):not(.bg-amber-500):not(.bg-amber-600) {
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 /* =========================================================================
@@ -323,11 +336,7 @@ body.high-contrast,
   --background: #000000 !important;
   --foreground: #FFFFFF !important;
   background-color: #000000 !important;
-  color: #FFFFFF !important;
-}
-
-.high-contrast body {
-  background-color: #000000 !important;
+  background-image: none !important;
   color: #FFFFFF !important;
 }
 
@@ -336,56 +345,145 @@ body.high-contrast,
   outline-offset: 3px !important;
 }
 
+/* Force EVERY container, card, section, header, nav, div, and inline-styled element to BLACK in High Contrast */
+.high-contrast body,
+.high-contrast main,
 .high-contrast header,
 .high-contrast nav,
-.high-contrast aside,
+.high-contrast footer,
 .high-contrast section,
 .high-contrast article,
-.high-contrast main,
-.high-contrast div.bg-white,
-.high-contrast div.bg-stone-50,
-.high-contrast div.bg-stone-100,
-.high-contrast div.bg-\[\#FAF9F5\],
-.high-contrast div.bg-\[\#F7F6F1\] {
+.high-contrast aside,
+.high-contrast form,
+.high-contrast div,
+.high-contrast fieldset,
+.high-contrast details,
+.high-contrast summary,
+.high-contrast [role="dialog"],
+.high-contrast [role="region"],
+.high-contrast [role="article"],
+.high-contrast [class*="bg-"],
+.high-contrast [style] {
   background-color: #000000 !important;
-  border: 2px solid #FACC15 !important;
-  color: #FFFFFF !important;
+  background-image: none !important;
   box-shadow: none !important;
+  text-shadow: none !important;
 }
 
-.high-contrast text,
-.high-contrast span,
+/* Typography in High Contrast: bright white text */
+.high-contrast,
 .high-contrast p,
-.high-contrast label,
+.high-contrast span,
 .high-contrast h1,
 .high-contrast h2,
 .high-contrast h3,
-.high-contrast h4 {
+.high-contrast h4,
+.high-contrast h5,
+.high-contrast h6,
+.high-contrast label,
+.high-contrast li,
+.high-contrast td,
+.high-contrast th,
+.high-contrast strong,
+.high-contrast b,
+.high-contrast i,
+.high-contrast code,
+.high-contrast [style*="color:"] {
   color: #FFFFFF !important;
 }
 
+/* Muted / secondary text in High Contrast: bright legible yellow (#FEF08A) */
+.high-contrast .text-stone-300,
 .high-contrast .text-stone-400,
 .high-contrast .text-stone-500,
 .high-contrast .text-stone-600,
-.high-contrast .text-stone-700 {
+.high-contrast .text-stone-700,
+.high-contrast small,
+.high-contrast time,
+.high-contrast .text-xs,
+.high-contrast .text-\[10px\],
+.high-contrast .text-\[11px\],
+.high-contrast [class*="text-amber-"],
+.high-contrast [class*="text-yellow-"] {
   color: #FEF08A !important;
 }
 
+/* All borders in High Contrast: sharp solid yellow (#FACC15) */
+.high-contrast header,
+.high-contrast nav,
+.high-contrast section,
+.high-contrast article,
+.high-contrast aside,
+.high-contrast main,
+.high-contrast form,
+.high-contrast div,
+.high-contrast div.rounded-2xl,
+.high-contrast div.rounded-3xl,
+.high-contrast div.rounded-xl,
+.high-contrast div[class*="border"],
+.high-contrast input,
+.high-contrast textarea,
+.high-contrast select,
+.high-contrast button,
+.high-contrast a,
+.high-contrast [role="dialog"] {
+  border-color: #FACC15 !important;
+}
+
+/* Buttons & Links in High Contrast */
 .high-contrast button,
 .high-contrast a[role="button"] {
   background-color: #000000 !important;
+  background-image: none !important;
   border: 2px solid #FACC15 !important;
   color: #FACC15 !important;
   font-weight: 700 !important;
-  box-shadow: none !important;
 }
 
 .high-contrast button:hover,
-.high-contrast a[role="button"]:hover {
+.high-contrast button:focus,
+.high-contrast a:hover,
+.high-contrast a:focus {
   background-color: #FACC15 !important;
   color: #000000 !important;
 }
 
+.high-contrast button:hover *,
+.high-contrast button:focus *,
+.high-contrast a:hover *,
+.high-contrast a:focus * {
+  background-color: transparent !important;
+  color: #000000 !important;
+}
+
+/* Active state for tabs, radio options, active buttons, and selected elements in High Contrast */
+.high-contrast button[aria-selected="true"],
+.high-contrast button[aria-current="page"],
+.high-contrast [role="tab"][aria-selected="true"],
+.high-contrast button[role="radio"][aria-checked="true"],
+.high-contrast [role="radio"][aria-checked="true"],
+.high-contrast .bg-stone-900,
+.high-contrast .dark\:bg-white {
+  background-color: #FACC15 !important;
+  background-image: none !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* Nested elements inside active/selected yellow containers MUST be transparent with black text */
+.high-contrast button[aria-selected="true"] *,
+.high-contrast button[aria-current="page"] *,
+.high-contrast [role="tab"][aria-selected="true"] *,
+.high-contrast button[role="radio"][aria-checked="true"] *,
+.high-contrast [role="radio"][aria-checked="true"] *,
+.high-contrast .bg-stone-900 *,
+.high-contrast .dark\:bg-white * {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+
+/* Form controls in High Contrast */
 .high-contrast input,
 .high-contrast textarea,
 .high-contrast select {
@@ -397,6 +495,7 @@ body.high-contrast,
 .high-contrast input::placeholder,
 .high-contrast textarea::placeholder {
   color: #FEF08A !important;
+  opacity: 1 !important;
 }
 
 /* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */
