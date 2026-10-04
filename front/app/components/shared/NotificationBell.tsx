@@ -170,11 +170,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
         aria-label={`Powiadomienia i wiadomości ${unreadCount > 0 ? `(${unreadCount} nieprzeczytanych)` : ''}`}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        className={`relative min-w-[32px] min-h-[32px] p-2 rounded-xl border text-stone-800 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${
-          isOpen
+        className={`relative min-w-[32px] min-h-[32px] p-2 rounded-xl border text-stone-800 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${isOpen
             ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
             : 'bg-white border-stone-300 hover:bg-stone-50'
-        }`}
+          }`}
       >
         <Bell className="w-4 h-4" aria-hidden="true" />
         {unreadCount > 0 && (
@@ -221,33 +220,29 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
           <div className="flex items-center gap-1 p-1.5 border-b border-black/5 bg-stone-50/70 text-[11px] font-medium text-stone-600 overflow-x-auto">
             <button
               onClick={() => setFilter('all')}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                filter === 'all' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
-              }`}
+              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${filter === 'all' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
+                }`}
             >
               Wszystkie
             </button>
             <button
               onClick={() => setFilter('grant')}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                filter === 'grant' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
-              }`}
+              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${filter === 'grant' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
+                }`}
             >
               Nabory grantowe
             </button>
             <button
               onClick={() => setFilter('chat')}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                filter === 'chat' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
-              }`}
+              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${filter === 'chat' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
+                }`}
             >
               Wiadomości
             </button>
             <button
               onClick={() => setFilter('partnership')}
-              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                filter === 'partnership' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
-              }`}
+              className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${filter === 'partnership' ? 'bg-white text-stone-900 font-bold shadow-2xs' : 'hover:text-stone-900'
+                }`}
             >
               Partnerstwa
             </button>
@@ -272,19 +267,17 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
                       handleCardClick(notif);
                     }
                   }}
-                  className={`p-3.5 transition-all cursor-pointer flex items-start gap-3 border-l-4 focus-visible:outline-2 focus-visible:outline-stone-900 ${
-                    !notif.read
+                  className={`p-3.5 transition-all cursor-pointer flex items-start gap-3 border-l-4 focus-visible:outline-2 focus-visible:outline-stone-900 ${!notif.read
                       ? 'bg-amber-50/70 hover:bg-amber-100/60 border-l-amber-500 shadow-2xs'
                       : 'bg-white hover:bg-stone-50 border-l-transparent text-stone-600'
-                  }`}
+                    }`}
                   aria-label={`${notif.title}, ${notif.read ? 'przeczytane' : 'nowe nieprzeczytane'}. Kliknij, aby ${notif.read && notif.link ? 'przejść do strony' : 'oznaczyć jako przeczytane'}.`}
                 >
                   <div
-                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border ${
-                      !notif.read
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border ${!notif.read
                         ? 'bg-amber-100/80 border-amber-300 text-stone-900'
                         : 'bg-stone-100 border-stone-200 text-stone-500'
-                    }`}
+                      }`}
                   >
                     {getNotifIcon(notif.type)}
                   </div>
@@ -293,9 +286,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
                     <div className="flex items-start justify-between gap-1.5">
                       <div className="flex items-center gap-1.5 flex-1 min-w-0">
                         <h4
-                          className={`text-xs font-bold leading-tight truncate ${
-                            !notif.read ? 'text-stone-900' : 'text-stone-700'
-                          }`}
+                          className={`text-xs font-bold leading-tight truncate ${!notif.read ? 'text-stone-900' : 'text-stone-700'
+                            }`}
                         >
                           {notif.title}
                         </h4>
@@ -329,9 +321,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ currentUser 
                     </div>
 
                     <p
-                      className={`text-[11px] line-clamp-2 leading-relaxed ${
-                        !notif.read ? 'text-stone-800' : 'text-stone-500'
-                      }`}
+                      className={`text-[11px] line-clamp-2 leading-relaxed ${!notif.read ? 'text-stone-800' : 'text-stone-500'
+                        }`}
                     >
                       {notif.message}
                     </p>

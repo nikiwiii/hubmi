@@ -109,8 +109,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     fontSizeLevel === "huge"
       ? "200% (A++)"
       : fontSizeLevel === "large"
-      ? "150% (A+)"
-      : "100% (A)";
+        ? "150% (A+)"
+        : "100% (A)";
 
   const fontShort =
     fontSizeLevel === "huge" ? "A++" : fontSizeLevel === "large" ? "A+" : "A";
@@ -165,11 +165,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   type="button"
                   onClick={() => navigateTo(link.id)}
                   aria-current={isActive ? "page" : undefined}
-                  className={`h-8 px-3.5 rounded-xl text-sm font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${
-                    isActive
+                  className={`h-8 px-3.5 rounded-xl text-sm font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${isActive
                       ? "bg-white dark:bg-stone-900 text-stone-950 dark:text-white shadow-2xs font-bold"
                       : "text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10"
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </button>
@@ -188,11 +187,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-label="Ustawienia wyglądu"
                 aria-expanded={isAppearanceOpen}
                 aria-haspopup="menu"
-                className={`h-8 px-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-stone-900 ${
-                  hasActiveAppearance || isAppearanceOpen
+                className={`h-8 px-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-stone-900 ${hasActiveAppearance || isAppearanceOpen
                     ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 border-stone-900 dark:border-white shadow-sm"
                     : "bg-white dark:bg-[#1C1E23] text-stone-800 dark:text-stone-200 border-stone-300 dark:border-white/15 hover:bg-stone-50 dark:hover:bg-white/10 shadow-2xs"
-                }`}
+                  }`}
               >
                 <Eye className="w-3.5 h-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">Wygląd</span>
@@ -277,11 +275,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                     </div>
                     <span
-                      className={`text-[11px] font-black px-1.5 py-0.5 rounded-lg ${
-                        fontSizeLevel !== "normal"
+                      className={`text-[11px] font-black px-1.5 py-0.5 rounded-lg ${fontSizeLevel !== "normal"
                           ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950"
                           : "bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300"
-                      }`}
+                        }`}
                     >
                       {fontShort}
                     </span>
@@ -381,11 +378,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={() => navigateTo(item.id)}
                 aria-current={isActive ? "page" : undefined}
-                className={`min-w-[40px] min-h-[44px] flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 dark:focus-visible:ring-white ${
-                  isActive
+                className={`min-w-[40px] min-h-[44px] flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 dark:focus-visible:ring-white ${isActive
                     ? "text-stone-950 dark:text-white font-bold"
                     : "text-stone-700 dark:text-stone-400 hover:text-stone-950 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
                 <span className="text-[10px] leading-tight font-medium">

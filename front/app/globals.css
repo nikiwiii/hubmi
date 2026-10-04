@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant high-contrast (&:where(.high-contrast, .high-contrast *));
+
 @theme {
   --font-ubuntu: var(--font-ubuntu), "Ubuntu", sans-serif;
 }
@@ -104,14 +107,14 @@ textarea::placeholder,
   opacity: 1;
 }
 
-/* Kontrast tekstu na jasnym tle */
-body:not(.dark) .text-stone-400:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+/* Kontrast tekstu na jasnym tle (aktywny wyłącznie w standardowym profilu jasnym) */
+html:not(.dark):not(.high-contrast) body:not(.dark):not(.high-contrast) .text-stone-400:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #57534E;
 }
-body:not(.dark) .text-stone-500:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+html:not(.dark):not(.high-contrast) body:not(.dark):not(.high-contrast) .text-stone-500:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #44403C;
 }
-body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+html:not(.dark):not(.high-contrast) body:not(.dark):not(.high-contrast) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #57534E;
 }
 
@@ -215,14 +218,18 @@ body.dark,
 .dark header,
 .dark nav.bg-\[\#F7F6F1\]\/95,
 .dark nav.bg-\[\#F7F6F1\],
-.dark .bg-\[\#F7F6F1\] {
-  background-color: rgba(20, 21, 24, 0.95) !important;
+.dark .bg-\[\#F7F6F1\],
+.dark .bg-\[\#F4F4F0\],
+.dark .bg-\[\#FAF9F5\] {
+  background-color: #141518 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .dark div.bg-white,
 .dark article.bg-white,
 .dark section.bg-white,
+.dark nav.bg-white,
+.dark header.bg-white,
 .dark .bg-white {
   background-color: #1C1E23 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
@@ -250,12 +257,12 @@ body.dark,
 }
 
 .dark .text-stone-700 {
-  color: #D1D5DB !important;
+  color: #E5E7EB !important;
 }
 
 .dark .text-stone-600,
 .dark .text-stone-500 {
-  color: #9CA3AF !important;
+  color: #D1D5DB !important;
 }
 
 .dark .text-stone-400 {
@@ -278,15 +285,15 @@ body.dark,
 .dark select {
   background-color: #141518 !important;
   color: #F3F4F6 !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
 }
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #6B7280 !important;
+  color: #9CA3AF !important;
 }
 
-.dark button:not(.bg-stone-900):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-yellow-400) {
+.dark button:not(.bg-stone-900):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-yellow-400):not(.bg-amber-500):not(.bg-amber-600) {
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
 

@@ -115,10 +115,10 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-[28px] border border-black/5 shadow-2xs p-5 sm:p-6 space-y-5">
+    <div className="bg-white dark:bg-[#1C1E23] rounded-[28px] border border-black/5 dark:border-white/10 shadow-2xs p-5 sm:p-6 space-y-5">
       {/* Pasek narzędziowy */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
-        <span className="text-xs font-semibold text-stone-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 dark:border-white/10 pb-4">
+        <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">
           Wszystkie 22 powiaty Małopolski
         </span>
 
@@ -131,12 +131,12 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Szukaj powiatu..."
-              className="w-full pl-8 pr-7 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900"
+              className="w-full pl-8 pr-7 py-1.5 bg-stone-50 dark:bg-black/30 border border-stone-200 dark:border-white/15 rounded-xl text-xs font-medium text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-amber-400"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -164,8 +164,8 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
               onClick={() => setSelectedSubregion(sub.key)}
               className={`whitespace-nowrap px-3 py-1.5 rounded-xl font-semibold transition-all cursor-pointer border ${
                 isActive
-                  ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-                  : 'bg-stone-50 text-stone-600 hover:bg-stone-100 border-stone-200/70'
+                  ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-950 border-stone-900 dark:border-white shadow-2xs'
+                  : 'bg-stone-50 dark:bg-white/5 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-white/10 border-stone-200/70 dark:border-white/10'
               }`}
             >
               {sub.label}
@@ -176,7 +176,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
 
       {/* Grid 22 wykresów liniowych */}
       {filteredSeries.length === 0 ? (
-        <div className="bg-stone-50 rounded-2xl p-10 text-center border border-stone-200 text-stone-500 text-xs">
+        <div className="bg-stone-50 dark:bg-white/5 rounded-2xl p-10 text-center border border-stone-200 dark:border-white/10 text-stone-500 dark:text-stone-400 text-xs">
           Brak powiatów spełniających kryteria wyszukiwania.
         </div>
       ) : (
@@ -191,8 +191,8 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                 onClick={() => onSelectPowiat(item.powiatId)}
                 className={`group flex flex-col justify-between p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
                   isSelected
-                    ? 'bg-stone-900 text-white border-stone-900 shadow-lg ring-2 ring-stone-900 ring-offset-2'
-                    : 'bg-white hover:bg-stone-50/70 text-stone-900 border-stone-200 hover:border-stone-400 hover:shadow-xs'
+                    ? 'bg-stone-900 dark:bg-[#232731] text-white border-stone-900 dark:border-amber-400/50 shadow-lg ring-2 ring-stone-900 dark:ring-amber-400 ring-offset-2 dark:ring-offset-[#1C1E23]'
+                    : 'bg-white dark:bg-[#20232A] hover:bg-stone-50/70 dark:hover:bg-[#272B34] text-stone-900 dark:text-stone-100 border-stone-200 dark:border-white/10 hover:border-stone-400 dark:hover:border-white/25 hover:shadow-xs'
                 }`}
               >
                 {/* Górny wiersz karty */}
@@ -208,7 +208,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                             className={`text-[9px] font-bold px-1.5 py-0.2 rounded-md ${
                               isSelected
                                 ? 'bg-white/20 text-stone-100'
-                                : 'bg-stone-100 text-stone-600'
+                                : 'bg-stone-100 dark:bg-white/10 text-stone-600 dark:text-stone-300'
                             }`}
                           >
                             Miasto
@@ -217,7 +217,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                       </div>
                       <span
                         className={`text-[11px] block mt-0.5 ${
-                          isSelected ? 'text-stone-300' : 'text-stone-400'
+                          isSelected ? 'text-stone-300' : 'text-stone-500 dark:text-stone-400'
                         }`}
                       >
                         Siedziba: {item.seat}
@@ -228,7 +228,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                       className={`text-xs font-bold px-2 py-0.5 rounded-lg shrink-0 ${
                         isSelected
                           ? 'bg-white/20 text-white'
-                          : 'bg-stone-100 text-stone-700'
+                          : 'bg-stone-100 dark:bg-white/10 text-stone-700 dark:text-stone-300'
                       }`}
                     >
                       #{item.latestRank}
@@ -240,7 +240,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                     <div>
                       <span
                         className={`text-[10px] block uppercase font-medium tracking-wider ${
-                          isSelected ? 'text-stone-300' : 'text-stone-500'
+                          isSelected ? 'text-stone-300' : 'text-stone-500 dark:text-stone-400'
                         }`}
                       >
                         Najnowszy ({research.years[research.years.length - 1]})
@@ -254,7 +254,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                       {research.unit !== '%' && research.unit.toLowerCase() !== 'procent' && (
                         <div
                           className={`text-[11px] font-medium mt-0.5 truncate max-w-[130px] ${
-                            isSelected ? 'text-stone-300' : 'text-stone-500'
+                            isSelected ? 'text-stone-300' : 'text-stone-500 dark:text-stone-400'
                           }`}
                           title={research.unit}
                         >
@@ -266,7 +266,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                     <div className="text-right">
                       <span
                         className={`text-[10px] block uppercase font-medium tracking-wider ${
-                          isSelected ? 'text-stone-300' : 'text-stone-500'
+                          isSelected ? 'text-stone-300' : 'text-stone-500 dark:text-stone-400'
                         }`}
                       >
                         Zmiana ({research.years.length} lat)
@@ -275,13 +275,13 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                         {isPositive ? (
                           <TrendingUp
                             className={`w-3.5 h-3.5 ${
-                              isSelected ? 'text-emerald-400' : 'text-emerald-600'
+                              isSelected ? 'text-emerald-400' : 'text-emerald-600 dark:text-emerald-400'
                             }`}
                           />
                         ) : (
                           <TrendingDown
                             className={`w-3.5 h-3.5 ${
-                              isSelected ? 'text-rose-400' : 'text-rose-600'
+                              isSelected ? 'text-rose-400' : 'text-rose-600 dark:text-rose-400'
                             }`}
                           />
                         )}
@@ -292,8 +292,8 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                                 ? 'text-emerald-400'
                                 : 'text-rose-400'
                               : isPositive
-                              ? 'text-emerald-700'
-                              : 'text-rose-700'
+                              ? 'text-emerald-700 dark:text-emerald-400'
+                              : 'text-rose-700 dark:text-rose-400'
                           }`}
                         >
                           {item.delta > 0 ? `+${formatResearchValue(item.delta)}` : formatResearchValue(item.delta)}
@@ -308,7 +308,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                 <div
                   role="region"
                   aria-label={`Mini wykres trendu wskaźnika dla powiatu ${item.powiatName} w latach 2014-2024`}
-                  className="w-full h-[120px] mt-3 pt-2 border-t border-dashed border-stone-200/50"
+                  className="w-full h-[120px] mt-3 pt-2 border-t border-dashed border-stone-200/50 dark:border-white/10"
                 >
                   {isMounted ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -347,15 +347,15 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                       </LineChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-full bg-stone-100 rounded-xl animate-pulse" />
+                    <div className="h-full bg-stone-100 dark:bg-white/5 rounded-xl animate-pulse" />
                   )}
                 </div>
 
                 {/* Stopka karty z przyciskiem zaznaczenia */}
-                <div className="mt-2 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
+                <div className="mt-2 pt-2 border-t border-stone-100 dark:border-white/10 flex items-center justify-between text-[11px]">
                   <span
                     className={`font-medium ${
-                      isSelected ? 'text-stone-300' : 'text-stone-400'
+                      isSelected ? 'text-stone-300' : 'text-stone-500 dark:text-stone-400'
                     }`}
                   >
                     {item.subregion}
@@ -365,7 +365,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                     className={`flex items-center gap-1 font-bold ${
                       isSelected
                         ? 'text-amber-400'
-                        : 'text-stone-700 group-hover:text-stone-900'
+                        : 'text-stone-700 dark:text-stone-200 group-hover:text-stone-900 dark:group-hover:text-white'
                     }`}
                   >
                     <span>{isSelected ? 'Wybrany' : 'Wybierz'}</span>

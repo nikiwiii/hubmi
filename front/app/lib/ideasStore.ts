@@ -221,3 +221,27 @@ export function deleteIdea(id: string, currentList?: Idea[]): Idea[] {
   return updated;
 }
 
+export function isUserIdeaAuthor(idea: Idea, user: any): boolean {
+  if (!user || !idea) return false;
+  if (user.id && idea.authorId && String(user.id) === String(idea.authorId)) return true;
+  if (
+    user.email &&
+    idea.authorEmail &&
+    user.email.toLowerCase() === idea.authorEmail.toLowerCase()
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function isUserAdmin(user: any): boolean {
+  return Boolean(user && user.role === 'admin');
+}
+
+export function canUserDeleteIdea(idea: Idea, user: any): boolean {
+  if (!user || !idea) return false;
+  if (isUserAdmin(user)) return true;
+  return isUserIdeaAuthor(idea, user);
+}
+
+

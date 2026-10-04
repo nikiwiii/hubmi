@@ -110,34 +110,34 @@ export function CustomSelect<T extends string = string>({
         aria-label={labelPrefix ? `${labelPrefix} ${displayText}` : displayText}
         className={`${
           isMd
-            ? `w-full min-h-[38px] px-3.5 py-2 bg-white hover:bg-stone-50 border rounded-xl text-sm flex items-center justify-between transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900 ${
+            ? `w-full min-h-[38px] px-3.5 py-2 bg-white dark:bg-[#1C1E23] hover:bg-stone-50 dark:hover:bg-white/5 border rounded-xl text-sm flex items-center justify-between transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-amber-400 ${
                 error
                   ? "border-red-500 focus:border-red-600"
                   : isOpen
-                    ? "border-stone-900 ring-2 ring-stone-900/15"
-                    : "border-black/10 hover:border-black/25"
+                    ? "border-stone-900 dark:border-white ring-2 ring-stone-900/15 dark:ring-white/20"
+                    : "border-black/10 dark:border-white/15 hover:border-black/25 dark:hover:border-white/30"
               }`
-            : "min-h-[32px] px-3 py-1.5 bg-white hover:bg-stone-50 active:bg-stone-100 border border-stone-300 hover:border-stone-400 rounded-xl text-xs font-semibold text-stone-900 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900"
+            : "min-h-[32px] px-3 py-1.5 bg-white dark:bg-[#1C1E23] hover:bg-stone-50 dark:hover:bg-white/5 active:bg-stone-100 dark:active:bg-white/10 border border-stone-300 dark:border-white/15 hover:border-stone-400 dark:hover:border-white/30 rounded-xl text-xs font-semibold text-stone-900 dark:text-stone-100 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900 dark:focus:ring-amber-400"
         }`}
       >
         <div className="flex items-center gap-2 overflow-hidden text-left">
           {labelPrefix && (
-            <span className="text-stone-600 font-medium shrink-0">
+            <span className="text-stone-600 dark:text-stone-400 font-medium shrink-0">
               {labelPrefix}
             </span>
           )}
           {selectedOption?.icon && (
-            <span className="text-stone-700 shrink-0" aria-hidden="true">
+            <span className="text-stone-700 dark:text-stone-300 shrink-0" aria-hidden="true">
               {selectedOption.icon}
             </span>
           )}
           <span
             className={`truncate ${
               !hasSelection && placeholder
-                ? "text-stone-600 font-medium"
+                ? "text-stone-600 dark:text-stone-400 font-medium"
                 : isMd
-                  ? "font-medium text-stone-950"
-                  : "font-semibold text-stone-900"
+                  ? "font-medium text-stone-950 dark:text-white"
+                  : "font-semibold text-stone-900 dark:text-white"
             }`}
           >
             {displayText}
@@ -146,8 +146,8 @@ export function CustomSelect<T extends string = string>({
 
         <ChevronDown
           aria-hidden="true"
-          className={`${isMd ? "w-4 h-4 ml-2" : "w-3.5 h-3.5"} text-stone-600 shrink-0 transition-transform duration-200 ease-out ${
-            isOpen ? "rotate-180 text-stone-900" : ""
+          className={`${isMd ? "w-4 h-4 ml-2" : "w-3.5 h-3.5"} text-stone-600 dark:text-stone-400 shrink-0 transition-transform duration-200 ease-out ${
+            isOpen ? "rotate-180 text-stone-900 dark:text-white" : ""
           }`}
         />
       </button>
@@ -160,7 +160,7 @@ export function CustomSelect<T extends string = string>({
           aria-label={labelPrefix || "Wybierz opcję"}
           className={`absolute ${
             fullWidth ? "left-0 right-0 w-full" : "right-0 min-w-[190px]"
-          } top-full mt-1.5 max-h-64 overflow-y-auto bg-white border border-stone-300 rounded-2xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 origin-top divide-y divide-stone-100/60`}
+          } top-full mt-1.5 max-h-64 overflow-y-auto bg-white dark:bg-[#1C1E23] border border-stone-300 dark:border-white/15 rounded-2xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 origin-top divide-y divide-stone-100/60 dark:divide-white/10`}
         >
           <div className="space-y-0.5">
             {options.map((option) => {
@@ -179,15 +179,15 @@ export function CustomSelect<T extends string = string>({
                     isMd ? "px-3.5 py-2.5 text-sm" : "px-3 py-2 text-xs"
                   } rounded-xl flex items-center justify-between text-left transition-colors cursor-pointer select-none ${
                     isSelected
-                      ? "bg-stone-100 text-stone-900 font-semibold"
-                      : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                      ? "bg-stone-100 dark:bg-white/15 text-stone-900 dark:text-white font-semibold"
+                      : "text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-white/10 hover:text-stone-900 dark:hover:text-white"
                   }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
                     {option.icon && (
                       <span
                         className={`shrink-0 ${
-                          isSelected ? "text-stone-900" : "text-stone-400"
+                          isSelected ? "text-stone-900 dark:text-white" : "text-stone-400 dark:text-stone-400"
                         }`}
                       >
                         {option.icon}
@@ -200,7 +200,7 @@ export function CustomSelect<T extends string = string>({
                     <Check
                       className={`${
                         isMd ? "w-4 h-4" : "w-3.5 h-3.5"
-                      } text-stone-900 shrink-0 ml-2`}
+                      } text-stone-900 dark:text-white shrink-0 ml-2`}
                     />
                   )}
                 </button>
