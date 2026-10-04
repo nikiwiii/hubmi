@@ -389,7 +389,94 @@ const TOPIC_PROFILES: Record<string, TopicProfile> = {
   }
 };
 
+const SUGGESTED_QUERIES_FALLBACK = [
+  "Dostępność i osoby na wózkach w powiecie krakowskim",
+  "Bezrobocie i poszukiwanie pracy w powiecie tarnowskim",
+  "Sytuacja seniorów i domy opieki w Nowym Sączu",
+  "Piecza zastępcza i rodziny w powiecie wadowickim",
+  "Mieszkańcy na pracownika socjalnego w Małopolsce",
+  "Czas pobytu w szpitalu i ochrona zdrowia w powiecie oświęcimskim"
+];
+
+function evaluateClientGuardrail(query: string): { status: "PASSED" | "BLOCKED_GIBBERISH" | "BLOCKED_OFF_TOPIC"; message: string | null } {
+  const raw = query.trim();
+  const qLower = raw.toLowerCase();
+
+  if (raw.length < 3) {
+    return {
+      status: "BLOCKED_GIBBERISH",
+      message: "Wpisane zapytanie jest zbyt krótkie. Wpisz zagadnienie dotyczące wyzwań społecznych lub mieszkańców Małopolski (np. 'osoby na wózkach w powiecie krakowskim')."
+    };
+  }
+
+  if (!/[a-ząćęłńóśźż]/i.test(raw)) {
+    return {
+      status: "BLOCKED_GIBBERISH",
+      message: "Zapytanie nie zawiera słów ani zrozumiałej treści tekstowej. Wpisz konkretne pytanie społeczne lub wskaźnik dla Małopolski."
+    };
+  }
+
+  if (/(.)\1{3,}/.test(qLower)) {
+    return {
+      status: "BLOCKED_GIBBERISH",
+      message: "Wykryto powtarzające się znaki. Prosimy o sformułowanie pytania w języku naturalnym."
+    };
+  }
+
+  if (/\b(?:asdf|qwerty|zxcvb|12345|hjkl)\b/.test(qLower)) {
+    return {
+      status: "BLOCKED_GIBBERISH",
+      message: "Wpisane zapytanie wygląda na losowy ciąg znaków klawiatury. Zadaj konkretne pytanie dotyczące polityki społecznej i wyzwań mieszkańców."
+    };
+  }
+
+  const offTopicPatterns = [
+    /\b(?:przepis|ugotuj|upiecz|ciasto|pizza|nalesnik|zupa|obiad|patelnia|smazen|gotowan|restauracj|drozdze|maka|cukier)\b/,
+    /\b(?:gra|minecraft|fortnite|playstation|xbox|fifa|csgo|mecz|pilka|ekstraklasa|liga mistrzow|bramka|gol|turniej|sportow|tenis)\b/,
+    /\b(?:napisz kod|skrypt|program|funkcja|python|javascript|typescript|c\+\+|html|css|sql|hack|trojan)\b/,
+    /\b(?:napisz wiersz|piosenk|rap|rymowank|kawal|zart|dowcip|bajk)\b/,
+    /\b(?:stolica francji|stolica niemiec|ile to jest \d|kto byl napoleon|odleglosc do ksiezyca)\b/,
+    /\b(?:kupie|sprzedam|cena iphone|samochodu|opon|allegro|olx|biedronce)\b/,
+    /\b(?:jaka pogoda|prognoza pogody|bedzie padac|temperatura jutro|horoskop|zodiak)\b/,
+    /(?:ignore previous instructions|zapomnij poprzednie|jestes teraz|dan mode)/
+  ];
+
+  for (const pat of offTopicPatterns) {
+    if (pat.test(qLower)) {
+      return {
+        status: "BLOCKED_OFF_TOPIC",
+        message: "Baza wiedzy i raporty ROPS Kraków służą do analizy danych społecznych, wskaźników regionalnych oraz innowacji w Małopolsce. Twoje zapytanie dotyczy tematu spoza tego zakresu (np. kulinaria, sport, gry lub ogólna rozrywka). Możesz zapytać o bezrobocie, sytuację seniorów, dostępność architektoniczną czy ochronę zdrowia."
+      };
+    }
+  }
+
+  const domainKeywords = [
+    "niepelnosprawn", "wozk", "inwalid", "ruch", "barier", "dostepn", "rehabilitac",
+    "prac", "bezroboc", "zatrudn", "zarob", "ubostw", "staz", "zwolnien",
+    "zasil", "pomoc spoleczn", "pracownik socjaln", "ops", "mops", "gops", "pcpr",
+    "senior", "starsz", "emeryt", "starosc", "dps", "dom opiek", "wytchnieniow",
+    "dziec", "rodzin", "zastepc", "piecz", "sierot", "wychowaw", "przedszkol", "zlob",
+    "szpital", "zdrow", "rak", "nowotwor", "medycyn", "lecz", "chorob", "aptek",
+    "mieszkanc", "ludnosc", "demograf", "budzet", "wydatk", "gmin", "powiat", "muze", "kultur",
+    "innowac", "grant", "rops", "projekt", "ngo",
+    "krakow", "tarnow", "nowy sacz", "bochni", "brzesk", "chrzanow", "dabrow", "gorlic",
+    "limanow", "miechow", "myslenic", "olkusz", "oswiecim", "proszowic", "susk", "tatrzan",
+    "zakopan", "wadowic", "wielicz"
+  ];
+
+  const hasDomainKeyword = domainKeywords.some((kw) => qLower.includes(kw));
+  if (!hasDomainKeyword) {
+    return {
+      status: "BLOCKED_OFF_TOPIC",
+      message: "Nie znaleziono powiązania z tematyką polityki społecznej ani wskaźnikami Małopolski. Baza wiedzy ROPS koncentruje się na zagadnieniach takich jak: rynek pracy, niepełnosprawność, starzejące się społeczeństwo, opieka wytchnieniowa, rodzicielstwo zastępcze oraz usługi opiekuńcze."
+    };
+  }
+
+  return { status: "PASSED", message: null };
+}
+
 export function executeClientKnowledgeRag(query: string, preferredPowiatId?: string): KnowledgeRagResponse {
+  const guard = evaluateClientGuardrail(query);
   const qLower = query.toLowerCase();
 
   // 1. NAJPIERW wykryj powiat z treści zapytania
@@ -424,6 +511,31 @@ export function executeClientKnowledgeRag(query: string, preferredPowiatId?: str
   // Jeśli w zapytaniu nie ma powiatu, a użytkownik wybrał dropdown, użyj dropdownu
   if (!foundInQuery && preferredPowiatId && POWIATY_MAPPING_CLIENT[preferredPowiatId]) {
     detectedPowiat = POWIATY_MAPPING_CLIENT[preferredPowiatId];
+  }
+
+  if (guard.status !== "PASSED") {
+    return {
+      success: false,
+      guardrail_status: guard.status,
+      guardrail_message: guard.message,
+      query,
+      detected_powiat: detectedPowiat,
+      detected_topics: [],
+      ai_synthesis: guard.message || "Zapytanie nie dotyczy tematyki polityki społecznej.",
+      primary_report: null,
+      matched_reports: [],
+      chart_data: {
+        report_id: "",
+        report_title: "",
+        unit: "",
+        latest_year: "",
+        trend_series: [],
+        comparison_bars: []
+      },
+      matched_innovations: [],
+      matched_expert: null,
+      suggested_queries: SUGGESTED_QUERIES_FALLBACK
+    };
   }
 
   // 2. Określ tematykę zapytania
@@ -552,6 +664,9 @@ Wskaźnik wiodący (*${primary?.title}*) w **${detectedPowiat.display_name}** wy
 
   return {
     success: true,
+    guardrail_status: "PASSED",
+    guardrail_message: null,
+    suggested_queries: SUGGESTED_QUERIES_FALLBACK,
     query,
     detected_powiat: detectedPowiat,
     detected_topics: [profile.category],

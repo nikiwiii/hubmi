@@ -509,6 +509,9 @@ export interface KnowledgeRagMatchedInnovation {
 
 export interface KnowledgeRagResponse {
   success: boolean;
+  guardrail_status?: "PASSED" | "BLOCKED_OFF_TOPIC" | "BLOCKED_GIBBERISH";
+  guardrail_message?: string | null;
+  suggested_queries?: string[];
   query: string;
   detected_powiat: KnowledgeRagDetectedPowiat;
   detected_topics: string[];

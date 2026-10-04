@@ -38,6 +38,7 @@ import {
   FileText,
   ChevronRight,
   ShieldCheck,
+  ShieldAlert,
   Info
 } from "lucide-react";
 import { searchKnowledgeRag } from "../../lib/api";
@@ -284,9 +285,63 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
 
       {/* WYNIKI RAG */}
       {ragResult && !isLoading && (
-        <div className="p-6 sm:p-8 space-y-8 animate-in fade-in duration-300">
-          {/* PASEK ZIDENTYFIKOWANEGO OBSZARU I TEMATÓW */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#FAF9F5] border border-stone-200/80">
+        <>
+          {ragResult.guardrail_status && ragResult.guardrail_status !== "PASSED" ? (
+            <div className="p-6 sm:p-8 space-y-6 animate-in fade-in duration-300">
+              <div className="p-6 sm:p-7 rounded-2xl bg-amber-50/90 border border-amber-300 text-amber-950 space-y-5 shadow-xs">
+                <div className="flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-amber-200/90 text-amber-950 shrink-0 mt-0.5">
+                    <ShieldAlert className="w-6 h-6 text-amber-900" aria-hidden="true" />
+                  </div>
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-bold text-stone-900">
+                        {ragResult.guardrail_status === "BLOCKED_GIBBERISH"
+                          ? "Wpisz konkretne pytanie lub problem społeczny"
+                          : "Pytanie spoza zakresu Bazy Wiedzy i Raportów ROPS"}
+                      </h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 uppercase tracking-wide">
+                        Filtr merytoryczny
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-medium">
+                      {ragResult.guardrail_message || ragResult.ai_synthesis}
+                    </p>
+                  </div>
+                </div>
+
+                {/* SUGEROWANE SENSOWNE PYTANIA */}
+                <div className="pt-4 border-t border-amber-200/80 space-y-3">
+                  <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-800" />
+                    Przykładowe pytania, które możesz zadać w bazie analitycznej:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {(ragResult.suggested_queries && ragResult.suggested_queries.length > 0
+                      ? ragResult.suggested_queries
+                      : SAMPLE_QUERIES
+                    ).map((suggested, sIdx) => (
+                      <button
+                        key={sIdx}
+                        type="button"
+                        onClick={() => {
+                          setQuery(suggested);
+                          handleSearch(suggested);
+                        }}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100 text-stone-900 border border-amber-300/80 shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-stone-900"
+                      >
+                        <span>{suggested}</span>
+                        <ArrowRight className="w-3 h-3 text-amber-800" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-6 sm:p-8 space-y-8 animate-in fade-in duration-300">
+              {/* PASEK ZIDENTYFIKOWANEGO OBSZARU I TEMATÓW */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#FAF9F5] border border-stone-200/80">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-stone-200 shadow-2xs">
                 <MapPin className="w-4 h-4 text-amber-600 shrink-0" />
@@ -793,7 +848,9 @@ export const KnowledgeRagSection: React.FC<KnowledgeRagSectionProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </>
+  )}
+</div>
   );
 };
 

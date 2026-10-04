@@ -241,7 +241,129 @@ def get_indicator_embedding(ind_id: str, ind_info: Dict[str, Any]) -> List[float
     doc_text = f"{ind_info.get('name', '')}. Opis: {ind_info.get('description', '')}. Jednostka: {ind_info.get('unit', '')}"
     vec = compute_embedding(doc_text)
     _INDICATORS_EMBEDDING_CACHE[ind_id] = vec
-    return vec
+SUGGESTED_RAG_QUERIES = [
+    "Dostępność i osoby na wózkach w powiecie krakowskim",
+    "Bezrobocie i poszukiwanie pracy w powiecie tarnowskim",
+    "Sytuacja seniorów i domy opieki w Nowym Sączu",
+    "Piecza zastępcza i rodziny w powiecie wadowickim",
+    "Mieszkańcy na pracownika socjalnego w Małopolsce",
+    "Czas pobytu w szpitalu i ochrona zdrowia w powiecie oświęcimskim"
+]
+
+SOCIAL_DOMAIN_STEMS = {
+    # Niepełnosprawność i dostępność
+    "niepelnosprawn", "wozk", "inwalid", "ruchow", "barier", "dostepn", "rehabilitac",
+    "migow", "niedowidz", "niewidom", "autyzm", "asystent",
+    # Rynek pracy i bezrobocie
+    "prac", "bezroboc", "zatrudn", "zarob", "ubostw", "staz", "zwolnien", "biern",
+    # Pomoc społeczna
+    "zasil", "pomoc spoleczn", "pracownik socjaln", "ops", "mops", "gops", "pcpr",
+    "schronisk", "bezdomn", "wykluczen", "swiadczen",
+    # Seniorzy
+    "senior", "starsz", "emeryt", "starosc", "dps", "dom opiek", "wytchnieniow", "alzheimer", "opiekun",
+    # Rodzina, dzieci, piecza zastępcza
+    "dziec", "rodzin", "zastepcz", "piecz", "sierot", "wychowawcz", "mlodziez", "rodzic",
+    "zlob", "przedszkol", "wielodzietn", "adopcj", "dom dzieck",
+    # Zdrowie
+    "szpital", "zdrow", "rak", "nowotwor", "medycyn", "lecz", "chorob", "pacjent", "aptek",
+    "przychodn", "lekarz", "psychiat", "psycholog",
+    # Mieszkalnictwo, demografia, budżety gmin, kultura
+    "mieszkanc", "ludnosc", "demograf", "urodzen", "zgon", "budzet", "wydatk", "gmin", "powiat",
+    "muze", "kultur", "bibliotek", "komunikacj", "transport",
+    # Innowacje i projekty
+    "innowac", "grant", "rops", "projekt", "ngo", "fundacj", "stowarzyszen", "spoldzieln", "ekonom",
+    # Powiaty i miasta Małopolski
+    "malopolsk", "krakow", "tarnow", "nowy sacz", "bochni", "brzesk", "chrzanow",
+    "dabrow", "gorlic", "limanow", "miechow", "myslenic", "olkusz", "oswiecim",
+    "proszowic", "susk", "sucha", "tatrzan", "zakopan", "podhal", "wadowic", "wielicz"
+}
+
+OFF_TOPIC_PATTERNS = [
+    # Kulinaria
+    r"\b(?:przepis(?:y|em|u)?|ugotuj|upiecz|ciast(?:o|a|em)|pizz(?:a|y|e)|nalesnik|zup(?:a|y|e)|obiad|patelni|smazen|gotowan|restauracj|jadaln|schabow|drozdze|maka|cukier)\b",
+    # Gry i sport
+    r"\b(?:gra(?:c|my|lem|z)?|minecraft|fortnite|playstation|xbox|fifa|csgo|mecz|pilk(?:a|i)|ekstraklas|liga mistrzow|bramk(?:a|i)|gol(?:a|e)?|turniej|sportow|tenis|koszykowk)\b",
+    # IT, programowanie, hacking
+    r"\b(?:napisz (?:kod|skrypt|program|funkcj)|python(?:ie)?|javascript|typescript|c\+\+|html|css|sql injection|zlam haslo|hack(?:owac|er)?|wirus|trojan)\b",
+    # Poezja, żarty, bajki
+    r"\b(?:napisz (?:wiersz|piosenk|rap|rymowank)|opowiedz (?:kawal|zart|dowcip|bajk)|streszczenie lektur)\b",
+    # Encyklopedia ogólna
+    r"\b(?:stolica (?:francji|niemiec|wloch|hiszpanii|usa|chin|japoni)|ile to jest \d|kto byl (?:napoleon|cezarem|prezydentem)|odleglosc do (?:ksiezyc|mars)|uklad sloneczn)\b",
+    # Handel i zakupy
+    r"\b(?:kupie|sprzedam|cena (?:iphone|samochodu|opon)|ogloszeni|allegro|olx|promocj(?:a|e) w biedronce)\b",
+    # Pogoda i horoskopy
+    r"\b(?:jaka pogoda|prognoza pogody|bedzie padac|temperatura jutro|horoskop|znaki zodiaku|astrologi)\b",
+    # Prompt injection / jailbreak
+    r"(?:ignore (?:all )?previous instructions|zapomnij poprzednie instrukcje|jestes teraz|dan mode|bypass guardrail)"
+]
+
+
+def evaluate_rag_guardrail(query: str, max_indicator_similarity: float = 0.0) -> Tuple[str, Optional[str]]:
+    """
+    GUARDRAIL DLA KNOWLEDGE RAG:
+    Weryfikuje czy zapytanie użytkownika jest sensowne i mieści się w domenie Obserwatorium Społecznego ROPS.
+    Zwraca (status, message), gdzie status to:
+    - 'PASSED' (pytanie sensowne, dopuszczone do analizy)
+    - 'BLOCKED_GIBBERISH' (losowe znaki, brak sensu, za krótkie)
+    - 'BLOCKED_OFF_TOPIC' (tematyka poza polityką społeczną Małopolski)
+    """
+    raw = query.strip()
+    q_clean = strip_accents_flexible(raw)
+
+    # 1. Sprawdzenie długości i obecności liter
+    if len(raw) < 3:
+        return (
+            "BLOCKED_GIBBERISH",
+            "Wpisane zapytanie jest zbyt krótkie. Wpisz zagadnienie dotyczące wyzwań społecznych lub mieszkańców Małopolski (np. 'osoby na wózkach w powiecie krakowskim')."
+        )
+
+    if not re.search(r"[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]", raw):
+        return (
+            "BLOCKED_GIBBERISH",
+            "Zapytanie nie zawiera słów ani zrozumiałej treści tekstowej. Wpisz konkretne pytanie społeczne lub wskaźnik dla Małopolski."
+        )
+
+    # 2. Ciągi losowych znaków (keyboard mashing / spam)
+    if re.search(r"(.)\1{3,}", q_clean):
+        return (
+            "BLOCKED_GIBBERISH",
+            "Wykryto powtarzające się znaki. Prosimy o sformułowanie pytania w języku naturalnym."
+        )
+
+    if re.search(r"\b(?:asdf|qwerty|zxcvb|12345|hjkl)\b", q_clean):
+        return (
+            "BLOCKED_GIBBERISH",
+            "Wpisane zapytanie wygląda na losowy ciąg znaków klawiatury. Zadaj konkretne pytanie dotyczące polityki społecznej i wyzwań mieszkańców."
+        )
+
+    words = re.findall(r"[a-z0-9]+", q_clean)
+    vowels = set("aeiouy")
+    for w in words:
+        if len(w) >= 6 and not any(c in vowels for c in w):
+            return (
+                "BLOCKED_GIBBERISH",
+                "Wpisane słowa nie przypominają naturalnego języka. Sformułuj zapytanie opisujące problem lub wskaźnik społeczny."
+            )
+
+    # 3. Ewidentny off-topic (kulinaria, sport, IT, gry, ogólne ciekawostki, jailbreak)
+    for pat in OFF_TOPIC_PATTERNS:
+        if re.search(pat, q_clean):
+            return (
+                "BLOCKED_OFF_TOPIC",
+                "Baza wiedzy i raporty ROPS Kraków służą do analizy danych społecznych, wskaźników regionalnych oraz innowacji w Małopolsce. Twoje zapytanie dotyczy tematu spoza tego zakresu (np. kulinaria, sport, gry lub ogólna rozrywka). Możesz zapytać o bezrobocie, sytuację seniorów, dostępność architektoniczną czy ochronę zdrowia."
+            )
+
+    # 4. Sprawdzenie słów kluczowych domeny polityki społecznej i regionu
+    has_domain_keyword = any(stem in q_clean for stem in SOCIAL_DOMAIN_STEMS)
+
+    # Jeśli nie ma ani słowa kluczowego, ani semantycznego dopasowania do żadnego wskaźnika
+    if not has_domain_keyword and max_indicator_similarity < 0.28:
+        return (
+            "BLOCKED_OFF_TOPIC",
+            "Nie znaleziono powiązania z tematyką polityki społecznej ani wskaźnikami Małopolski. Baza wiedzy ROPS koncentruje się na zagadnieniach takich jak: rynek pracy, niepełnosprawność, starzejące się społeczeństwo, opieka wytchnieniowa, rodzicielstwo zastępcze oraz usługi opiekuńcze."
+        )
+
+    return ("PASSED", None)
 
 
 class KnowledgeRagService:
@@ -258,6 +380,38 @@ class KnowledgeRagService:
         7. Generuje syntezę analityczną przez LLM Groq (lub inteligentny generator deterministyczny).
         """
         all_data = load_indicators_data()
+
+        # GUARDRAIL KROK 1: Wczesna weryfikacja bełkotu i ewidentnego off-topic
+        early_status, early_msg = evaluate_rag_guardrail(query, max_indicator_similarity=0.0)
+        if early_status in ["BLOCKED_GIBBERISH", "BLOCKED_OFF_TOPIC"]:
+            detected_powiat_info, _ = detect_powiat_from_query_or_pref(query, preferred_powiat_id)
+            return {
+                "success": False,
+                "guardrail_status": early_status,
+                "guardrail_message": early_msg,
+                "query": query,
+                "detected_powiat": {
+                    "id": detected_powiat_info["id"],
+                    "name": detected_powiat_info["name"],
+                    "display_name": detected_powiat_info["display_name"],
+                    "is_city": detected_powiat_info.get("is_city", False)
+                },
+                "detected_topics": [],
+                "ai_synthesis": early_msg,
+                "primary_report": None,
+                "matched_reports": [],
+                "chart_data": {
+                    "report_id": "",
+                    "report_title": "",
+                    "unit": "",
+                    "latest_year": "",
+                    "trend_series": [],
+                    "comparison_bars": []
+                },
+                "matched_innovations": [],
+                "matched_expert": None,
+                "suggested_queries": SUGGESTED_RAG_QUERIES
+            }
 
         # 1. Wykrycie powiatu (Query FIRST, dropdown second)
         detected_powiat_info, match_source = detect_powiat_from_query_or_pref(query, preferred_powiat_id)
@@ -312,6 +466,38 @@ class KnowledgeRagService:
         # Sortuj wskaźniki po najwyższym dopasowaniu
         scored_indicators.sort(key=lambda x: x[0], reverse=True)
         top_matched_indicators = scored_indicators[:4]
+
+        # GUARDRAIL KROK 2: Semantyczna weryfikacja dopasowania wskaźników
+        max_ind_sim = scored_indicators[0][0] if scored_indicators else 0.0
+        late_status, late_msg = evaluate_rag_guardrail(query, max_indicator_similarity=max_ind_sim)
+        if late_status != "PASSED":
+            return {
+                "success": False,
+                "guardrail_status": late_status,
+                "guardrail_message": late_msg,
+                "query": query,
+                "detected_powiat": {
+                    "id": powiat_id,
+                    "name": powiat_raw_name,
+                    "display_name": powiat_display_name,
+                    "is_city": detected_powiat_info.get("is_city", False)
+                },
+                "detected_topics": [],
+                "ai_synthesis": late_msg,
+                "primary_report": None,
+                "matched_reports": [],
+                "chart_data": {
+                    "report_id": "",
+                    "report_title": "",
+                    "unit": "",
+                    "latest_year": "",
+                    "trend_series": [],
+                    "comparison_bars": []
+                },
+                "matched_innovations": [],
+                "matched_expert": None,
+                "suggested_queries": SUGGESTED_RAG_QUERIES
+            }
 
         # 4. Zgromadzenie danych statystycznych dla wybranych wskaźników
         reports_summary: List[Dict[str, Any]] = []
@@ -436,6 +622,8 @@ class KnowledgeRagService:
 
         return {
             "success": True,
+            "guardrail_status": "PASSED",
+            "guardrail_message": None,
             "query": query,
             "detected_powiat": {
                 "id": powiat_id,
@@ -449,7 +637,8 @@ class KnowledgeRagService:
             "matched_reports": reports_summary,
             "chart_data": chart_data,
             "matched_innovations": matched_innovations,
-            "matched_expert": matched_expert
+            "matched_expert": matched_expert,
+            "suggested_queries": SUGGESTED_RAG_QUERIES
         }
 
     @staticmethod
