@@ -63,20 +63,42 @@ class IdeasRepository:
     def _to_row(
         project: ProjectCreate, user_id: str, author_name: str, image_url: Optional[str] = None
     ) -> Dict[str, Any]:
+        import json
         row = {column: getattr(project, field) for field, column in FIELD_TO_COLUMN.items()}
         row["stage"] = project.etap.value
         row["category"] = project.category or DEFAULT_CATEGORY
-        row["user_id"] = user_id
+        import uuid as _uuid
+        try:
+            _uuid.UUID(user_id)
+            row["user_id"] = user_id
+        except (ValueError, TypeError, AttributeError):
+            row["user_id"] = None
         row["author_name"] = author_name
         # Omitted when absent, so publishing without an image works before the image_url migration.
         if image_url:
             row["image_url"] = image_url
+        if project.partner_types or project.looking_for_partner:
+            row["dedicated_to"] = json.dumps({
+                "looking_for_partner": bool(project.looking_for_partner),
+                "partner_types": project.partner_types or []
+            })
         return row
 
     @staticmethod
     def _from_row(row: Dict[str, Any]) -> ProjectOut:
+        import json
         data = {field: row.get(column) for field, column in FIELD_TO_COLUMN.items()}
         data.update({column: row.get(column) for column in PASSTHROUGH_COLUMNS})
+        if not data.get("image_url") and row.get("essence"):
+            data["image_url"] = row.get("essence")
+        if row.get("dedicated_to"):
+            try:
+                parsed = json.loads(row["dedicated_to"])
+                if isinstance(parsed, dict):
+                    data["looking_for_partner"] = parsed.get("looking_for_partner", False)
+                    data["partner_types"] = parsed.get("partner_types", [])
+            except Exception:
+                pass
         return ProjectOut.model_validate(data)
 
     # ----- storage primitives (Supabase) -----

@@ -6,6 +6,10 @@ export interface RawResearchEntry {
   name: string;
   unit: string;
   description: string;
+  category?: string;
+  category_id?: string;
+  color?: string;
+  source?: string;
   years: string[];
   dane_powiaty: Record<string, Record<string, number>>;
 }
@@ -420,6 +424,72 @@ const RESEARCH_CONFIGS: Record<
       border: '#C1C9E4',
       text: '#1D2235'
     }
+  },
+  disability_support_share: {
+    titlePl: 'Pomoc społeczna z powodu niepełnosprawności',
+    titleEn: 'Social assistance due to disability',
+    unitPl: '%',
+    category: 'Niepełnosprawność',
+    descriptionPl:
+      'Udział rodzin i osób z niepełnosprawnościami objętych świadczeniami pomocy społecznej w ogólnej liczbie podopiecznych. Kluczowy wskaźnik zapotrzebowania na usługi asystenckie i opiekę środowiskową.',
+    iconName: 'heart',
+    theme: {
+      accent: '#76927E',
+      chartColor: '#76927E',
+      chartSecondary: '#CAD7CE',
+      badgeBg: 'bg-[#CAD7CE] text-[#1B271F] border-[#B6C7BA]',
+      badgeText: 'text-[#1B271F]',
+      cardBorder: 'border-[#B6C7BA] hover:border-[#76927E]',
+      gradient: 'from-[#76927E] to-[#58735F]',
+      colorScale: ['#EBF2ED', '#9CB6A4', '#4D6B55'],
+      pastelBg: '#CAD7CE',
+      border: '#B6C7BA',
+      text: '#1B271F'
+    }
+  },
+  severe_disability_share: {
+    titlePl: 'Osoby ze znacznym stopniem niepełnosprawności',
+    titleEn: 'Persons with severe disability',
+    unitPl: '%',
+    category: 'Niepełnosprawność',
+    descriptionPl:
+      'Odsetek osób ze znacznym stopniem niepełnosprawności (w tym osób poruszających się na wózkach inwalidzkich i o ograniczonej mobilności) w populacji osób z orzeczeniem (NSP).',
+    iconName: 'users',
+    theme: {
+      accent: '#8E77A3',
+      chartColor: '#8E77A3',
+      chartSecondary: '#DCD0E6',
+      badgeBg: 'bg-[#DCD0E6] text-[#291D33] border-[#CCBCDB]',
+      badgeText: 'text-[#291D33]',
+      cardBorder: 'border-[#CCBCDB] hover:border-[#8E77A3]',
+      gradient: 'from-[#8E77A3] to-[#705A85]',
+      colorScale: ['#F3ECF7', '#AB96BF', '#56416A'],
+      pastelBg: '#DCD0E6',
+      border: '#CCBCDB',
+      text: '#291D33'
+    }
+  },
+  total_disability_share: {
+    titlePl: 'Odsetek osób z niepełnosprawnościami ogółem',
+    titleEn: 'Total disability share in population',
+    unitPl: '%',
+    category: 'Niepełnosprawność',
+    descriptionPl:
+      'Odsetek mieszkańców posiadających orzeczenie o niepełnosprawności w ogólnej populacji powiatu (NSP). Kluczowy wskaźnik potrzeb w zakresie likwidacji barier architektonicznych.',
+    iconName: 'activity',
+    theme: {
+      accent: '#698B99',
+      chartColor: '#698B99',
+      chartSecondary: '#CEE0E6',
+      badgeBg: 'bg-[#CEE0E6] text-[#1A282E] border-[#B9D2DB]',
+      badgeText: 'text-[#1A282E]',
+      cardBorder: 'border-[#B9D2DB] hover:border-[#698B99]',
+      gradient: 'from-[#698B99] to-[#4D6F7C]',
+      colorScale: ['#EAF3F6', '#87A6B4', '#3E5D6B'],
+      pastelBg: '#CEE0E6',
+      border: '#B9D2DB',
+      text: '#1A282E'
+    }
   }
 };
 
@@ -701,13 +771,14 @@ export function getAllResearches(): ResearchInfo[] {
 
   return keys.map((key) => {
     const raw = dynamicRawData[key];
+    const categoryName = raw.category || 'Badanie Społeczne';
     const cfg = RESEARCH_CONFIGS[key] || {
       titlePl: raw.name,
       titleEn: raw.name,
-      category: 'Badanie Społeczne',
+      category: categoryName,
       descriptionPl: raw.description,
       iconName: 'activity' as const,
-      theme: getResearchThemeForCategory(raw.name)
+      theme: getResearchThemeForCategory(categoryName || raw.name)
     };
 
     const years = raw.years;
@@ -931,3 +1002,17 @@ export function interpolateColor(
 
   return `rgb(${r}, ${g}, ${b})`;
 }
+
+// Formatowanie wartości wskaźników do czytelnej postaci (np. z separatorem tysięcy)
+export function formatResearchValue(val: number | null | undefined): string {
+  if (val === null || val === undefined || isNaN(val)) return '—';
+  const abs = Math.abs(val);
+  if (abs >= 1000) {
+    return Number(val.toFixed(1)).toLocaleString('pl-PL', { maximumFractionDigits: 1 });
+  }
+  if (abs >= 10) {
+    return Number(val.toFixed(1)).toLocaleString('pl-PL', { maximumFractionDigits: 1 });
+  }
+  return Number(val.toFixed(2)).toLocaleString('pl-PL', { maximumFractionDigits: 2 });
+}
+

@@ -117,16 +117,27 @@ function MiddlemanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const innovationFromUrl = searchParams.get("innovation");
-  const { currentUser } = useApp();
+  const {
+    currentUser,
+    innovations,
+    middlemanStep: step,
+    setMiddlemanStep: setStep,
+    selectedInnovation: innovation,
+    setSelectedInnovation: setInnovation,
+    institutionProfile: profile,
+    setInstitutionProfile: setProfile,
+    serviceCardResult: result,
+    setServiceCardResult: setResult,
+    middlemanRefineText: refineText,
+    setMiddlemanRefineText: setRefineText,
+    resetMiddleman,
+  } = useApp();
 
-  const [step, setStep] = useState<Step>("pick");
-  const [innovation, setInnovation] = useState<InnovationRecord | null>(null);
-  const [profile, setProfile] = useState<InstitutionProfile>(EMPTY_PROFILE);
-  const [result, setResult] = useState<ServiceCardResponse | null>(null);
-  const [isLoadingInnovation, setIsLoadingInnovation] = useState(!!innovationFromUrl);
+  const [isLoadingInnovation, setIsLoadingInnovation] = useState(
+    Boolean(innovationFromUrl && (!innovation || innovation.id !== innovationFromUrl))
+  );
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refineText, setRefineText] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isConsulting, setIsConsulting] = useState(false);
@@ -134,11 +145,26 @@ function MiddlemanContent() {
 
   useEffect(() => {
     if (!innovationFromUrl) return;
+    if (innovation?.id === innovationFromUrl) return;
+
+    // Najpierw sprawdź, czy innowacja jest już w globalnym stanie
+    const found = innovations.find((inn) => inn.id === innovationFromUrl);
+    if (found) {
+      setInnovation(found);
+      setResult(null);
+      setError(null);
+      setStep("profile");
+      return;
+    }
+
     let cancelled = false;
+    setIsLoadingInnovation(true);
     fetchInnovationById(innovationFromUrl)
       .then((inn) => {
         if (cancelled) return;
         setInnovation(inn);
+        setResult(null);
+        setError(null);
         setStep("profile");
       })
       .catch((err) => {
@@ -150,7 +176,7 @@ function MiddlemanContent() {
     return () => {
       cancelled = true;
     };
-  }, [innovationFromUrl]);
+  }, [innovationFromUrl, innovation?.id, innovations, setInnovation, setResult, setStep]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -238,12 +264,9 @@ function MiddlemanContent() {
   };
 
   const handleStartOver = () => {
-    setResult(null);
-    setInnovation(null);
-    setProfile(EMPTY_PROFILE);
+    resetMiddleman();
     setError(null);
     setConsultMessage(null);
-    setStep("pick");
     if (innovationFromUrl) router.replace("/middleman");
   };
 
@@ -294,7 +317,8 @@ function MiddlemanContent() {
           <SelectedInnovation innovation={innovation} onChange={handleBackToPick} />
           <div className="bg-white rounded-[28px] border border-black/5 p-5 sm:p-8 shadow-2xs">
             <InstitutionForm
-              initialProfile={profile}
+              profile={profile}
+              onChange={setProfile}
               isLoading={isGenerating}
               onBack={handleBackToPick}
               onSubmit={handleGenerate}
@@ -370,7 +394,7 @@ function MiddlemanContent() {
                   type="button"
                   disabled={isRefining}
                   onClick={() => handleRefine(ex)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 cursor-pointer disabled:opacity-50"
+                  className="min-h-[34px] px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 hover:text-stone-900 cursor-pointer disabled:opacity-50"
                 >
                   {ex}
                 </button>

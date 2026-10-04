@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useResearches } from "../lib/researchData";
-import { ResearchAIChat } from "../components/knowledge/ResearchAIChat";
+import { KnowledgeRagSection } from "../components/knowledge/KnowledgeRagSection";
 import {
   Users,
   Briefcase,
@@ -11,37 +11,50 @@ import {
   Heart,
   Activity,
   ArrowRight,
-  BookOpen,
+  Search,
+  X,
+  Filter,
   Sparkles,
 } from "lucide-react";
 
-export default function KnowledgePage() {
+const CATEGORIES = [
+  "Wszystkie",
+  "Niepełnosprawność",
+  "Pomoc Społeczna",
+  "Rynek Pracy",
+  "Zdrowie",
+  "Piecza Zastępcza",
+  "Demografia",
+  "Finanse",
+  "Edukacja",
+  "Kultura",
+];
+
+function KnowledgeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+
   const { researches, isLoading } = useResearches();
+  const [selectedCategory, setSelectedCategory] = useState("Wszystkie");
+  const [catalogSearch, setCatalogSearch] = useState("");
 
-  // Tryb skupienia na czacie (pamiętanie wyboru usera w localStorage)
-  const [isChatOpen, setIsChatOpen] = useState(true);
-
-  useEffect(() => {
-    try {
-      const savedTab = localStorage.getItem("minno_knowledge_active_tab");
-      if (savedTab === "catalog") {
-        setIsChatOpen(false);
-      } else if (savedTab === "chat") {
-        setIsChatOpen(true);
+  const filteredResearches = useMemo(() => {
+    return researches.filter((r) => {
+      // Filtr kategorii
+      if (selectedCategory !== "Wszystkie" && r.category !== selectedCategory) {
+        return false;
       }
-    } catch {}
-  }, []);
-
-  const handleTabChange = (openChat: boolean) => {
-    setIsChatOpen(openChat);
-    try {
-      localStorage.setItem(
-        "minno_knowledge_active_tab",
-        openChat ? "chat" : "catalog"
+      // Filtr wyszukiwania tekstowego w katalogu
+      if (!catalogSearch.trim()) return true;
+      const q = catalogSearch.toLowerCase();
+      return (
+        r.titlePl.toLowerCase().includes(q) ||
+        r.descriptionPl.toLowerCase().includes(q) ||
+        r.category.toLowerCase().includes(q)
       );
-    } catch {}
-  };
+    });
+  }, [researches, selectedCategory, catalogSearch]);
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -60,86 +73,114 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-200">
-      {/* Górny przełącznik trybów (Separacja raportów od czatu) */}
+    <div className="py-6 px-4 sm:px-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-200">
+      {/* NAGŁÓWEK STRONY */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
         <div>
           <div className="text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95] select-none">
-            <span className="block text-stone-900">
-              {isChatOpen ? "Doradca Projektów" : "Katalog Badań"}
-            </span>
-            <span className="block text-stone-300">
-              {isChatOpen ? "AI" : "Społecznych"}
-            </span>
+            <span className="block text-stone-900">Katalog Badań</span>
+            <span className="block text-stone-600">i Raportów Społecznych</span>
           </div>
-          <p className="mt-2.5 text-stone-500 text-xs sm:text-sm font-medium max-w-xl">
-            {isChatOpen
-              ? "Tryb skupienia: opisz swój pomysł, a doradca AI wskaże badania ROPS i powiaty o największym zapotrzebowaniu."
-              : "Diagnozy ROPS Kraków – interaktywne kartogramy i szeregi czasowe 2014–2024 dla 22 powiatów."}
+          <p className="mt-2.5 text-stone-600 text-xs sm:text-sm font-medium max-w-2xl leading-relaxed">
+            Oficjalne dane i wskaźniki ROPS Kraków – inteligentny RAG analityczny, interaktywne kartogramy oraz szeregi czasowe 2014–2024 dla 22 powiatów Małopolski.
           </p>
-        </div>
-
-        {/* Zakładki wyboru: Czat AI vs Tradycyjny Katalog */}
-        <div className="flex bg-stone-100 p-1 rounded-2xl border border-stone-200/80 shadow-2xs self-start sm:self-auto shrink-0">
-          <button
-            type="button"
-            onClick={() => handleTabChange(true)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              isChatOpen
-                ? "bg-stone-900 text-white shadow-2xs"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/40"
-            }`}
-          >
-            <Sparkles
-              className={`w-3.5 h-3.5 ${isChatOpen ? "text-amber-400" : "text-stone-400"}`}
-            />
-            <span>Doradca AI</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleTabChange(false)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              !isChatOpen
-                ? "bg-stone-900 text-white shadow-2xs"
-                : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/40"
-            }`}
-          >
-            <BookOpen
-              className={`w-3.5 h-3.5 ${!isChatOpen ? "text-stone-200" : "text-stone-500"}`}
-            />
-            <span>Katalog Badań</span>
-            <span
-              className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${
-                !isChatOpen
-                  ? "bg-white/20 text-white"
-                  : "bg-black/5 text-stone-500"
-              }`}
-            >
-              {researches.length}
-            </span>
-          </button>
         </div>
       </div>
 
-      {/* WIDOK 1: Użytkownik jest w 100% skupiony tylko na czacie */}
-      {isChatOpen ? (
-        <section className="animate-in fade-in duration-200">
-          <ResearchAIChat onClose={() => handleTabChange(false)} />
-        </section>
-      ) : (
-        /* WIDOK 2: Tradycyjny katalog raportów i kartogramów */
-        <div className="space-y-6 animate-in fade-in duration-200">
-          {/* Siatka kart diagnoz regionalnych (3 w rzędzie na desktopie) */}
+      {/* FLAGOWA SEKCJA: INTELIGENTNY RAG RAPORTÓW I WSKAŹNIKÓW */}
+      <KnowledgeRagSection initialQuery={initialQuery} />
+
+      {/* KATALOG WSZYSTKICH BADAŃ I KARTOGRAMÓW ROPS */}
+      <div className="space-y-6 pt-4 border-t border-stone-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
+              Katalog Diagnoz i Kartogramów
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-600 font-medium mt-0.5">
+              Przeglądaj wszystkie {researches.length} diagnoz z podziałem na dziedziny polityki społecznej.
+            </p>
+          </div>
+
+          {/* Szybki filtr tekstowy kart katalogu */}
+          <div className="relative w-full sm:w-72">
+            <label htmlFor="catalog-search-input" className="sr-only">
+              Filtruj karty katalogu
+            </label>
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" aria-hidden="true" />
+            <input
+              id="catalog-search-input"
+              type="text"
+              value={catalogSearch}
+              onChange={(e) => setCatalogSearch(e.target.value)}
+              placeholder="Filtruj karty katalogu..."
+              className="w-full pl-9 pr-8 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-stone-900 focus:bg-white transition-colors"
+            />
+            {catalogSearch && (
+              <button
+                type="button"
+                onClick={() => setCatalogSearch("")}
+                aria-label="Wyczyść filtr katalogu"
+                className="min-h-[28px] min-w-[28px] flex items-center justify-center absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-900 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* PILLS KATEGORII */}
+        <div
+          role="tablist"
+          aria-label="Dziedziny polityki społecznej"
+          className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none"
+        >
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              role="tab"
+              aria-selected={selectedCategory === cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`min-h-[34px] px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                selectedCategory === cat
+                  ? "bg-stone-900 text-white shadow-2xs font-bold"
+                  : "bg-stone-100 text-stone-700 hover:text-stone-900 hover:bg-stone-200"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* SIATKA KART DIAGNOZ REGIONALNYCH */}
+        {filteredResearches.length === 0 ? (
+          <p className="text-sm text-stone-600 py-12 text-center bg-stone-50 rounded-2xl border border-stone-100">
+            {catalogSearch ? (
+              <>Nie znaleziono badań odpowiadających frazie &bdquo;{catalogSearch}&rdquo;.</>
+            ) : (
+              <>Nie znaleziono badań odpowiadających wybranym kryteriom.</>
+            )}
+          </p>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {researches.map((research) => {
+            {filteredResearches.map((research) => {
               const isPositive = research.summary.deltaAvg >= 0;
 
               return (
                 <div
                   key={research.id}
+                  role="article"
+                  tabIndex={0}
+                  aria-label={`Raport z badań społecznych: ${research.titlePl}`}
                   onClick={() => router.push(`/knowledge/${research.id}`)}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-black/4 select-none min-h-70"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      router.push(`/knowledge/${research.id}`);
+                    }
+                  }}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-black/4 select-none min-h-70 focus-visible:ring-2 focus-visible:ring-stone-900"
                   style={{
                     background: `linear-gradient(145deg, ${research.theme.pastelBg} 0%, ${research.theme.colorScale[0]} 100%)`,
                   }}
@@ -228,8 +269,23 @@ export default function KnowledgePage() {
               );
             })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
+
+export default function KnowledgePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-16 text-center text-xs text-stone-400">
+          Ładowanie bazy wiedzy i raportów...
+        </div>
+      }
+    >
+      <KnowledgeContent />
+    </Suspense>
+  );
+}
+

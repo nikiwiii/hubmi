@@ -15,6 +15,11 @@ interface CustomSelectProps<T extends string = string> {
   options: SelectOption<T>[];
   labelPrefix?: string;
   className?: string;
+  fullWidth?: boolean;
+  size?: "sm" | "md";
+  placeholder?: string;
+  error?: boolean;
+  id?: string;
 }
 
 export function CustomSelect<T extends string = string>({
@@ -23,11 +28,17 @@ export function CustomSelect<T extends string = string>({
   options,
   labelPrefix,
   className = "",
+  fullWidth = false,
+  size = "sm",
+  placeholder,
+  error = false,
+  id,
 }: CustomSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+  const selectedOption = options.find((opt) => opt.value === value);
+  const isMd = size === "md";
 
   // Close on outside click
   useEffect(() => {
@@ -48,7 +59,7 @@ export function CustomSelect<T extends string = string>({
     };
   }, [isOpen]);
 
-  // Close on Escape key
+  // Close on Escape key and navigate with ArrowUp/ArrowDown
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -64,28 +75,75 @@ export function CustomSelect<T extends string = string>({
     };
   }, [isOpen]);
 
+  const handleListKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const currentIndex = options.findIndex((o) => o.value === value);
+      const nextIndex = (currentIndex + 1) % options.length;
+      onChange(options[nextIndex].value);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const currentIndex = options.findIndex((o) => o.value === value);
+      const prevIndex = (currentIndex - 1 + options.length) % options.length;
+      onChange(options[prevIndex].value);
+    }
+  };
+
+  const hasSelection = Boolean(selectedOption && selectedOption.value !== "");
+  const displayText = hasSelection
+    ? selectedOption!.label
+    : placeholder || options[0]?.label || "";
+
   return (
-    <div ref={containerRef} className={`relative inline-block ${className}`}>
+    <div
+      ref={containerRef}
+      onKeyDown={handleListKeyDown}
+      className={`relative ${fullWidth ? "w-full block" : "inline-block"} ${className}`}
+    >
       {/* Trigger Button */}
       <button
+        id={id}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className="px-3 py-1.5 bg-white hover:bg-stone-50/80 active:bg-stone-100 border border-stone-200/80 hover:border-stone-300 rounded-xl text-xs font-medium text-stone-700 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none"
+        aria-label={labelPrefix ? `${labelPrefix} ${displayText}` : displayText}
+        className={`${
+          isMd
+            ? `w-full min-h-[44px] px-4 py-3 bg-white hover:bg-stone-50 border rounded-xl text-base flex items-center justify-between transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900 ${
+                error
+                  ? "border-red-500 focus:border-red-600"
+                  : isOpen
+                  ? "border-stone-900 ring-2 ring-stone-900/20"
+                  : "border-stone-300 hover:border-stone-400"
+              }`
+            : "min-h-[32px] px-3 py-1.5 bg-white hover:bg-stone-50 active:bg-stone-100 border border-stone-300 hover:border-stone-400 rounded-xl text-xs font-semibold text-stone-900 shadow-2xs flex items-center gap-2 transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-stone-900"
+        }`}
       >
-        {labelPrefix && (
-          <span className="text-stone-400 font-normal">{labelPrefix}</span>
-        )}
-        {selectedOption?.icon && (
-          <span className="text-stone-500 shrink-0">{selectedOption.icon}</span>
-        )}
-        <span className="font-semibold text-stone-800">
-          {selectedOption?.label}
-        </span>
+        <div className="flex items-center gap-2 overflow-hidden text-left">
+          {labelPrefix && (
+            <span className="text-stone-600 font-medium shrink-0">{labelPrefix}</span>
+          )}
+          {selectedOption?.icon && (
+            <span className="text-stone-700 shrink-0" aria-hidden="true">{selectedOption.icon}</span>
+          )}
+          <span
+            className={`truncate ${
+              !hasSelection && placeholder
+                ? "text-stone-600 font-medium"
+                : isMd
+                ? "font-medium text-stone-950"
+                : "font-semibold text-stone-900"
+            }`}
+          >
+            {displayText}
+          </span>
+        </div>
+
         <ChevronDown
-          className={`w-3.5 h-3.5 text-stone-400 transition-transform duration-200 ease-out ${
-            isOpen ? "rotate-180 text-stone-700" : ""
+          aria-hidden="true"
+          className={`${isMd ? "w-4 h-4 ml-2" : "w-3.5 h-3.5"} text-stone-600 shrink-0 transition-transform duration-200 ease-out ${
+            isOpen ? "rotate-180 text-stone-900" : ""
           }`}
         />
       </button>
@@ -94,7 +152,11 @@ export function CustomSelect<T extends string = string>({
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 top-full mt-1.5 min-w-[180px] bg-white border border-stone-200/80 rounded-2xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 origin-top-right divide-y divide-stone-100/60"
+          tabIndex={-1}
+          aria-label={labelPrefix || "Wybierz opcję"}
+          className={`absolute ${
+            fullWidth ? "left-0 right-0 w-full" : "right-0 min-w-[190px]"
+          } top-full mt-1.5 max-h-64 overflow-y-auto bg-white border border-stone-300 rounded-2xl shadow-xl p-1.5 z-40 animate-in fade-in zoom-in-95 duration-150 origin-top divide-y divide-stone-100/60`}
         >
           <div className="space-y-0.5">
             {options.map((option) => {
@@ -109,13 +171,15 @@ export function CustomSelect<T extends string = string>({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-3 py-2 rounded-xl text-xs flex items-center justify-between text-left transition-colors cursor-pointer select-none ${
+                  className={`w-full ${
+                    isMd ? "px-3.5 py-2.5 text-sm" : "px-3 py-2 text-xs"
+                  } rounded-xl flex items-center justify-between text-left transition-colors cursor-pointer select-none ${
                     isSelected
                       ? "bg-stone-100 text-stone-900 font-semibold"
                       : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 overflow-hidden">
                     {option.icon && (
                       <span
                         className={`shrink-0 ${
@@ -125,11 +189,15 @@ export function CustomSelect<T extends string = string>({
                         {option.icon}
                       </span>
                     )}
-                    <span>{option.label}</span>
+                    <span className="truncate">{option.label}</span>
                   </div>
 
                   {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-stone-900 shrink-0 ml-2" />
+                    <Check
+                      className={`${
+                        isMd ? "w-4 h-4" : "w-3.5 h-3.5"
+                      } text-stone-900 shrink-0 ml-2`}
+                    />
                   )}
                 </button>
               );

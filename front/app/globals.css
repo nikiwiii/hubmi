@@ -40,18 +40,224 @@ body {
   background: rgba(0, 0, 0, 0.22);
 }
 
-/* 40+ Accessibility Font scaling */
-.font-scale-large {
-  font-size: 1.125rem;
+/* =========================================================================
+   WCAG 2.2 AA ACCESSIBILITY ENHANCEMENTS
+   ========================================================================= */
+
+/* Focus Visible: Clear high-contrast focus indicator for keyboard navigation */
+:focus-visible {
+  outline: 2.5px solid #1c1917 !important;
+  outline-offset: 2.5px !important;
+  border-radius: 4px;
 }
-.font-scale-large h1 {
-  font-size: 112% !important;
+
+/* WCAG 2.2 - Skip link do przeskakiwania nawigacji dla czytników ekranu i klawiatury */
+.skip-to-content {
+  position: absolute;
+  top: -120px;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1.25rem;
+  background-color: #1C1917;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+  transition: top 0.2s ease-in-out;
 }
-.font-scale-large h2 {
-  font-size: 112% !important;
+.skip-to-content:focus {
+  top: 1rem;
 }
-.font-scale-large p, .font-scale-large span, .font-scale-large button, .font-scale-large input {
-  font-size: 108% !important;
+
+/* WCAG 2.2 Criterion 2.5.8 - Minimalny rozmiar celu dotykowego / kliknięcia (Target Size: min 24x24px) */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
+[role="tab"],
+[role="checkbox"],
+[role="radio"],
+[role="switch"] {
+  min-height: 24px;
+  min-width: 24px;
+}
+
+/* Wygodny rozmiar kliknięcia dla urządzeń dotykowych (Smartfony / Tablety) */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  [role="tab"],
+  [role="checkbox"] {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* Accessible placeholders: minimum 4.5:1 contrast against light backgrounds */
+input::placeholder,
+textarea::placeholder,
+::placeholder {
+  color: #57534e !important;
+  opacity: 1;
+}
+
+/* Kontrast tekstu na jasnym tle */
+body:not(.dark) .text-stone-400:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #57534E;
+}
+body:not(.dark) .text-stone-500:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #44403C;
+}
+body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
+  color: #57534E;
+}
+
+/* Zachowanie wysokiego kontrastu w ciemnych kontenerach */
+.bg-stone-900 .text-stone-400,
+.bg-stone-950 .text-stone-400,
+.bg-black .text-stone-400,
+[class*="from-stone-900"] .text-stone-400,
+[role="dialog"] .text-stone-400 {
+  color: #D6D3CD;
+}
+.bg-stone-900 .text-stone-300,
+.bg-stone-950 .text-stone-300,
+.bg-black .text-stone-300,
+[class*="from-stone-900"] .text-stone-300,
+[role="dialog"] .text-stone-300 {
+  color: #E7E5E0;
+}
+
+/* Utility dla czytników ekranu */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* WCAG 1.4.4 Font Scaling (up to 200% scalable) */
+.font-scale-large,
+.font-scale-150 {
+  font-size: 1.25rem;
+}
+.font-scale-large h1,
+.font-scale-150 h1 {
+  font-size: 130% !important;
+}
+.font-scale-large h2,
+.font-scale-150 h2 {
+  font-size: 125% !important;
+}
+.font-scale-large p,
+.font-scale-large span,
+.font-scale-large button,
+.font-scale-large input,
+.font-scale-large textarea,
+.font-scale-150 p,
+.font-scale-150 span,
+.font-scale-150 button,
+.font-scale-150 input,
+.font-scale-150 textarea {
+  font-size: 115% !important;
+}
+
+.font-scale-huge,
+.font-scale-200 {
+  font-size: 1.5rem;
+}
+.font-scale-huge h1,
+.font-scale-200 h1 {
+  font-size: 160% !important;
+}
+.font-scale-huge h2,
+.font-scale-200 h2 {
+  font-size: 150% !important;
+}
+.font-scale-huge p,
+.font-scale-huge span,
+.font-scale-huge button,
+.font-scale-huge input,
+.font-scale-huge textarea,
+.font-scale-200 p,
+.font-scale-200 span,
+.font-scale-200 button,
+.font-scale-200 input,
+.font-scale-200 textarea {
+  font-size: 135% !important;
+}
+
+/* High Contrast Mode (WCAG AAA contrast) */
+.high-contrast {
+  --background: #000000 !important;
+  --foreground: #ffffff !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast :focus-visible {
+  outline: 3px solid #facc15 !important;
+  outline-offset: 3px !important;
+}
+
+.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast header,
+.high-contrast nav,
+.high-contrast aside,
+.high-contrast section,
+.high-contrast article,
+.high-contrast div.bg-white,
+.high-contrast div.bg-\[\#FAF9F5\],
+.high-contrast div.bg-\[\#F7F6F1\] {
+  background-color: #121212 !important;
+  border-color: #facc15 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast text,
+.high-contrast span,
+.high-contrast p,
+.high-contrast label,
+.high-contrast h1,
+.high-contrast h2,
+.high-contrast h3,
+.high-contrast h4 {
+  color: #ffffff !important;
+}
+
+.high-contrast .text-stone-400,
+.high-contrast .text-stone-500,
+.high-contrast .text-stone-600 {
+  color: #fef08a !important;
+}
+
+.high-contrast button {
+  border-color: #facc15 !important;
+}
+
+.high-contrast button:not(.bg-stone-900) {
+  background-color: #1c1917 !important;
+  color: #fef08a !important;
+}
+
+.high-contrast input,
+.high-contrast textarea,
+.high-contrast select {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #facc15 !important;
 }
 
 /* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */

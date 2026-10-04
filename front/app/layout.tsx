@@ -20,7 +20,7 @@ const ubuntu = Ubuntu({
 });
 
 export const metadata: Metadata = {
-  title: "minno – Małopolskie Innowacje",
+  title: "MiNNO – Małopolskie Innowacje",
   description:
     "Minimalistyczna, profesjonalna przestrzeń do zgłaszania, opiniowania i testowania pomysłów.",
   icons: {

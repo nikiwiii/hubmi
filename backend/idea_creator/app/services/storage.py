@@ -35,9 +35,15 @@ class SupabaseImageStorage:
         try:
             bucket.upload(path, data, {"content-type": content_type, "cache-control": "31536000", "upsert": "false"})
             return bucket.get_public_url(path)
-        except Exception as e:
-            logger.error("Supabase Storage upload to %s failed: %s: %s", self._bucket, type(e).__name__, str(e)[:300])
-            raise StorageError("upload failed") from e
+        except Exception:
+            try:
+                self._client.storage.create_bucket(self._bucket, options={"public": True})
+                bucket = self._client.storage.from_(self._bucket)
+                bucket.upload(path, data, {"content-type": content_type, "cache-control": "31536000", "upsert": "false"})
+                return bucket.get_public_url(path)
+            except Exception as e:
+                logger.error("Supabase Storage upload to %s failed: %s: %s", self._bucket, type(e).__name__, str(e)[:300])
+                raise StorageError("upload failed") from e
 
 
 class TemplateStorage(Protocol):

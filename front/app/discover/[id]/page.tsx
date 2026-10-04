@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Idea, getCategoryThemeAndShape } from "../../lib/types";
 import { GeometricIllustration } from "../../components/shared/GeometricIllustration";
 import { getThemeStyles } from "../../components/shared/IdeaCard";
+import { InnovationTestPanel } from "../../components/testing/InnovationTestPanel";
 import { useApp } from "../../context/AppContext";
+import { startExpertConversation } from "../../lib/api";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -16,6 +18,12 @@ import {
   Check,
   ArrowLeft,
   RefreshCw,
+  Maximize2,
+  X,
+  ExternalLink,
+  Sparkles,
+  Eye,
+  Clock,
 } from "lucide-react";
 
 export default function DiscoverIdeaDetailPage() {
@@ -31,6 +39,27 @@ export default function DiscoverIdeaDetailPage() {
     openChatWithAuthor,
     isLoadingIdeas,
   } = useApp();
+
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isOpeningChat, setIsOpeningChat] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsImageModalOpen(false);
+      }
+    };
+    if (isImageModalOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isImageModalOpen]);
 
   if (isLoadingIdeas) {
     return (
@@ -88,30 +117,33 @@ export default function DiscoverIdeaDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => router.push("/discover")}
-            className="p-2 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 transition-colors cursor-pointer inline-flex items-center gap-1.5 text-xs font-medium"
-            title="Powrót do listy"
+            className="min-h-[38px] px-3 py-2 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold"
+            aria-label="Wróć do listy pomysłów"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Wróć</span>
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Wróć do listy</span>
           </button>
         </div>
 
         {/* Carousel Prev/Next */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={handlePrev}
-            aria-label="Poprzedni"
-            className="p-2.5 rounded-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer"
+            aria-label="Poprzedni pomysł"
+            className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 rounded-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-800 transition-colors cursor-pointer"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={handleNext}
-            aria-label="Następny"
-            className="p-2.5 rounded-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 transition-colors cursor-pointer"
+            aria-label="Następny pomysł"
+            className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 rounded-full bg-white border border-stone-200 hover:bg-stone-50 text-stone-800 transition-colors cursor-pointer"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -129,6 +161,13 @@ export default function DiscoverIdeaDetailPage() {
               {currentIdea.category}
             </span>
 
+            {currentIdea.status === "pending" && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-900 border border-amber-300 text-xs font-bold">
+                <Clock className="w-3.5 h-3.5 text-amber-700 animate-spin" />
+                <span>Oczekuje na akceptację moderatora ROPS Kraków</span>
+              </div>
+            )}
+
             <h1
               className={`text-3xl sm:text-4xl font-bold tracking-tight leading-tight ${styles.text}`}
             >
@@ -145,13 +184,28 @@ export default function DiscoverIdeaDetailPage() {
           </div>
 
           {currentIdea.visualMockupUrl ? (
-            <div className="shrink-0 w-full md:w-80 overflow-hidden rounded-2xl border border-white/50 bg-white/40">
-              {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
-              <img
-                src={currentIdea.visualMockupUrl}
-                alt={`Wizualizacja: ${currentIdea.title}`}
-                className="w-full aspect-[4/3] object-cover"
-              />
+            <div className="space-y-2 shrink-0 w-full md:w-96">
+              <button
+                type="button"
+                onClick={() => setIsImageModalOpen(true)}
+                aria-label={`Powiększ wizualizację prototypu: ${currentIdea.title}`}
+                className="w-full text-left group relative cursor-pointer overflow-hidden rounded-2xl border border-white/60 bg-white/40 shadow-xs transition-all duration-300 hover:shadow-md hover:scale-[1.01] block"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
+                <img
+                  src={currentIdea.visualMockupUrl}
+                  alt={`Wizualizacja prototypu innowacji: ${currentIdea.title}`}
+                  className="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+
+                {/* Hover overlay with button */}
+                <div className="absolute inset-0 bg-stone-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/95 text-stone-900 text-xs font-semibold shadow-md">
+                    <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Powiększ zdjęcie</span>
+                  </span>
+                </div>
+              </button>
             </div>
           ) : (
             <div className="shrink-0 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xs rounded-2xl border border-white/50">
@@ -165,30 +219,32 @@ export default function DiscoverIdeaDetailPage() {
           {/* Like / Dislike */}
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => vote(currentIdea.id, "like")}
-              title="Polub"
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                currentIdea.userVote === "like"
-                  ? "bg-stone-900 text-white"
-                  : "bg-stone-100 hover:bg-stone-200 text-stone-800"
-              }`}
+              aria-label={`Polub pomysł (${currentIdea.likes} polubień)`}
+              className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "like"
+                ? "bg-stone-900 text-white"
+                : "bg-stone-100 hover:bg-stone-200 text-stone-800"
+                }`}
             >
               <ThumbsUp
+                aria-hidden="true"
                 className={`w-4 h-4 ${currentIdea.userVote === "like" ? "fill-white" : ""}`}
               />
               <span>{currentIdea.likes}</span>
             </button>
 
             <button
+              type="button"
               onClick={() => vote(currentIdea.id, "dislike")}
-              title="Nie podoba mi się"
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                currentIdea.userVote === "dislike"
-                  ? "bg-stone-800 text-white"
-                  : "bg-stone-100 hover:bg-stone-200 text-stone-600"
-              }`}
+              aria-label={`Nie podoba mi się (${currentIdea.dislikes} ocen)`}
+              className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${currentIdea.userVote === "dislike"
+                ? "bg-stone-800 text-white"
+                : "bg-stone-100 hover:bg-stone-200 text-stone-700"
+                }`}
             >
               <ThumbsDown
+                aria-hidden="true"
                 className={`w-4 h-4 ${currentIdea.userVote === "dislike" ? "fill-white" : ""}`}
               />
               <span>{currentIdea.dislikes}</span>
@@ -198,20 +254,51 @@ export default function DiscoverIdeaDetailPage() {
           {/* Right Action buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => openChatWithAuthor(currentIdea.authorId)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-sm font-semibold transition-colors cursor-pointer"
+              onClick={async () => {
+                if (!currentUser) {
+                  router.push(
+                    `/auth?redirect=${encodeURIComponent(`/discover/${currentIdea.id}`)}`,
+                  );
+                  return;
+                }
+                setIsOpeningChat(true);
+                try {
+                  const conv = await startExpertConversation({
+                    idea_id: currentIdea.id,
+                    idea_title: currentIdea.title,
+                    topic: `Konsultacja pomysłu: ${currentIdea.title}`,
+                    initial_message: `Dzień dobry, chciałbym skonsultować pomysł „${currentIdea.title}” w obszarze: ${currentIdea.category}.`,
+                  });
+                  router.push(`/chat?recipient=${encodeURIComponent(conv.id)}`);
+                } catch (err) {
+                  console.warn("Błąd startExpertConversation:", err);
+                  router.push(
+                    `/chat?topic=${encodeURIComponent(`Konsultacja: ${currentIdea.title}`)}`,
+                  );
+                } finally {
+                  setIsOpeningChat(false);
+                }
+              }}
+              disabled={isOpeningChat}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60"
             >
-              <MessageSquare className="w-4 h-4 text-stone-500" />
+              {isOpeningChat ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-stone-500" />
+              ) : (
+                <MessageSquare className="w-4 h-4 text-stone-500" />
+              )}
               <span>Zapytaj eksperta</span>
             </button>
 
             <button
-              onClick={() => toggleTesting(currentIdea.id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                isTester
-                  ? "bg-emerald-700 text-white"
-                  : "bg-stone-900 hover:bg-stone-800 text-white"
-              }`}
+              onClick={() => {
+                const el = document.getElementById("test-panel");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${isTester
+                ? "bg-emerald-700 text-white"
+                : "bg-stone-900 hover:bg-stone-800 text-white"
+                }`}
             >
               {isTester ? (
                 <>
@@ -231,20 +318,20 @@ export default function DiscoverIdeaDetailPage() {
         {/* Details & Description - Always visible */}
         <div className="p-6 sm:p-8 space-y-6">
           <div className="space-y-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-stone-400">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-stone-600">
               Opis pomysłu
             </h2>
-            <p className="text-stone-700 text-base leading-relaxed whitespace-pre-line">
+            <p className="text-stone-800 text-base leading-relaxed whitespace-pre-line">
               {currentIdea.description}
             </p>
           </div>
 
           {currentIdea.targetAudience && (
             <div className="pt-4 border-t border-stone-100">
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-600 mb-1">
                 Dla kogo
               </p>
-              <p className="text-sm font-medium text-stone-800">
+              <p className="text-sm font-semibold text-stone-900">
                 {currentIdea.targetAudience}
               </p>
             </div>
@@ -252,7 +339,7 @@ export default function DiscoverIdeaDetailPage() {
 
           {currentIdea.keyBenefits && currentIdea.keyBenefits.length > 0 && (
             <div className="pt-4 border-t border-stone-100">
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
                 Kluczowe korzyści
               </p>
               <div className="flex flex-wrap gap-2">
@@ -261,14 +348,103 @@ export default function DiscoverIdeaDetailPage() {
                     key={idx}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200/80 text-xs font-medium text-stone-700"
                   >
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" />
                     {benefit}
                   </span>
                 ))}
               </div>
             </div>
           )}
+
         </div>
+      </div>
+
+      {/* Lightbox / Pełny podgląd zdjęcia */}
+      {isImageModalOpen && currentIdea.visualMockupUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsImageModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-stone-950/85 backdrop-blur-md animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-4xl w-full max-h-[90vh] bg-stone-900 rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-stone-900/90 backdrop-blur-md">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white leading-tight">
+                    {currentIdea.title}
+                  </h3>
+                  <p className="text-[11px] text-stone-400">
+                    Wizualizacja AI • {currentIdea.category}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={currentIdea.visualMockupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-stone-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors text-xs inline-flex items-center gap-1.5 font-medium"
+                  title="Otwórz oryginalny plik w nowej karcie"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span className="hidden sm:inline">Nowe okno</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setIsImageModalOpen(false)}
+                  aria-label="Zamknij podgląd zdjęcia"
+                  className="min-h-[36px] min-w-[36px] flex items-center justify-center p-2 text-stone-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Image Body */}
+            <div className="flex-1 overflow-auto flex items-center justify-center p-2 sm:p-6 bg-stone-950/60 min-h-[300px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={currentIdea.visualMockupUrl}
+                alt={`Powiększona wizualizacja prototypu innowacji: ${currentIdea.title}`}
+                className="max-h-[72vh] w-auto max-w-full rounded-2xl object-contain shadow-lg"
+              />
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3.5 bg-stone-900 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-stone-400">
+              <span className="italic">
+                Autor pomysłu: <strong className="text-stone-200">{currentIdea.authorName}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsImageModalOpen(false)}
+                className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer self-end sm:self-auto"
+              >
+                Zamknij podgląd
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Moduł IV: Tester innowacji - Usability rating, feedback & comments */}
+      <div id="test-panel">
+        <InnovationTestPanel
+          ideaId={currentIdea.id}
+          ideaTitle={currentIdea.title}
+          currentUser={currentUser}
+          isTester={isTester}
+          onToggleTesting={toggleTesting}
+        />
       </div>
     </div>
   );

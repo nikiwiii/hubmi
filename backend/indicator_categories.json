@@ -1,0 +1,1092 @@
+[
+  {
+    "id": "ludnosc",
+    "name": "Ludność",
+    "description": "Demografia, struktura wieku, urbanizacja, dynamika populacji i przyrost naturalny.",
+    "color": "#698B99",
+    "icon": "users",
+    "sort_order": 1,
+    "pointers": [
+      {
+        "pointer_id": 186,
+        "name": "Ludność ogółem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/186"
+      },
+      {
+        "pointer_id": 55,
+        "name": "Ludność w wieku przedprodukcyjnym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/55"
+      },
+      {
+        "pointer_id": 56,
+        "name": "Ludność w wieku produkcyjnym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/56"
+      },
+      {
+        "pointer_id": 53,
+        "name": "Ludność w wieku poprodukcyjnym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/53"
+      },
+      {
+        "pointer_id": 257,
+        "name": "Ludność w wieku 60+",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/257"
+      },
+      {
+        "pointer_id": 273,
+        "name": "Wskaźnik podwójnego starzenia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/273"
+      },
+      {
+        "pointer_id": 274,
+        "name": "Wskaźnik wsparcia osób najstarszych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/274"
+      },
+      {
+        "pointer_id": 268,
+        "name": "Potencjał pielęgnacyjny",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/268"
+      },
+      {
+        "pointer_id": 48,
+        "name": "Wskaźnik obciążenia demograficznego",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/48"
+      },
+      {
+        "pointer_id": 91,
+        "name": "Przyrost naturalny na 1 000 ludności",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/91"
+      },
+      {
+        "pointer_id": 135,
+        "name": "Współczynnik dzietności",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/135"
+      },
+      {
+        "pointer_id": 3,
+        "name": "Wskaźnik feminizacji",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/3"
+      },
+      {
+        "pointer_id": 1,
+        "name": "Wskaźnik maskulinizacji",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/1"
+      },
+      {
+        "pointer_id": 7,
+        "name": "Wskaźnik gęstości zaludnienia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/7"
+      },
+      {
+        "pointer_id": 4,
+        "name": "Wskaźnik urbanizacji",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/4"
+      },
+      {
+        "pointer_id": 152,
+        "name": "Rozwody na 1000 mieszkańców",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/152"
+      },
+      {
+        "pointer_id": 127,
+        "name": "Małżeństwa na 1000 mieszkańców",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/127"
+      },
+      {
+        "pointer_id": 128,
+        "name": "Urodzenia na 1000 mieszkańców",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/128"
+      },
+      {
+        "pointer_id": 280,
+        "name": "Przeciętne dalsze trwanie życia kobiet",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/280"
+      },
+      {
+        "pointer_id": 281,
+        "name": "Przeciętne dalsze trwanie życia mężczyzn",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/281"
+      },
+      {
+        "pointer_id": 129,
+        "name": "Zgony na 1000 mieszkańców",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/129"
+      },
+      {
+        "pointer_id": 282,
+        "name": "Zgony kobiet w wieku 45-64 lata",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/282"
+      },
+      {
+        "pointer_id": 283,
+        "name": "Zgony ludności w wieku 80+",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/283"
+      },
+      {
+        "pointer_id": 284,
+        "name": "Wskaźnik/ indeks starości",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/284"
+      },
+      {
+        "pointer_id": 285,
+        "name": "Ludność w wieku 65+/ Współczynnik starości demograficznej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/285"
+      },
+      {
+        "pointer_id": 286,
+        "name": "Wskaźnik potencjalnego wsparcia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/286"
+      }
+    ]
+  },
+  {
+    "id": "gospodarstwa_domowe",
+    "name": "Gospodarstwa domowe",
+    "description": "Zagrożenie ubóstwem, wielkość gospodarstw i dochody transferowe.",
+    "color": "#B8A663",
+    "icon": "home",
+    "sort_order": 2,
+    "pointers": [
+      {
+        "pointer_id": 271,
+        "name": "Wskaźnik zagrożenia ubóstwem po uwzględnieniu w dochodach transferów społecznych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/271"
+      },
+      {
+        "pointer_id": 130,
+        "name": "Wskaźnik zagrożenia ubóstwem relatywnym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/130"
+      },
+      {
+        "pointer_id": 131,
+        "name": "Wskaźnik zagrożenia ubóstwem ustawowym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/131"
+      },
+      {
+        "pointer_id": 132,
+        "name": "Wskaźnik zagrożenia ubóstwem skrajnym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/132"
+      },
+      {
+        "pointer_id": 143,
+        "name": "Liczba osób w gospodarstwie domowym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/143"
+      },
+      {
+        "pointer_id": 140,
+        "name": "Osoby na utrzymaniu w gospodarstwie domowym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/140"
+      },
+      {
+        "pointer_id": 141,
+        "name": "Świadczeniobiorcy w gospodarstwach domowych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/141"
+      },
+      {
+        "pointer_id": 142,
+        "name": "Osoby pracujące w gospodarstwach domowych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/142"
+      },
+      {
+        "pointer_id": 145,
+        "name": "Dochód na osobę w gospodarstwie domowym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/145"
+      },
+      {
+        "pointer_id": 134,
+        "name": "Wydatki na osobę w gospodarstwie domowym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/134"
+      }
+    ]
+  },
+  {
+    "id": "rodzina",
+    "name": "Rodzina",
+    "description": "Liczba rodzin, rodziny z dziećmi na utrzymaniu, rodziny wielodzietne.",
+    "color": "#8E77A3",
+    "icon": "heart",
+    "sort_order": 3,
+    "pointers": [
+      {
+        "pointer_id": 233,
+        "name": "Liczba rodzin ogółem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/233"
+      },
+      {
+        "pointer_id": 234,
+        "name": "Rodziny z dziećmi do lat 24 na utrzymaniu",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/234"
+      },
+      {
+        "pointer_id": 235,
+        "name": "Rodziny z 1 dzieckiem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/235"
+      },
+      {
+        "pointer_id": 236,
+        "name": "Rodziny z 2 dzieci",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/236"
+      },
+      {
+        "pointer_id": 237,
+        "name": "Rodziny wielodzietne (z 3 lub więcej dzieci)",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/237"
+      },
+      {
+        "pointer_id": 238,
+        "name": "Liczba dzieci do lat 24 na utrzymaniu ogółem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/238"
+      },
+      {
+        "pointer_id": 240,
+        "name": "Dzieci do lat 24 na utrzymaniu w rodzinach wielodzietnych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/240"
+      },
+      {
+        "pointer_id": 239,
+        "name": "Przeciętna liczba dzieci do lat 24 na utrzymaniu",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/239"
+      }
+    ]
+  },
+  {
+    "id": "pomoc_spoleczna_kadra",
+    "name": "Pomoc społeczna - Kadra",
+    "description": "Pracownicy socjalni, wykształcenie i stopnie specjalizacji kadry OPS.",
+    "color": "#D97706",
+    "icon": "user-check",
+    "sort_order": 4,
+    "pointers": [
+      {
+        "pointer_id": 27,
+        "name": "Liczba mieszkańców na 1 pracownika socjalnego",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/27"
+      },
+      {
+        "pointer_id": 220,
+        "name": "Pracownicy socjalni OPS posiadający wyższe wykształcenie",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/220"
+      },
+      {
+        "pointer_id": 221,
+        "name": "Pracownicy socjalni OPS posiadający I stopień specjalizacji w zawodzie pracownik socjalny",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/221"
+      },
+      {
+        "pointer_id": 222,
+        "name": "Pracownicy socjalni OPS posiadający II stopień specjalizacji w zawodzie pracownik socjalny",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/222"
+      }
+    ]
+  },
+  {
+    "id": "pomoc_spoleczna_powody_korzystania",
+    "name": "Pomoc społeczna - Powody korzystania",
+    "description": "Ubóstwo, bezrobocie, bezdomność, długotrwała choroba, uzależnienia.",
+    "color": "#E11D48",
+    "icon": "alert-circle",
+    "sort_order": 5,
+    "pointers": [
+      {
+        "pointer_id": 40,
+        "name": "Alkoholizm",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/40"
+      },
+      {
+        "pointer_id": 34,
+        "name": "Bezdomność",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/34"
+      },
+      {
+        "pointer_id": 38,
+        "name": "Bezradność w sprawach opiekuńczo-wychowawczych i prowadzenia gosp. dom.",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/38"
+      },
+      {
+        "pointer_id": 32,
+        "name": "Bezrobocie",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/32"
+      },
+      {
+        "pointer_id": 39,
+        "name": "Długotrwała lub ciężka choroba",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/39"
+      },
+      {
+        "pointer_id": 41,
+        "name": "Narkomania",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/41"
+      },
+      {
+        "pointer_id": 37,
+        "name": "Niepełnosprawność",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/37"
+      },
+      {
+        "pointer_id": 231,
+        "name": "Potrzeba ochrony macierzyństwa",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/231"
+      },
+      {
+        "pointer_id": 36,
+        "name": "Przemoc domowa",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/36"
+      },
+      {
+        "pointer_id": 35,
+        "name": "Sieroctwo",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/35"
+      },
+      {
+        "pointer_id": 42,
+        "name": "Sytuacja kryzysowa",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/42"
+      },
+      {
+        "pointer_id": 31,
+        "name": "Ubóstwo",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/31"
+      },
+      {
+        "pointer_id": 33,
+        "name": "Wielodzietność",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/33"
+      },
+      {
+        "pointer_id": 43,
+        "name": "Zdarzenie losowe",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/43"
+      }
+    ]
+  },
+  {
+    "id": "pomoc_spoleczna_beneficjenci",
+    "name": "Pomoc społeczna - Beneficjenci",
+    "description": "Beneficjenci pomocy, rodziny niepełne, wielodzietne, stypendia socjalne.",
+    "color": "#F59E0B",
+    "icon": "users",
+    "sort_order": 6,
+    "pointers": [
+      {
+        "pointer_id": 17,
+        "name": "Beneficjenci pomocy społecznej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/17"
+      },
+      {
+        "pointer_id": 59,
+        "name": "Rodziny niepełne objęte pomocą społeczną",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/59"
+      },
+      {
+        "pointer_id": 60,
+        "name": "Rodziny wielodzietne objęte pomocą społeczną",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/60"
+      },
+      {
+        "pointer_id": 126,
+        "name": "Rodziny emerytów i rencistów objęte pomocą społeczną",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/126"
+      },
+      {
+        "pointer_id": 224,
+        "name": "Dzieci i młodzież otrzymujący stypendia socjalne lub zasiłki szkolne",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/224"
+      },
+      {
+        "pointer_id": 162,
+        "name": "Liczba pensjonariuszy DPS na 1000 mieszkańców",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/162"
+      },
+      {
+        "pointer_id": 163,
+        "name": "Pensjonariusze DPS nieopuszczający łóżek",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/163"
+      },
+      {
+        "pointer_id": 164,
+        "name": "Pensjonariusze DPS do 18 roku życia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/164"
+      },
+      {
+        "pointer_id": 165,
+        "name": "Pensjonariusze DPS w wieku 19-40 lat",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/165"
+      },
+      {
+        "pointer_id": 166,
+        "name": "Pensjonariusze DPS w wieku 41-60 lat",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/166"
+      },
+      {
+        "pointer_id": 167,
+        "name": "Pensjonariusze DPS w wieku 61-74 lat",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/167"
+      },
+      {
+        "pointer_id": 168,
+        "name": "Pensjonariusze DPS w wieku powyżej 74 lat",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/168"
+      },
+      {
+        "pointer_id": 172,
+        "name": "Osoby w podeszłym wieku oczekujące na miejsce w DPS",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/172"
+      },
+      {
+        "pointer_id": 173,
+        "name": "Osoby przewlekle somatycznie chore oczekujące na miejsce w DPS",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/173"
+      },
+      {
+        "pointer_id": 174,
+        "name": "Osoby przewlekle psychicznie chore oczekujące na miejsce w DPS",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/174"
+      }
+    ]
+  },
+  {
+    "id": "pomoc_spoleczna_swiadczenia",
+    "name": "Pomoc społeczna - Świadczenia",
+    "description": "Świadczenia pieniężne, niepieniężne, usługi opiekuńcze, kontrakty socjalne.",
+    "color": "#B8A663",
+    "icon": "banknote",
+    "sort_order": 7,
+    "pointers": [
+      {
+        "pointer_id": 225,
+        "name": "Świadczenia pieniężne z pomocy społecznej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/225"
+      },
+      {
+        "pointer_id": 226,
+        "name": "Świadczenia niepieniężne z pomocy społecznej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/226"
+      },
+      {
+        "pointer_id": 227,
+        "name": "Osoby korzystające z usług opiekuńczych i specjalistycznych usług opiekuńczych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/227"
+      },
+      {
+        "pointer_id": 228,
+        "name": "Osoby korzystające ze specjalistycznych usług opiekuńczych dla osób z zaburzeniami psychicznymi",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/228"
+      },
+      {
+        "pointer_id": 229,
+        "name": "Osoby objęte kontraktami socjalnymi",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/229"
+      },
+      {
+        "pointer_id": 175,
+        "name": "Osoby objęte dożywianiem na 1000 mieszkańców",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/175"
+      },
+      {
+        "pointer_id": 176,
+        "name": "Udział dzieci w ogóle osób objętych dożywianiem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/176"
+      },
+      {
+        "pointer_id": 177,
+        "name": "Udział uczniów w ogóle osób objętych dożywianiem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/177"
+      }
+    ]
+  },
+  {
+    "id": "pomoc_spoleczna_i_otoczenie_infrastruktura",
+    "name": "Pomoc społeczna - Infrastruktura",
+    "description": "Domy pomocy społecznej, CIS, KIS, mieszkania treningowe, placówki wsparcia.",
+    "color": "#0D9488",
+    "icon": "building",
+    "sort_order": 8,
+    "pointers": [
+      {
+        "pointer_id": 254,
+        "name": "Centra integracji społecznej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/254"
+      },
+      {
+        "pointer_id": 241,
+        "name": "Domy pomocy społecznej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/241"
+      },
+      {
+        "pointer_id": 245,
+        "name": "Dzienne domy pomocy",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/245"
+      },
+      {
+        "pointer_id": 279,
+        "name": "Placówki specjalistycznego poradnictwa - jednostki  powiatowe",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/279"
+      },
+      {
+        "pointer_id": 255,
+        "name": "Kluby integracji społecznej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/255"
+      },
+      {
+        "pointer_id": 250,
+        "name": "Mieszkania treningowe oraz wspomagane",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/250"
+      },
+      {
+        "pointer_id": 247,
+        "name": "Noclegownie, schroniska i domy dla osób bezdomnych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/247"
+      },
+      {
+        "pointer_id": 243,
+        "name": "Ośrodki interwencji kryzysowej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/243"
+      },
+      {
+        "pointer_id": 248,
+        "name": "Placówki opiekuńczo-wychowawcze",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/248"
+      },
+      {
+        "pointer_id": 249,
+        "name": "Placówki wsparcia dziennego",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/249"
+      },
+      {
+        "pointer_id": 242,
+        "name": "Placówki zapewniające całodobową opiekę osobom niepełnosprawnym, przewlekle chorym lub osobom w podeszłym wieku",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/242"
+      },
+      {
+        "pointer_id": 256,
+        "name": "Spółdzielnie socjalne",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/256"
+      },
+      {
+        "pointer_id": 244,
+        "name": "Środowiskowe domy samopomocy",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/244"
+      },
+      {
+        "pointer_id": 253,
+        "name": "Uniwersytety trzeciego wieku",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/253"
+      },
+      {
+        "pointer_id": 252,
+        "name": "Zakłady aktywności zawodowej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/252"
+      }
+    ]
+  },
+  {
+    "id": "piecza_zastepcza",
+    "name": "Piecza zastępcza",
+    "description": "Rodziny zastępcze, dzieci w pieczy, deinstytucjonalizacja, usamodzielnienia.",
+    "color": "#8E77A3",
+    "icon": "heart-handshake",
+    "sort_order": 9,
+    "pointers": [
+      {
+        "pointer_id": 258,
+        "name": "Stopień deinstytucjonalizacji pieczy zastępczej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/258"
+      },
+      {
+        "pointer_id": 275,
+        "name": "Stopień deinstytucjonalizacji pieczy zastępczej - dzieci  z danego terytorium",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/275"
+      },
+      {
+        "pointer_id": 259,
+        "name": "Intensywność pieczy zastępczej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/259"
+      },
+      {
+        "pointer_id": 276,
+        "name": "Intensywność pieczy zastępczej - dzieci z danego terytorium",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/276"
+      },
+      {
+        "pointer_id": 261,
+        "name": "Niepełne usamodzielnienia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/261"
+      },
+      {
+        "pointer_id": 29,
+        "name": "Liczba rodzin zastępczych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/29"
+      },
+      {
+        "pointer_id": 30,
+        "name": "Liczba dzieci w rodzinach zastępczych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/30"
+      }
+    ]
+  },
+  {
+    "id": "zdrowie",
+    "name": "Zdrowie",
+    "description": "Dostępność aptek, szpitali, hospitalizacja, zachorowalność na nowotwory i cukrzycę.",
+    "color": "#7C89B8",
+    "icon": "activity",
+    "sort_order": 10,
+    "pointers": [
+      {
+        "pointer_id": 2,
+        "name": "Dostępność aptek",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/2"
+      },
+      {
+        "pointer_id": 18,
+        "name": "Dostępność szpitali",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/18"
+      },
+      {
+        "pointer_id": 136,
+        "name": "Osoby z zaburzeniami psychicznymi i uzależnione",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/136"
+      },
+      {
+        "pointer_id": 85,
+        "name": "Średni czas pobytu w szpitalu",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/85"
+      },
+      {
+        "pointer_id": 84,
+        "name": "Wykorzystanie łóżek szpitalnych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/84"
+      },
+      {
+        "pointer_id": 82,
+        "name": "Schorzenia z powodu otyłości u dzieci",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/82"
+      },
+      {
+        "pointer_id": 83,
+        "name": "Schorzenia z powodu niedożywienia u dzieci",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/83"
+      },
+      {
+        "pointer_id": 88,
+        "name": "Zachorowania na nowotwory",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/88"
+      },
+      {
+        "pointer_id": 89,
+        "name": "Zachorowania na cukrzycę",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/89"
+      },
+      {
+        "pointer_id": 90,
+        "name": "Zachorowania na choroby układu krążenia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/90"
+      },
+      {
+        "pointer_id": 120,
+        "name": "Zgony z powodu chorób nowotworowych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/120"
+      },
+      {
+        "pointer_id": 121,
+        "name": "Zgony z powodu chorób układu krążenia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/121"
+      },
+      {
+        "pointer_id": 123,
+        "name": "Zgony z przyczyn zewnętrznych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/123"
+      }
+    ]
+  },
+  {
+    "id": "niepelnosprawnosc",
+    "name": "Niepełnosprawność",
+    "description": "Osoby niepełnosprawne prawnie i biologicznie, stopnie niepełnosprawności, zatrudnienie.",
+    "color": "#9333EA",
+    "icon": "accessibility",
+    "sort_order": 11,
+    "pointers": [
+      {
+        "pointer_id": 215,
+        "name": "Odsetek osób niepełnosprawnych ogółem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/215"
+      },
+      {
+        "pointer_id": 214,
+        "name": "Odsetek osób niepełnosprawnych prawnie",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/214"
+      },
+      {
+        "pointer_id": 213,
+        "name": "Odsetek osób niepełnosprawnych biologicznie",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/213"
+      },
+      {
+        "pointer_id": 216,
+        "name": "Odsetek osób niepełnosprawnych prawnie w wieku 0-15 lat",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/216"
+      },
+      {
+        "pointer_id": 217,
+        "name": "Osoby niepełnosprawnie prawnie o stopniu niepełnosprawności lekkim",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/217"
+      },
+      {
+        "pointer_id": 218,
+        "name": "Osoby niepełnosprawnie prawnie o stopniu niepełnosprawności umiarkowanym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/218"
+      },
+      {
+        "pointer_id": 219,
+        "name": "Osoby niepełnosprawnie prawnie o stopniu niepełnosprawności znacznym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/219"
+      },
+      {
+        "pointer_id": 133,
+        "name": "Wskaźnik zatrudnienia osób niepełnosprawnych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/133"
+      },
+      {
+        "pointer_id": 272,
+        "name": "Wskaźnik zatrudnienia osób niepełnosprawnych w wieku 16-64 lata",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/272"
+      }
+    ]
+  },
+  {
+    "id": "wynagrodzenia_emerytury_i_renty",
+    "name": "Wynagrodzenia, emerytury i renty",
+    "description": "Przeciętne wynagrodzenia w relacji do średniej krajowej, emerytury i renty.",
+    "color": "#10B981",
+    "icon": "credit-card",
+    "sort_order": 12,
+    "pointers": [
+      {
+        "pointer_id": 65,
+        "name": "Przeciętne wynagrodzenie w relacji do śr. krajowej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/65"
+      },
+      {
+        "pointer_id": 146,
+        "name": "Przeciętna emerytura i renta",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/146"
+      },
+      {
+        "pointer_id": 148,
+        "name": "Przeciętna renta z tytułu niezdolności do pracy",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/148"
+      },
+      {
+        "pointer_id": 149,
+        "name": "Przeciętna renta rodzinna",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/149"
+      },
+      {
+        "pointer_id": 150,
+        "name": "Przeciętna renta i emerytura rolnicza",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/150"
+      },
+      {
+        "pointer_id": 151,
+        "name": "Emeryci i renciści w liczbie ludności ogółem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/151"
+      }
+    ]
+  },
+  {
+    "id": "kultura",
+    "name": "Kultura",
+    "description": "Dostępność kin, muzeów, domów kultury, bibliotek oraz wskaźniki czytelnictwa.",
+    "color": "#6366F1",
+    "icon": "book-open",
+    "sort_order": 13,
+    "pointers": [
+      {
+        "pointer_id": 22,
+        "name": "Wskaźnik dostępności kin",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/22"
+      },
+      {
+        "pointer_id": 67,
+        "name": "Wskaźnik dostępności domów i ośrodków kultury",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/67"
+      },
+      {
+        "pointer_id": 21,
+        "name": "Wskaźnik dostępności muzeów",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/21"
+      },
+      {
+        "pointer_id": 20,
+        "name": "Wskaźnik dostępności bibliotek",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/20"
+      },
+      {
+        "pointer_id": 68,
+        "name": "Wskaźnik czytelnictwa",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/68"
+      }
+    ]
+  },
+  {
+    "id": "edukacja",
+    "name": "Edukacja",
+    "description": "Dostępność przedszkoli, edukacja przedszkolna, zdawalność matur i egzaminów ósmoklasisty.",
+    "color": "#2563EB",
+    "icon": "graduation-cap",
+    "sort_order": 14,
+    "pointers": [
+      {
+        "pointer_id": 23,
+        "name": "Dostępność przedszkoli",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/23"
+      },
+      {
+        "pointer_id": 24,
+        "name": "Edukacja przedszkolna",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/24"
+      },
+      {
+        "pointer_id": 81,
+        "name": "Zdawalność egzaminu maturalnego w technikach",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/81"
+      },
+      {
+        "pointer_id": 80,
+        "name": "Zdawalność egzaminu maturalnego w liceach ogólnokształcących",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/80"
+      },
+      {
+        "pointer_id": 262,
+        "name": "Wyniki egzaminu ósmoklasisty – język polski",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/262"
+      },
+      {
+        "pointer_id": 263,
+        "name": "Wyniki egzaminu ósmoklasisty – język angielski podstawowy",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/263"
+      },
+      {
+        "pointer_id": 264,
+        "name": "Wyniki egzaminu ósmoklasisty – matematyka",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/264"
+      },
+      {
+        "pointer_id": 207,
+        "name": "Wyniki egzaminu gimnazjalnego - język polski",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/207"
+      },
+      {
+        "pointer_id": 208,
+        "name": "Wyniki egzaminu gimnazjalnego - język angielski podstawowy",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/208"
+      },
+      {
+        "pointer_id": 209,
+        "name": "Wyniki egzaminu gimnazjalnego - matematyka",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/209"
+      },
+      {
+        "pointer_id": 265,
+        "name": "Wybory edukacyjne ósmoklasistów – technikum",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/265"
+      },
+      {
+        "pointer_id": 266,
+        "name": "Wybory edukacyjne ósmoklasistów – liceum ogólnokształcące",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/266"
+      },
+      {
+        "pointer_id": 267,
+        "name": "Wybory edukacyjne ósmoklasistów – szkoła branżowa I stopnia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/267"
+      },
+      {
+        "pointer_id": 210,
+        "name": "Wybory edukacyjne gimnazjalistów - technikum",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/210"
+      },
+      {
+        "pointer_id": 211,
+        "name": "Wybory edukacyjne gimnazjalistów - liceum ogólnokształcące",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/211"
+      },
+      {
+        "pointer_id": 212,
+        "name": "Wybory edukacyjne gimnazjalistów - zasadnicza szkoła zawodowa",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/212"
+      },
+      {
+        "pointer_id": 137,
+        "name": "Studenci uczelni wyższych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/137"
+      }
+    ]
+  },
+  {
+    "id": "rynek_pracy",
+    "name": "Rynek pracy",
+    "description": "Stopa bezrobocia, bezrobocie długotrwałe, wskaźniki zatrudnienia kobiet i młodych.",
+    "color": "#A6737E",
+    "icon": "briefcase",
+    "sort_order": 15,
+    "pointers": [
+      {
+        "pointer_id": 25,
+        "name": "Stopa bezrobocia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/25"
+      },
+      {
+        "pointer_id": 188,
+        "name": "Bezrobocie kobiet",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/188"
+      },
+      {
+        "pointer_id": 230,
+        "name": "Bezrobocie rodzinne",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/230"
+      },
+      {
+        "pointer_id": 189,
+        "name": "Bezrobotni dłużej niż 1 rok",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/189"
+      },
+      {
+        "pointer_id": 190,
+        "name": "Bezrobotni z wykształceniem gimnazjalnym i niższym",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/190"
+      },
+      {
+        "pointer_id": 191,
+        "name": "Bezrobotni w wieku poniżej 25 lat",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/191"
+      },
+      {
+        "pointer_id": 192,
+        "name": "Bezrobotni w wieku 25-34 lata",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/192"
+      },
+      {
+        "pointer_id": 193,
+        "name": "Bezrobotni w wieku 55 lat i więcej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/193"
+      },
+      {
+        "pointer_id": 195,
+        "name": "Prowadzący działalność gospodarczą",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/195"
+      },
+      {
+        "pointer_id": 196,
+        "name": "Wskaźnik zatrudnienia",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/196"
+      },
+      {
+        "pointer_id": 197,
+        "name": "Wskaźnik zatrudnienia kobiet",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/197"
+      },
+      {
+        "pointer_id": 198,
+        "name": "Wskaźnik zatrudnienia mężczyzn",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/198"
+      },
+      {
+        "pointer_id": 199,
+        "name": "Wskaźnik zatrudnienia osób w wieku 15-29 lat",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/199"
+      },
+      {
+        "pointer_id": 200,
+        "name": "Wskaźnik zatrudnienia osób w wieku 50 lat i więcej",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/200"
+      },
+      {
+        "pointer_id": 201,
+        "name": "Zatrudnienie w branży finansowej i nieruchomościach",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/201"
+      },
+      {
+        "pointer_id": 202,
+        "name": "Zatrudnienie w rolnictwie",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/202"
+      },
+      {
+        "pointer_id": 203,
+        "name": "Zatrudnienie w przemyśle i budownictwie",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/203"
+      },
+      {
+        "pointer_id": 204,
+        "name": "Zatrudnienie w handlu, transporcie, turystyce, informacji i komunikacji",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/204"
+      },
+      {
+        "pointer_id": 205,
+        "name": "Zatrudnienie w pozostałych usługach",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/205"
+      }
+    ]
+  },
+  {
+    "id": "mobilnosc",
+    "name": "Mobilność",
+    "description": "Saldo migracji stałych, zagranicznych, europejskich i międzywojewódzkich.",
+    "color": "#0284C7",
+    "icon": "navigation",
+    "sort_order": 16,
+    "pointers": [
+      {
+        "pointer_id": 98,
+        "name": "Saldo migracji stałych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/98"
+      },
+      {
+        "pointer_id": 99,
+        "name": "Saldo migracji zagranicznych",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/99"
+      },
+      {
+        "pointer_id": 138,
+        "name": "Saldo migracji europejskich",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/138"
+      },
+      {
+        "pointer_id": 139,
+        "name": "Saldo migracji amerykańskich",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/139"
+      }
+    ]
+  },
+  {
+    "id": "budzety_gmin",
+    "name": "Budżety gmin",
+    "description": "Wydatki budżetów gmin ogółem na mieszkańca, oświata, kultura, pomoc społeczna.",
+    "color": "#059669",
+    "icon": "wallet",
+    "sort_order": 17,
+    "pointers": [
+      {
+        "pointer_id": 94,
+        "name": "Wydatki budżetów gmin ogółem",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/94"
+      },
+      {
+        "pointer_id": 95,
+        "name": "Wydatki budżetów gmin - oświata i wychowanie",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/95"
+      },
+      {
+        "pointer_id": 96,
+        "name": "Wydatki budżetów gmin - kultura",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/96"
+      },
+      {
+        "pointer_id": 97,
+        "name": "Wydatki budżetów gmin - pomoc społeczna",
+        "url": "https://obserwator.rops.krakow.pl/differenceanalysis/97"
+      }
+    ]
+  }
+]

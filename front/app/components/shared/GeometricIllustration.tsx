@@ -6,13 +6,17 @@ interface GeometricIllustrationProps {
   theme: ColorTheme;
   className?: string;
   size?: number;
+  alt?: string;
+  ariaHidden?: boolean;
 }
 
 export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
   shape,
   theme,
   className = '',
-  size = 110
+  size = 110,
+  alt,
+  ariaHidden = true,
 }) => {
   // Sophisticated, subtle matte palette
   const getFillColors = () => {
@@ -37,11 +41,15 @@ export const GeometricIllustration: React.FC<GeometricIllustrationProps> = ({
   };
 
   const { primary, secondary, accent } = getFillColors();
+  const ariaProps = alt
+    ? { role: "img", "aria-label": alt }
+    : { "aria-hidden": true };
 
   switch (shape) {
     case 'donut':
       return (
         <svg
+          {...ariaProps}
           width={size}
           height={size}
           viewBox="0 0 100 100"

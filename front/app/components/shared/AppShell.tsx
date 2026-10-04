@@ -22,10 +22,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   const router = useRouter();
 
   const isAuthPage = pathname === "/auth" || pathname?.startsWith("/auth");
+  const protectedRoutes = ["/admin", "/dashboard", "/chat"];
+  const isProtectedRoute = protectedRoutes.some(
+    (route) => pathname === route || pathname?.startsWith(`${route}/`),
+  );
 
   useEffect(() => {
     if (!isLoadingUser) {
-      if (!currentUser && !isAuthPage) {
+      if (!currentUser && isProtectedRoute) {
         // Niezalogowany użytkownik próbuje wejść na chronioną stronę -> przekieruj do /auth
         const redirectParam =
           pathname && pathname !== "/"
@@ -37,7 +41,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         router.replace("/");
       }
     }
-  }, [currentUser, isLoadingUser, isAuthPage, pathname, router]);
+  }, [currentUser, isLoadingUser, isAuthPage, isProtectedRoute, pathname, router]);
 
   // Jeśli użytkownik jest na stronie /auth
   if (isAuthPage) {
@@ -63,8 +67,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     );
   }
 
-  // Jeśli użytkownik nie jest zalogowany (i nie jest na /auth) – nic nie renderujemy, przekierowanie w toku
-  if (!currentUser) {
+  // Jeśli użytkownik nie jest zalogowany i wszedł na chronioną stronę – oczekiwanie na przekierowanie
+  if (!currentUser && isProtectedRoute) {
     return null;
   }
 
@@ -76,6 +80,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   // Użytkownik jest zalogowany – pełny dostęp do aplikacji
   return (
     <>
+      {/* WCAG 2.4.1 Bypass Blocks: Skip to main content link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-stone-900 focus:text-white focus:rounded-xl focus:ring-4 focus:ring-amber-400 focus:shadow-2xl focus:font-bold focus:outline-none transition-all"
+      >
+        Przejdź do treści głównej (Naciśnij Enter)
+      </a>
+
       <Navbar
         currentUser={currentUser}
         isLargeFont={isLargeFont}
@@ -83,7 +95,17 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         ideasCount={ideas.length}
         onNavigate={navigate}
       />
-      <main className="flex-1 pb-20 md:pb-8">{children}</main>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className={`flex-1 focus:outline-none ${
+          pathname === "/matching"
+            ? "pb-2 sm:pb-3 flex flex-col min-h-0"
+            : "pb-20 md:pb-8"
+        }`}
+      >
+        {children}
+      </main>
     </>
   );
 };

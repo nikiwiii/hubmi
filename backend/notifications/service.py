@@ -29,7 +29,7 @@ class NotificationService:
             "link": "/admin",
             "email_sent": True,
             "email_recipient": "admin@rops.krakow.pl",
-            "email_subject": "[minno / Hubmi] Zgłoszono nowy pomysł mieszkańca w powiecie tarnowskim",
+            "email_subject": "[MiNNO / Hubmi] Zgłoszono nowy pomysł mieszkańca w powiecie tarnowskim",
             "role_target": "admin"
         },
         {
@@ -42,7 +42,7 @@ class NotificationService:
             "link": "/chat",
             "email_sent": True,
             "email_recipient": "tworca@hubmi.org",
-            "email_subject": "[minno / ROPS] mgr Anna Kowalska odpowiedziała na Twoją wiadomość na czacie",
+            "email_subject": "[MiNNO / ROPS] mgr Anna Kowalska odpowiedziała na Twoją wiadomość na czacie",
             "role_target": "user"
         },
         {
@@ -55,7 +55,7 @@ class NotificationService:
             "link": "/discover",
             "email_sent": True,
             "email_recipient": "tworca@hubmi.org",
-            "email_subject": "[minno / Partnerstwa] Nowe zgłoszenie chęci partnerstwa od NGO",
+            "email_subject": "[MiNNO / Partnerstwa] Nowe zgłoszenie chęci partnerstwa od NGO",
             "role_target": "user"
         },
         {
@@ -68,7 +68,7 @@ class NotificationService:
             "link": "/chat",
             "email_sent": True,
             "email_recipient": "tworca@hubmi.org",
-            "email_subject": "[minno / ROPS] Twój pomysł otrzymał mentora merytorycznego",
+            "email_subject": "[MiNNO / ROPS] Twój pomysł otrzymał mentora merytorycznego",
             "role_target": "user"
         }
     ]
@@ -142,7 +142,7 @@ class NotificationService:
             "link": link,
             "email_sent": True,
             "email_recipient": recipient_email,
-            "email_subject": subject or f"[ROPS Kraków / minno] {title}",
+            "email_subject": subject or f"[ROPS Kraków / MiNNO] {title}",
             "role_target": role_target
         }
         cls._notifications.insert(0, item)
@@ -170,7 +170,7 @@ class NotificationService:
         body_html = cls._generate_email_html(item)
         body_text = (
             f"Regionalny Ośrodek Polityki Społecznej w Krakowie\n"
-            f"Platforma Innowacji Społecznych 'minno'\n\n"
+            f"Platforma Innowacji Społecznych 'MiNNO'\n\n"
             f"Szanowni Państwo,\n\n"
             f"{item['message']}\n\n"
             f"Aby przejść do szczegółów, skorzystaj z platformy: {item.get('link', '/')}\n\n"
@@ -197,7 +197,7 @@ class NotificationService:
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #EFE5C6; background: rgba(255,255,255,0.1); padding: 4px 8px; rounded: 6px;">ROPS KRAKÓW</span>
                 </div>
-                <h2 style="margin: 12px 0 0 0; font-size: 20px; font-weight: bold; color: #ffffff;">minno • Powiadomienie Systemowe</h2>
+                <h2 style="margin: 12px 0 0 0; font-size: 20px; font-weight: bold; color: #ffffff;">MiNNO • Powiadomienie Systemowe</h2>
             </div>
             <div style="padding: 24px; color: #292524; line-height: 1.6; font-size: 14px;">
                 <div style="background: #fafaf8; border: 1px solid #f0eee6; border-radius: 12px; padding: 14px; margin-bottom: 20px; font-size: 12px; color: #57534e;">
@@ -209,12 +209,12 @@ class NotificationService:
                 <h3 style="margin-top: 0; color: #1c1917; font-size: 16px;">{item['title']}</h3>
                 <p style="color: #44403c; margin: 12px 0;">{item['message']}</p>
                 <div style="margin: 24px 0 12px 0;">
-                    <a href="{item.get('link', '#')}" style="display: inline-block; background: #1c1917; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;">Otwórz w platformie minno &rarr;</a>
+                    <a href="{item.get('link', '#')}" style="display: inline-block; background: #1c1917; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;">Otwórz w platformie MiNNO &rarr;</a>
                 </div>
             </div>
             <div style="background: #f5f5f0; padding: 16px 24px; text-align: center; font-size: 11px; color: #78716c; border-top: 1px solid #e5e5e0;">
                 Regionalny Ośrodek Polityki Społecznej w Krakowie • ul. Piastowska 32, 30-070 Kraków<br/>
-                Wiadomość wygenerowana automatycznie przez system minno / Hubmi.
+                Wiadomość wygenerowana automatycznie przez system MiNNO.
             </div>
         </div>
         """

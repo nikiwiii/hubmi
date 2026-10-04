@@ -12,8 +12,15 @@ import {
   NotificationItem,
   SimulatedEmail,
   RopsExpert,
+  IdeaFeedback,
+  IdeaComment,
+  TestingSummary,
+  FeedbackSubmitPayload,
+  TesterApplication,
+  KnowledgeRagResponse,
 } from "./types";
 import { setCurrentUser } from "./auth";
+import { saveStoredInnovations } from "./innovationsStore";
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -341,6 +348,7 @@ export interface BackendIdea {
   assigned_expert_id?: string | null;
   assigned_expert_name?: string | null;
   assigned_expert_specialization?: string | null;
+  status?: string;
 }
 
 export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
@@ -352,7 +360,7 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
     title: b.title,
     subtitle: b.category ? `Kategoria: ${b.category}` : "Innowacja społeczna",
     authorId: b.user_id,
-    authorName: b.author_name || "Użytkownik minno",
+    authorName: b.author_name || "Użytkownik MiNNO",
     authorEmail: `${b.user_id}@minno.pl`,
     category: b.category || "Społeczność",
     summary:
@@ -376,7 +384,7 @@ export function mapBackendIdeaToFrontend(b: BackendIdea): Idea {
     colorTheme: theme,
     geometricShape: shape,
     visualMockupUrl: b.image_url || undefined,
-    status: "active",
+    status: (b.status as any) || "active",
     createdAt: b.created_at ? b.created_at.split("T")[0] : "2026-03-01",
     commentsCount: 0,
     lookingForPartner: Boolean(b.looking_for_partner),
@@ -462,6 +470,85 @@ export async function toggleIdeaReaction(
   };
 }
 
+export async function updateIdeaStatusBackend(
+  ideaId: string,
+  status: "active" | "testing" | "rejected" | "archived" | "pending"
+): Promise<Idea> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/status`, {
+    method: "PATCH",
+    headers: getHeaders(true),
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Nie udało się zaktualizować statusu pomysłu.");
+  }
+
+  const updated: BackendIdea = await res.json();
+  return mapBackendIdeaToFrontend(updated);
+}
+
+export async function applyAsTester(
+  ideaId: string,
+  motivation?: string
+): Promise<TesterApplication> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/apply-tester`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify({ motivation }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Nie udało się złożyć zgłoszenia testera.");
+  }
+
+  return await res.json();
+}
+
+export async function fetchTesterApplications(
+  ideaId?: string,
+  statusFilter?: string
+): Promise<TesterApplication[]> {
+  const params = new URLSearchParams();
+  if (ideaId) params.append("idea_id", ideaId);
+  if (statusFilter) params.append("status_filter", statusFilter);
+  const q = params.toString() ? `?${params.toString()}` : "";
+
+  const res = await apiFetch(`${API_BASE}/api/ideas/tester-applications${q}`, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+
+  if (!res.ok) {
+    return [];
+  }
+
+  return await res.json();
+}
+
+export async function updateTesterApplicationStatus(
+  appId: string,
+  status: "approved" | "rejected" | "pending"
+): Promise<TesterApplication> {
+  const res = await apiFetch(
+    `${API_BASE}/api/ideas/tester-applications/${appId}/status`,
+    {
+      method: "PATCH",
+      headers: getHeaders(true),
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Nie udało się zaktualizować statusu zgłoszenia testera.");
+  }
+
+  return await res.json();
+}
+
 // ==========================================
 // 3. MATCHING & RAG CHATBOT API (/api/matching)
 // ==========================================
@@ -496,26 +583,20 @@ export async function sendMatchingChat(
   return await res.json();
 }
 
-export async function fetchInnovations(): Promise<any[]> {
-  const res = await apiFetch(`${API_BASE}/api/matching/innovations`, {
-    method: "GET",
-    headers: getHeaders(false),
-  });
-
-  if (!res.ok) {
-    throw new Error("Błąd pobierania innowacji.");
-  }
-
-  return await res.json();
+export async function fetchInnovations(): Promise<InnovationRecord[]> {
+  return searchInnovations("");
 }
 
 export async function searchInnovations(
   search: string,
-  limit = 30,
+  limit?: number,
 ): Promise<InnovationRecord[]> {
+  const trimmed = search.trim();
   const url = new URL(`${API_BASE}/api/innovations`);
-  if (search.trim()) url.searchParams.set("search", search.trim());
-  url.searchParams.set("limit", String(limit));
+  if (trimmed) url.searchParams.set("search", trimmed);
+  if (limit !== undefined && limit > 0) {
+    url.searchParams.set("limit", String(limit));
+  }
   const res = await apiFetch(url.toString(), {
     method: "GET",
     headers: getHeaders(false),
@@ -523,7 +604,11 @@ export async function searchInnovations(
   if (!res.ok) {
     throw new Error("Błąd pobierania innowacji.");
   }
-  return await res.json();
+  const data: InnovationRecord[] = await res.json();
+  if (!trimmed && (!limit || limit >= 50)) {
+    saveStoredInnovations(data);
+  }
+  return data;
 }
 
 export async function fetchInnovationById(
@@ -821,5 +906,73 @@ export async function submitPartnershipRequest(
   }
   return await res.json();
 }
+
+// ==========================================
+// 7. TESTER INNOWACJI API (/api/ideas/{id}/testing, /feedback, /comments)
+// ==========================================
+export async function fetchIdeaTestingSummary(ideaId: string): Promise<TestingSummary> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/testing`, {
+    headers: getHeaders(false),
+  });
+  if (!res.ok) {
+    throw new Error("Błąd pobierania podsumowania testów.");
+  }
+  return await res.json();
+}
+
+export async function submitIdeaFeedback(
+  ideaId: string,
+  payload: FeedbackSubmitPayload
+): Promise<IdeaFeedback> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/feedback`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd wysyłania opinii i oceny użyteczności.");
+  }
+  return await res.json();
+}
+
+export async function submitIdeaComment(
+  ideaId: string,
+  content: string
+): Promise<IdeaComment> {
+  const res = await apiFetch(`${API_BASE}/api/ideas/${ideaId}/comments`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: JSON.stringify({ content }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd dodawania komentarza.");
+  }
+  return await res.json();
+}
+
+// ==========================================
+// 8. RAG RAPORTÓW I BADAŃ SPOŁECZNYCH (/api/indicators/rag)
+// ==========================================
+export async function searchKnowledgeRag(
+  query: string,
+  powiatId?: string
+): Promise<KnowledgeRagResponse> {
+  const res = await apiFetch(`${API_BASE}/api/indicators/rag`, {
+    method: "POST",
+    headers: getHeaders(false),
+    body: JSON.stringify({
+      query,
+      powiat_id: powiatId || null,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Błąd wyszukiwania analitycznego w bazie raportów.");
+  }
+  return await res.json();
+}
+
 
 

@@ -9,7 +9,8 @@ import {
 import {
   ResearchInfo,
   getYearPowiatValues,
-  interpolateColor
+  interpolateColor,
+  formatResearchValue
 } from '../../lib/researchData';
 import { Calendar, CheckCircle2, TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -97,6 +98,8 @@ export const AllYearsMapGallery: React.FC<AllYearsMapGalleryProps> = ({
               {/* Mini mapa SVG dla tego roku */}
               <div className="aspect-[315/211.134] w-full my-1 relative">
                 <svg
+                  role="img"
+                  aria-label={`Miniaturowa mapa powiatów Małopolski za rok ${yData.year}`}
                   viewBox="0 0 315 211.13402"
                   className="w-full h-full select-none"
                 >
@@ -138,13 +141,13 @@ export const AllYearsMapGallery: React.FC<AllYearsMapGalleryProps> = ({
               >
                 <div className="flex justify-between items-baseline">
                   <span className="text-[10px] opacity-75">Średnia:</span>
-                  <span className="font-bold">
-                    {yData.avg} {research.unit}
+                  <span className="font-bold truncate ml-1">
+                    {formatResearchValue(yData.avg)} {research.unit}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline text-[9px] opacity-80 truncate">
                   <span className="truncate">Top: {yData.top?.powiatName.replace('Powiat ', '')}</span>
-                  <span className="font-semibold ml-1">{yData.top?.value}</span>
+                  <span className="font-semibold ml-1">{formatResearchValue(yData.top?.value)}</span>
                 </div>
               </div>
             </div>

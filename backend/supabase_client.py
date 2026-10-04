@@ -1,7 +1,7 @@
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Mapping
 from supabase import create_client, Client
 from config import SUPABASE_URL, SUPABASE_KEY
 
@@ -23,6 +23,38 @@ if SUPABASE_URL and SUPABASE_KEY and not SUPABASE_URL.startswith("https://your-p
 else:
     logger.info("Supabase credentials not configured. Using local in-memory storage fallback. Add SUPABASE_URL and SUPABASE_KEY in .env to connect to your database.")
 
+try:
+    from local_db import (
+        local_save_feedback, local_get_feedback,
+        local_save_comment, local_get_comments,
+        local_save_tester_application, local_get_tester_applications,
+        local_get_tester_application_by_id, local_update_tester_application,
+        local_save_idea_status, local_get_all_idea_statuses
+    )
+except (ImportError, ModuleNotFoundError):
+    import sys
+    import os
+    _backend_dir = os.path.dirname(os.path.abspath(__file__))
+    if _backend_dir not in sys.path:
+        sys.path.insert(0, _backend_dir)
+    from local_db import (
+        local_save_feedback, local_get_feedback,
+        local_save_comment, local_get_comments,
+        local_save_tester_application, local_get_tester_applications,
+        local_get_tester_application_by_id, local_update_tester_application,
+        local_save_idea_status, local_get_all_idea_statuses
+    )
+
+
+def _as_dict(item: Any) -> Dict[str, Any]:
+    return dict(item) if isinstance(item, (dict, Mapping)) else {}
+
+
+def _as_dict_list(items: Any) -> List[Dict[str, Any]]:
+    if isinstance(items, list):
+        return [dict(x) for x in items if isinstance(x, (dict, Mapping))]
+    return []
+
 
 # ==========================================
 # In-memory database fallback implementation
@@ -36,6 +68,9 @@ class MemoryDB:
         self.conversations: List[Dict[str, Any]] = []
         self.messages: List[Dict[str, Any]] = []
         self.reported_problems: List[Dict[str, Any]] = []
+        self.feedback: List[Dict[str, Any]] = []
+        self.comments: List[Dict[str, Any]] = []
+        self.tester_applications: List[Dict[str, Any]] = []
         self._seed_default_data()
 
     def _seed_default_data(self):
@@ -67,6 +102,19 @@ class MemoryDB:
             "category": "Ekologia",
             "user_id": user_id,
             "author_name": "Jan Kowalski",
+            "status": "active",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        # Idea oczekująca na moderację przez administratora (pending)
+        pending_idea_id = str(uuid.uuid4())
+        self.ideas.append({
+            "id": pending_idea_id,
+            "title": "Sąsiedzki Mobilny Bank Narzędzi dla Seniorów",
+            "description": "Zgłoszenie pilotażowe: wypożyczalnia narzędzi ogrodowych i domowych prowadzona przez sołectwo dla starszych mieszkańców.",
+            "category": "Społeczność & Życie",
+            "user_id": user_id,
+            "author_name": "Jan Kowalski",
+            "status": "pending",
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         self.reactions.append({
@@ -77,10 +125,76 @@ class MemoryDB:
             "created_at": datetime.now(timezone.utc).isoformat()
         })
 
+        # Domyślne zgłoszenia testerów oczekujące na akceptację administratora
+        self.tester_applications.append({
+            "id": "app-tester-1",
+            "idea_id": sample_idea_id,
+            "idea_title": "Aplikacja do wspólnego sadzenia drzew w mieście",
+            "user_id": user_id,
+            "user_name": "Katarzyna Wiśniewska",
+            "user_email": "kasia.wisniewska@tarnow.pl",
+            "status": "pending",
+            "motivation": "Mieszkam blisko parku i mogę pomóc seniorom w testach terenowych.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        self.tester_applications.append({
+            "id": "app-tester-2",
+            "idea_id": sample_idea_id,
+            "idea_title": "Aplikacja do wspólnego sadzenia drzew w mieście",
+            "user_id": admin_id,
+            "user_name": "Piotr Kowalczyk",
+            "user_email": "piotr.kowalczyk@krakow.pl",
+            "status": "pending",
+            "motivation": "Jestem koordynatorem wolontariatu w Nowym Sączu.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+
+        # Domyślny feedback i komentarze testowe dla demonstracji modułu Testera
+        self.feedback.append({
+            "id": "fb-sample-1",
+            "idea_id": sample_idea_id,
+            "user_id": admin_id,
+            "author_name": "Barbara Nowak",
+            "author_role": "Opiekunka osoby starszej / Tester",
+            "overall_rating": 5,
+            "usability_rating": 4,
+            "accessibility_rating": 5,
+            "impact_rating": 5,
+            "strengths": "Bardzo prosta rejestracja uczestników, czytelny podział zadań na etapy.",
+            "weaknesses": "Przyciski potwierdzenia mogłyby mieć nieco większy kontrast na urządzeniach mobilnych.",
+            "suggested_improvements": "Warto dodać opcję przypomnień SMS dla osób, które rzadziej korzystają z poczty e-mail.",
+            "comment": "Przetestowałam prototyp z grupą 6 sąsiadów – rozwiązanie ma ogromny potencjał integracyjny w małych miejscowościach.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        self.feedback.append({
+            "id": "fb-sample-2",
+            "idea_id": sample_idea_id,
+            "user_id": user_id,
+            "author_name": "Piotr Wiśniewski",
+            "author_role": "Ekspert ds. Dostępności Społecznej",
+            "overall_rating": 4,
+            "usability_rating": 5,
+            "accessibility_rating": 4,
+            "impact_rating": 5,
+            "strengths": "Świetna koncepcja budowania zaangażowania lokalnego, intuicyjny proces zgłaszania się.",
+            "weaknesses": "Brak bezpośredniego powiadomienia koordynatora o osobach z ograniczeniami ruchowymi.",
+            "suggested_improvements": "Dodać pole wyboru: 'potrzebuję asystenta' lub 'dostępne dla wózków'.",
+            "comment": "Rekomenduję do dalszego skalowania w subregionie tarnowskim po drobnych korektach.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        self.comments.append({
+            "id": "cmt-sample-1",
+            "idea_id": sample_idea_id,
+            "user_id": admin_id,
+            "author_name": "Marek Zarządca",
+            "content": "Dziękujemy za pierwsze uwagi z testów terenowych! Wprowadzamy większe fonty i kontrast w kolejnej aktualizacji.",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+
         # ============================================================
         # Baza innowacji (Innovations) - Domyślne dane dla RAG matching
         # ============================================================
-        raw_innovations = [
+        raw_innovations: List[Dict[str, Any]] = [
             {
                 "id": "11111111-aaaa-bbbb-cccc-000000000001",
                 "title": "Centrum Dziennego Wsparcia Seniora w Domu Opieki 'Złoty Wiek'",
@@ -208,8 +322,9 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("users").select("*").eq("email", email.lower()).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
                 return None
             except Exception as e:
                 logger.error(f"Supabase error get_profile_by_email: {e}")
@@ -220,8 +335,9 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("users").select("*").eq("id", user_id).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
                 return None
             except Exception as e:
                 logger.error(f"Supabase error get_profile_by_id: {e}")
@@ -236,51 +352,130 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("users").insert(profile_data).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
             except Exception as e:
                 logger.error(f"Supabase error create_profile: {e}")
         memory_db.profiles.append(profile_data)
         return profile_data
 
-    # --- IDEAS ---
+    # --- IDEAS & MODERATION ---
+    _idea_statuses: Dict[str, str] = local_get_all_idea_statuses()
+
     @staticmethod
-    def get_all_ideas() -> List[Dict[str, Any]]:
+    def _unpack_idea(row: Dict[str, Any]) -> Dict[str, Any]:
+        if not row:
+            return row
+        item = dict(row)
+        dedicated = item.get("dedicated_to")
+        if dedicated and isinstance(dedicated, str):
+            try:
+                import json
+                meta = json.loads(dedicated)
+                if isinstance(meta, dict):
+                    for k, v in meta.items():
+                        if item.get(k) is None:
+                            item[k] = v
+            except Exception:
+                pass
+        return item
+
+    @classmethod
+    def get_all_ideas(cls) -> List[Dict[str, Any]]:
+        raw: List[Dict[str, Any]] = []
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("ideas").select("*").order("created_at", desc=True).execute()
-                if res.data is not None:
-                    return res.data
+                data = _as_dict_list(res.data)
+                if data:
+                    raw = data
             except Exception as e:
                 logger.error(f"Supabase error get_all_ideas: {e}")
-        return sorted(memory_db.ideas, key=lambda x: x["created_at"], reverse=True)
 
-    @staticmethod
-    def get_idea_by_id(idea_id: str) -> Optional[Dict[str, Any]]:
+        # If Supabase has data, also merge any memory_db ideas not present in Supabase
+        existing_ids = {str(item.get("id")) for item in raw}
+        for mem in memory_db.ideas:
+            if str(mem.get("id")) not in existing_ids:
+                raw.append(dict(mem))
+
+        if not raw:
+            raw = [dict(m) for m in sorted(memory_db.ideas, key=lambda x: x["created_at"], reverse=True)]
+
+        for item in raw:
+            iid = str(item.get("id"))
+            item["status"] = cls._idea_statuses.get(iid, str(item.get("status") or "active"))
+        return [cls._unpack_idea(item) for item in raw]
+
+    @classmethod
+    def get_idea_by_id(cls, idea_id: str) -> Optional[Dict[str, Any]]:
+        item: Optional[Dict[str, Any]] = None
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("ideas").select("*").eq("id", idea_id).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
-                return None
+                data = _as_dict_list(res.data)
+                if data:
+                    item = data[0]
             except Exception as e:
                 logger.error(f"Supabase error get_idea_by_id: {e}")
-        return next((i for i in memory_db.ideas if i["id"] == idea_id), None)
+        if not item:
+            matched = next((i for i in memory_db.ideas if str(i["id"]) == idea_id), None)
+            if matched:
+                item = dict(matched)
+        if item:
+            iid = str(item.get("id"))
+            item["status"] = cls._idea_statuses.get(iid, str(item.get("status") or "active"))
+            return cls._unpack_idea(item)
+        return None
 
-    @staticmethod
-    def create_idea(idea_data: Dict[str, Any]) -> Dict[str, Any]:
+    @classmethod
+    def create_idea(cls, idea_data: Dict[str, Any]) -> Dict[str, Any]:
         idea_data["id"] = idea_data.get("id") or str(uuid.uuid4())
         idea_data["created_at"] = idea_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+        idea_data["status"] = idea_data.get("status") or "pending"
+        cls._idea_statuses[str(idea_data["id"])] = idea_data["status"]
+        local_save_idea_status(str(idea_data["id"]), idea_data["status"])
+
+        KNOWN_COLUMNS = {
+            "id", "created_at", "stage", "dedicated_to", "title", "essence",
+            "user_id", "description", "category", "author_name", "innovation",
+            "target_audience", "image_url", "status"
+        }
+        supabase_payload = {}
+        extra_meta = {}
+        for k, v in idea_data.items():
+            if k == "status":
+                continue
+            if k in KNOWN_COLUMNS:
+                supabase_payload[k] = v
+            else:
+                extra_meta[k] = v
+
+        if extra_meta:
+            import json
+            current_dedicated = supabase_payload.get("dedicated_to")
+            meta_dict = {}
+            if current_dedicated and isinstance(current_dedicated, str):
+                try:
+                    meta_dict = json.loads(current_dedicated)
+                    if not isinstance(meta_dict, dict):
+                        meta_dict = {}
+                except Exception:
+                    meta_dict = {}
+            meta_dict.update(extra_meta)
+            supabase_payload["dedicated_to"] = json.dumps(meta_dict, ensure_ascii=False)
 
         if is_supabase_connected and supabase_client:
             try:
-                res = supabase_client.table("ideas").insert(idea_data).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                res = supabase_client.table("ideas").insert(supabase_payload).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    merged = {**data[0], "status": idea_data["status"]}
+                    return cls._unpack_idea(merged)
             except Exception as e:
                 logger.error(f"Supabase error create_idea: {e}")
-        memory_db.ideas.append(idea_data)
-        return idea_data
+        memory_db.ideas.insert(0, idea_data)
+        return cls._unpack_idea(idea_data)
 
     @staticmethod
     def delete_idea(idea_id: str) -> bool:
@@ -292,25 +487,174 @@ class DatabaseRepository:
             except Exception as e:
                 logger.error(f"Supabase error delete_idea: {e}")
         before_count = len(memory_db.ideas)
-        memory_db.ideas = [i for i in memory_db.ideas if i["id"] != idea_id]
-        memory_db.reactions = [r for r in memory_db.reactions if r["idea_id"] != idea_id]
+        memory_db.ideas = [i for i in memory_db.ideas if str(i["id"]) != idea_id]
+        memory_db.reactions = [r for r in memory_db.reactions if str(r["idea_id"]) != idea_id]
         return len(memory_db.ideas) < before_count
 
-    @staticmethod
-    def update_idea(idea_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        if is_supabase_connected and supabase_client:
+    @classmethod
+    def update_idea(cls, idea_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        iid = idea_id
+        if "status" in updates:
+            cls._idea_statuses[iid] = updates["status"]
+            local_save_idea_status(iid, updates["status"])
+
+        KNOWN_COLUMNS = {
+            "id", "created_at", "stage", "dedicated_to", "title", "essence",
+            "user_id", "description", "category", "author_name", "innovation",
+            "target_audience", "image_url", "status"
+        }
+        supabase_payload = {}
+        extra_meta = {}
+        for k, v in updates.items():
+            if k == "status":
+                continue
+            if k in KNOWN_COLUMNS:
+                supabase_payload[k] = v
+            else:
+                extra_meta[k] = v
+
+        existing = cls.get_idea_by_id(idea_id)
+        if extra_meta:
+            import json
+            current_dedicated = existing.get("dedicated_to") if existing else None
+            meta_dict = {}
+            if current_dedicated and isinstance(current_dedicated, str):
+                try:
+                    meta_dict = json.loads(current_dedicated)
+                    if not isinstance(meta_dict, dict):
+                        meta_dict = {}
+                except Exception:
+                    meta_dict = {}
+            meta_dict.update(extra_meta)
+            supabase_payload["dedicated_to"] = json.dumps(meta_dict, ensure_ascii=False)
+
+        item: Optional[Dict[str, Any]] = None
+        if is_supabase_connected and supabase_client and supabase_payload:
             try:
-                res = supabase_client.table("ideas").update(updates).eq("id", idea_id).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                res = supabase_client.table("ideas").update(supabase_payload).eq("id", idea_id).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    item = data[0]
             except Exception as e:
                 logger.error(f"Supabase error update_idea: {e}")
 
-        idea = next((i for i in memory_db.ideas if str(i["id"]) == str(idea_id)), None)
-        if idea:
-            idea.update(updates)
-            return idea
+        mem = next((i for i in memory_db.ideas if str(i["id"]) == iid), None)
+        if mem:
+            mem.update(updates)
+            if not item:
+                item = dict(mem)
+
+        if item:
+            item["status"] = cls._idea_statuses.get(iid, str(updates.get("status") or "active"))
+            item = cls._unpack_idea(item)
+            item.update(updates)
+        elif existing:
+            existing.update(updates)
+            item = existing
+        return item
+
+    # --- TESTER APPLICATIONS (Weryfikacja i akceptacja testerów) ---
+    @staticmethod
+    def get_tester_applications(
+        idea_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        user_email: Optional[str] = None,
+        status: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        remote_data: Optional[List[Dict[str, Any]]] = None
+        if is_supabase_connected and supabase_client:
+            try:
+                q = supabase_client.table("tester_applications").select("*").order("created_at", desc=True)
+                if idea_id:
+                    q = q.eq("idea_id", idea_id)
+                if user_id:
+                    q = q.eq("user_id", user_id)
+                if user_email:
+                    q = q.eq("user_email", user_email)
+                if status:
+                    q = q.eq("status", status)
+                res = q.execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    remote_data = data
+            except Exception as e:
+                logger.info(f"Supabase tester_applications fallback: {e}")
+
+        if remote_data is not None and len(remote_data) > 0:
+            for itm in remote_data:
+                local_save_tester_application(itm)
+            return remote_data
+
+        local_data = local_get_tester_applications(idea_id=idea_id, user_id=user_id, user_email=user_email, status=status)
+        if local_data:
+            return local_data
+
+        res = memory_db.tester_applications
+        if idea_id:
+            res = [a for a in res if str(a.get("idea_id")) == idea_id]
+        if user_id:
+            res = [a for a in res if str(a.get("user_id")) == user_id]
+        if status:
+            res = [a for a in res if a.get("status") == status]
+        return sorted(res, key=lambda x: str(x.get("created_at", "")), reverse=True)
+
+    @staticmethod
+    def create_tester_application(app_data: Dict[str, Any]) -> Dict[str, Any]:
+        app_data["id"] = app_data.get("id") or str(uuid.uuid4())
+        app_data["created_at"] = app_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+        app_data["status"] = app_data.get("status") or "pending"
+
+        # Zapisz w lokalnej trwałej bazie SQLite (gwarancja braku utraty danych)
+        local_save_tester_application(app_data)
+
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("tester_applications").insert(app_data).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
+            except Exception as e:
+                logger.info(f"Supabase tester_applications insert fallback: {e}")
+
+        memory_db.tester_applications.insert(0, app_data)
+        return app_data
+
+    @staticmethod
+    def get_tester_application_by_id(app_id: str) -> Optional[Dict[str, Any]]:
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("tester_applications").select("*").eq("id", app_id).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
+            except Exception as e:
+                logger.info(f"Supabase get_tester_application_by_id fallback: {e}")
+        local = local_get_tester_application_by_id(app_id)
+        if local:
+            return local
+        return next((a for a in memory_db.tester_applications if str(a.get("id")) == app_id), None)
+
+    @staticmethod
+    def update_tester_application(app_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        local_up = local_update_tester_application(app_id, updates)
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("tester_applications").update(updates).eq("id", app_id).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
+            except Exception as e:
+                logger.info(f"Supabase update_tester_application fallback: {e}")
+
+        if local_up:
+            return local_up
+
+        app = next((a for a in memory_db.tester_applications if str(a.get("id")) == app_id), None)
+        if app:
+            app.update(updates)
+            return app
         return None
+
 
     # --- REACTIONS ---
     @staticmethod
@@ -318,8 +662,9 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("reactions").select("*").eq("idea_id", idea_id).execute()
-                if res.data is not None:
-                    return res.data
+                data = _as_dict_list(res.data)
+                if data:
+                    return data
             except Exception as e:
                 logger.error(f"Supabase error get_reactions_for_idea: {e}")
         return [r for r in memory_db.reactions if r["idea_id"] == idea_id]
@@ -337,11 +682,22 @@ class DatabaseRepository:
                     .eq("user_id", user_id) \
                     .eq("reaction_type", reaction_type) \
                     .execute()
-                if res.data and len(res.data) > 0:
-                    reaction_id = res.data[0]["id"]
+                data = _as_dict_list(res.data)
+                if data:
+                    reaction_id = data[0]["id"]
                     supabase_client.table("reactions").delete().eq("id", reaction_id).execute()
                     return {"active": False, "reaction_type": reaction_type}
                 else:
+                    if reaction_type in ("like", "dislike"):
+                        opposite = "dislike" if reaction_type == "like" else "like"
+                        try:
+                            supabase_client.table("reactions").delete() \
+                                .eq("idea_id", idea_id) \
+                                .eq("user_id", user_id) \
+                                .eq("reaction_type", opposite) \
+                                .execute()
+                        except Exception:
+                            pass
                     new_reaction = {
                         "id": str(uuid.uuid4()),
                         "idea_id": idea_id,
@@ -356,13 +712,19 @@ class DatabaseRepository:
 
         existing = next(
             (r for r in memory_db.reactions 
-             if r["idea_id"] == idea_id and r["user_id"] == user_id and r["reaction_type"] == reaction_type),
+             if str(r.get("idea_id")) == idea_id and str(r.get("user_id")) == user_id and r.get("reaction_type") == reaction_type),
             None
         )
         if existing:
             memory_db.reactions.remove(existing)
             return {"active": False, "reaction_type": reaction_type}
         else:
+            if reaction_type in ("like", "dislike"):
+                opposite = "dislike" if reaction_type == "like" else "like"
+                memory_db.reactions = [
+                    r for r in memory_db.reactions
+                    if not (str(r.get("idea_id")) == idea_id and str(r.get("user_id")) == user_id and r.get("reaction_type") == opposite)
+                ]
             new_r = {
                 "id": str(uuid.uuid4()),
                 "idea_id": idea_id,
@@ -373,14 +735,100 @@ class DatabaseRepository:
             memory_db.reactions.append(new_r)
             return {"active": True, "reaction_type": reaction_type}
 
+    # --- TESTING FEEDBACK, USABILITY RATINGS & COMMENTS ---
+    @staticmethod
+    def get_feedback_for_idea(idea_id: str) -> List[Dict[str, Any]]:
+        remote_data: Optional[List[Dict[str, Any]]] = None
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("idea_feedback").select("*").eq("idea_id", idea_id).order("created_at", desc=True).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    remote_data = data
+            except Exception as e:
+                logger.info(f"Supabase idea_feedback fetch fallback: {e}")
+
+        if remote_data is not None and len(remote_data) > 0:
+            for itm in remote_data:
+                local_save_feedback(itm)
+            return remote_data
+
+        local_data = local_get_feedback(idea_id)
+        if local_data:
+            return local_data
+
+        return [f for f in memory_db.feedback if str(f.get("idea_id")) == idea_id]
+
+    @staticmethod
+    def create_feedback(feedback_data: Dict[str, Any]) -> Dict[str, Any]:
+        feedback_data["id"] = feedback_data.get("id") or str(uuid.uuid4())
+        feedback_data["created_at"] = feedback_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+        
+        # Trwały zapis w lokalnej bazie SQLite (dane nigdy nie znikną przy restartach serwera)
+        local_save_feedback(feedback_data)
+
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("idea_feedback").insert(feedback_data).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
+            except Exception as e:
+                logger.info(f"Supabase idea_feedback insert fallback: {e}")
+        memory_db.feedback.insert(0, feedback_data)
+        return feedback_data
+
+    @staticmethod
+    def get_comments_for_idea(idea_id: str) -> List[Dict[str, Any]]:
+        remote_data: Optional[List[Dict[str, Any]]] = None
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("idea_comments").select("*").eq("idea_id", idea_id).order("created_at", desc=False).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    remote_data = data
+            except Exception as e:
+                logger.info(f"Supabase idea_comments fetch fallback: {e}")
+
+        if remote_data is not None and len(remote_data) > 0:
+            for itm in remote_data:
+                local_save_comment(itm)
+            return remote_data
+
+        local_data = local_get_comments(idea_id)
+        if local_data:
+            return local_data
+
+        return [c for c in memory_db.comments if str(c.get("idea_id")) == idea_id]
+
+    @staticmethod
+    def create_comment(comment_data: Dict[str, Any]) -> Dict[str, Any]:
+        comment_data["id"] = comment_data.get("id") or str(uuid.uuid4())
+        comment_data["created_at"] = comment_data.get("created_at") or datetime.now(timezone.utc).isoformat()
+
+        # Trwały zapis w lokalnej bazie SQLite (dane nigdy nie znikną przy restartach serwera)
+        local_save_comment(comment_data)
+
+        if is_supabase_connected and supabase_client:
+            try:
+                res = supabase_client.table("idea_comments").insert(comment_data).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
+            except Exception as e:
+                logger.info(f"Supabase idea_comments insert fallback: {e}")
+        memory_db.comments.append(comment_data)
+        return comment_data
+
     # --- INNOVATIONS (RAG Database) ---
     @staticmethod
     def get_all_innovations() -> List[Dict[str, Any]]:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("innovations").select("*").execute()
-                if res.data and len(res.data) > 0:
-                    return res.data
+                data = _as_dict_list(res.data)
+                if data:
+                    return data
             except Exception as e:
                 logger.error(f"Supabase error get_all_innovations: {e}")
         return memory_db.innovations
@@ -390,11 +838,12 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("innovations").select("*").eq("id", innovation_id).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
             except Exception as e:
                 logger.error(f"Supabase error get_innovation_by_id: {e}")
-        return next((i for i in memory_db.innovations if str(i["id"]) == str(innovation_id)), None)
+        return next((i for i in memory_db.innovations if str(i["id"]) == innovation_id), None)
 
     @staticmethod
     def create_innovation(innovation_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -404,8 +853,9 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("innovations").insert(innovation_data).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
             except Exception as e:
                 logger.error(f"Supabase error create_innovation: {e}")
         memory_db.innovations.append(innovation_data)
@@ -428,8 +878,9 @@ class DatabaseRepository:
                         "match_count": match_count
                     }
                 ).execute()
-                if res.data is not None and len(res.data) > 0:
-                    return res.data
+                data = _as_dict_list(res.data)
+                if data:
+                    return data
             except Exception as e:
                 logger.info(f"RPC match_innovations niedostępne ({e}), używam hybrydowego wyszukiwania.")
         return None
@@ -449,8 +900,9 @@ class DatabaseRepository:
                     "embedding": problem_data.get("embedding")
                 }
                 res = supabase_client.table("reported_problems").insert(payload).execute()
-                if res.data and len(res.data) > 0:
-                    return {**problem_data, **res.data[0]}
+                data = _as_dict_list(res.data)
+                if data:
+                    return {**problem_data, **data[0]}
             except Exception as e:
                 logger.error(f"Supabase error save_reported_problem: {e}")
 
@@ -463,13 +915,13 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("reported_problems").select("*").order("created_at", desc=True).limit(limit).execute()
-                if res.data is not None:
-                    return res.data
+                data = _as_dict_list(res.data)
+                if data:
+                    return data
             except Exception as e:
                 logger.error(f"Supabase error get_reported_problems: {e}")
         return memory_db.reported_problems[:limit]
 
-    # --- CHAT & EXPERT COMMUNICATION ---
     @staticmethod
     def create_conversation(conv_data: Dict[str, Any]) -> Dict[str, Any]:
         conv_data["id"] = conv_data.get("id") or str(uuid.uuid4())
@@ -480,11 +932,25 @@ class DatabaseRepository:
         conv_data["unread_by_admin"] = conv_data.get("unread_by_admin", 0)
         conv_data["unread_by_user"] = conv_data.get("unread_by_user", 0)
 
+        clean_conv_data = dict(conv_data)
+        if clean_conv_data.get("idea_id"):
+            try:
+                uuid.UUID(str(clean_conv_data["idea_id"]))
+            except (ValueError, TypeError):
+                clean_conv_data["idea_id"] = None
+
+        if clean_conv_data.get("user_id"):
+            try:
+                uuid.UUID(str(clean_conv_data["user_id"]))
+            except (ValueError, TypeError):
+                clean_conv_data["user_id"] = str(uuid.uuid5(uuid.NAMESPACE_DNS, str(clean_conv_data["user_id"])))
+
         if is_supabase_connected and supabase_client:
             try:
-                res = supabase_client.table("chat_conversations").insert(conv_data).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                res = supabase_client.table("chat_conversations").insert(clean_conv_data).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
             except Exception as e:
                 logger.error(f"Supabase error create_conversation: {e}")
         memory_db.conversations.append(conv_data)
@@ -495,11 +961,12 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("chat_conversations").select("*").eq("id", conv_id).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
             except Exception as e:
                 logger.error(f"Supabase error get_conversation_by_id: {e}")
-        return next((c for c in memory_db.conversations if str(c["id"]) == str(conv_id)), None)
+        return next((c for c in memory_db.conversations if str(c["id"]) == conv_id), None)
 
     @staticmethod
     def get_conversations(user_id: Optional[str] = None, status: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -511,15 +978,16 @@ class DatabaseRepository:
                 if status:
                     query = query.eq("status", status)
                 res = query.execute()
-                if res.data is not None:
-                    return res.data
+                data = _as_dict_list(res.data)
+                if data:
+                    return data
             except Exception as e:
                 logger.error(f"Supabase error get_conversations: {e}")
 
         # In-memory filter
         res = memory_db.conversations
         if user_id:
-            res = [c for c in res if str(c.get("user_id")) == str(user_id)]
+            res = [c for c in res if str(c.get("user_id")) == user_id]
         if status:
             res = [c for c in res if c.get("status") == status]
         return sorted(res, key=lambda x: x.get("last_message_at", ""), reverse=True)
@@ -529,12 +997,13 @@ class DatabaseRepository:
         if is_supabase_connected and supabase_client:
             try:
                 res = supabase_client.table("chat_conversations").update(updates).eq("id", conv_id).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
             except Exception as e:
                 logger.error(f"Supabase error update_conversation: {e}")
 
-        conv = next((c for c in memory_db.conversations if str(c["id"]) == str(conv_id)), None)
+        conv = next((c for c in memory_db.conversations if str(c["id"]) == conv_id), None)
         if conv:
             conv.update(updates)
             return conv
@@ -566,11 +1035,19 @@ class DatabaseRepository:
                     conv_updates["status"] = "in_progress"
             DatabaseRepository.update_conversation(conv_id, conv_updates)
 
+        clean_msg = dict(msg_data)
+        if clean_msg.get("sender_id"):
+            try:
+                uuid.UUID(str(clean_msg["sender_id"]))
+            except (ValueError, TypeError):
+                clean_msg["sender_id"] = str(uuid.uuid5(uuid.NAMESPACE_DNS, str(clean_msg["sender_id"])))
+
         if is_supabase_connected and supabase_client:
             try:
-                res = supabase_client.table("chat_messages").insert(msg_data).execute()
-                if res.data and len(res.data) > 0:
-                    return res.data[0]
+                res = supabase_client.table("chat_messages").insert(clean_msg).execute()
+                data = _as_dict_list(res.data)
+                if data:
+                    return data[0]
             except Exception as e:
                 logger.error(f"Supabase error create_message: {e}")
         memory_db.messages.append(msg_data)
@@ -583,16 +1060,32 @@ class DatabaseRepository:
         after_id: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Pobiera wiadomości czatu z obsługą pollingu co 3 sekundy."""
+        clean_since = since
+        if since:
+            try:
+                s_norm = since.strip()
+                if " " in s_norm and "+" not in s_norm and not s_norm.endswith("Z"):
+                    if "T" in s_norm:
+                        s_norm = s_norm.replace(" ", "+")
+                    else:
+                        parts = s_norm.rsplit(" ", 1)
+                        if len(parts) == 2 and ":" in parts[1]:
+                            s_norm = f"{parts[0]}+{parts[1]}"
+                clean_since = datetime.fromisoformat(s_norm).isoformat()
+            except Exception:
+                clean_since = since
+
         if is_supabase_connected and supabase_client:
             try:
                 query = supabase_client.table("chat_messages").select("*").eq("conversation_id", conv_id).order("created_at", desc=False)
-                if since:
-                    query = query.gt("created_at", since)
+                if clean_since:
+                    query = query.gt("created_at", clean_since)
                 res = query.execute()
-                if res.data is not None:
-                    msgs = res.data
+                data = _as_dict_list(res.data)
+                if data:
+                    msgs = data
                     if after_id:
-                        idx = next((i for i, m in enumerate(msgs) if str(m.get("id")) == str(after_id)), -1)
+                        idx = next((i for i, m in enumerate(msgs) if str(m.get("id")) == after_id), -1)
                         if idx != -1:
                             msgs = msgs[idx + 1:]
                     return msgs
@@ -600,12 +1093,12 @@ class DatabaseRepository:
                 logger.error(f"Supabase error get_messages_for_conversation: {e}")
 
         # In-memory filter
-        matched = [m for m in memory_db.messages if str(m["conversation_id"]) == str(conv_id)]
+        matched = [m for m in memory_db.messages if str(m["conversation_id"]) == conv_id]
         sorted_msgs = sorted(matched, key=lambda x: x.get("created_at", ""))
-        if since:
-            sorted_msgs = [m for m in sorted_msgs if m.get("created_at", "") > since]
+        if clean_since:
+            sorted_msgs = [m for m in sorted_msgs if m.get("created_at", "") > clean_since]
         if after_id:
-            idx = next((i for i, m in enumerate(sorted_msgs) if str(m.get("id")) == str(after_id)), -1)
+            idx = next((i for i, m in enumerate(sorted_msgs) if str(m.get("id")) == after_id), -1)
             if idx != -1:
                 sorted_msgs = sorted_msgs[idx + 1:]
         return sorted_msgs

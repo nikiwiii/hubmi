@@ -11,7 +11,8 @@ import {
 import {
   ResearchInfo,
   getYearPowiatValues,
-  interpolateColor
+  interpolateColor,
+  formatResearchValue
 } from '../../lib/researchData';
 import {
   Play,
@@ -174,7 +175,7 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
           <div className="flex items-center gap-2 bg-stone-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs">
             <span>Wybrano: {selectedValueItem.powiatName}</span>
             <span className="bg-white/20 px-1.5 py-0.5 rounded text-[11px]">
-              {selectedValueItem.value} {research.unit}
+              {formatResearchValue(selectedValueItem.value)} {research.unit}
             </span>
             <button
               onClick={() => onSelectPowiat(null)}
@@ -238,7 +239,7 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
               <span className="text-xs text-stone-500 hidden sm:inline">
                 Średnia Małopolski ({selectedYear}):{' '}
                 <strong className="text-stone-900 font-bold">
-                  {stats.avg} {research.unit}
+                  {formatResearchValue(stats.avg)} {research.unit}
                 </strong>
               </span>
             </div>
@@ -293,6 +294,8 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
         <div className="relative bg-stone-50/70 rounded-2xl p-4 sm:p-8 border border-stone-200/70 flex flex-col items-center justify-center min-h-[380px] overflow-hidden">
           <div className="relative w-full max-w-2xl aspect-[315/211.134]">
             <svg
+              role="img"
+              aria-label={`Interaktywna mapa choropletowa powiatów województwa małopolskiego: ${research.titlePl} za rok ${selectedYear}`}
               viewBox="0 0 315 211.13402"
               className="w-full h-full drop-shadow-sm select-none"
               onMouseMove={(e) => {
@@ -367,7 +370,7 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
                 </div>
                 <div className="pt-1 flex items-baseline gap-2 border-t border-white/10">
                   <span className="text-amber-400 text-base font-extrabold">
-                    {hoveredValueItem.value} {research.unit}
+                    {formatResearchValue(hoveredValueItem.value)} {research.unit}
                   </span>
                   <span className="text-[10px] text-stone-400">
                     w roku {selectedYear}
@@ -380,9 +383,9 @@ export const ResearchChoroplethMap: React.FC<ResearchChoroplethMapProps> = ({
           {/* Legenda skali barwnej */}
           <div className="mt-4 w-full max-w-md bg-white/90 backdrop-blur-2xs p-3 rounded-2xl border border-stone-200/80 shadow-2xs space-y-1.5">
             <div className="flex items-center justify-between text-[11px] font-semibold text-stone-600">
-              <span>Min: {stats.min} {research.unit}</span>
-              <span className="text-stone-400">Śr: {stats.avg} {research.unit}</span>
-              <span>Max: {stats.max} {research.unit}</span>
+              <span>Min: {formatResearchValue(stats.min)} {research.unit}</span>
+              <span className="text-stone-400">Śr: {formatResearchValue(stats.avg)} {research.unit}</span>
+              <span>Max: {formatResearchValue(stats.max)} {research.unit}</span>
             </div>
             <div
               className="h-3 rounded-full w-full shadow-inner border border-stone-200/40"

@@ -12,7 +12,8 @@ import {
 import {
   ResearchInfo,
   PowiatTimeSeries,
-  getAllPowiatTimeSeries
+  getAllPowiatTimeSeries,
+  formatResearchValue
 } from '../../lib/researchData';
 import { SUBREGIONS } from '../../lib/malopolskaMapData';
 import {
@@ -244,10 +245,17 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                       >
                         Najnowszy ({research.years[research.years.length - 1]})
                       </span>
-                      <span className="text-xl font-extrabold tracking-tight">
-                        {item.endValue}{' '}
-                        <span className="text-xs font-normal opacity-80">{research.unit}</span>
-                      </span>
+                      <div className="text-xl font-extrabold tracking-tight leading-none mt-1">
+                        {formatResearchValue(item.endValue)}
+                      </div>
+                      <div
+                        className={`text-[11px] font-medium mt-0.5 truncate max-w-[130px] ${
+                          isSelected ? 'text-stone-300' : 'text-stone-500'
+                        }`}
+                        title={research.unit}
+                      >
+                        {research.unit}
+                      </div>
                     </div>
 
                     <div className="text-right">
@@ -256,7 +264,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                           isSelected ? 'text-stone-300' : 'text-stone-500'
                         }`}
                       >
-                        Zmiana 11 lat
+                        Zmiana ({research.years.length} lat)
                       </span>
                       <div className="flex items-center justify-end gap-1">
                         {isPositive ? (
@@ -283,7 +291,7 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                               : 'text-rose-700'
                           }`}
                         >
-                          {item.delta > 0 ? `+${item.delta}` : item.delta}
+                          {item.delta > 0 ? `+${formatResearchValue(item.delta)}` : formatResearchValue(item.delta)}
                         </span>
                       </div>
                     </div>
@@ -291,7 +299,11 @@ export const PowiatChartsGrid: React.FC<PowiatChartsGridProps> = ({
                 </div>
 
                 {/* Wykres liniowy Recharts dla danego powiatu */}
-                <div className="w-full h-[120px] mt-3 pt-2 border-t border-dashed border-stone-200/50">
+                <div
+                  role="region"
+                  aria-label={`Mini wykres trendu wskaźnika dla powiatu ${item.powiatName} w latach 2014-2024`}
+                  className="w-full h-[120px] mt-3 pt-2 border-t border-dashed border-stone-200/50"
+                >
                   {isMounted ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
