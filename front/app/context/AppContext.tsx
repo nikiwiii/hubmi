@@ -10,7 +10,7 @@ import {
   InstitutionProfile,
   ServiceCardResponse,
 } from '../lib/types';
-import { getCurrentUser, setCurrentUser as setStoredCurrentUser } from '../lib/auth';
+import { setCurrentUser as setStoredCurrentUser } from '../lib/auth';
 import {
   getIdeas,
   saveIdeas,
@@ -98,12 +98,11 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
-  const [currentUser, setCurrentUserState] = useState<User | null>(() => {
-    return getCurrentUser();
-  });
+  // null on the first render so the server HTML matches the client. The session is read after mount.
+  const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
-  const [isLoadingUser, setIsLoadingUser] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   // Accessibility states
   const [fontSizeLevel, setFontSizeLevelState] = useState<'normal' | 'large' | 'huge'>(() => {
     if (typeof window !== 'undefined') {

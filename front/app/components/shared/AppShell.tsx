@@ -43,6 +43,18 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [currentUser, isLoadingUser, isAuthPage, isProtectedRoute, pathname, router]);
 
+  // Podczas sprawdzania sesji użytkownika. Ten sam widok na serwerze i w przeglądarce.
+  if (isLoadingUser) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F1] gap-3 text-stone-600">
+        <Loader2 className="w-8 h-8 animate-spin text-stone-900" />
+        <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+          Weryfikacja autoryzacji...
+        </p>
+      </main>
+    );
+  }
+
   // Jeśli użytkownik jest na stronie /auth
   if (isAuthPage) {
     if (currentUser) {
@@ -51,18 +63,6 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     return (
       <main className="min-h-screen flex flex-col bg-[#F4F4F0]">
         {children}
-      </main>
-    );
-  }
-
-  // Podczas sprawdzania sesji użytkownika
-  if (isLoadingUser) {
-    return (
-      <main className="min-h-screen flex flex-col items-center justify-center bg-[#F7F6F1] gap-3 text-stone-600">
-        <Loader2 className="w-8 h-8 animate-spin text-stone-900" />
-        <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-          Weryfikacja autoryzacji...
-        </p>
       </main>
     );
   }
