@@ -5,7 +5,6 @@ import unicodedata
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import Any
 from app.schemas import APPLICATION_STATUS_LABELS, ApplicationOut, CallField, CallOut
 
 logger = logging.getLogger("idea_creator.documents")
@@ -159,7 +158,7 @@ def _search_keys(label: str) -> list[str]:
 @dataclass
 class _Line:
     page_index: int
-    bbox: Any
+    bbox: "object"
     text: str
     size: float
     font: str
@@ -195,7 +194,7 @@ def _font_for(lines: list[_Line]) -> tuple[str, str]:
     for line in lines:
         if line.size >= 10:
             counts[line.font] = counts.get(line.font, 0) + 1
-    dominant = max(counts, key=lambda k: counts.get(k, 0), default="")
+    dominant = max(counts, key=counts.get, default="")
     if "calibri" in dominant.lower():
         return CARLITO_FILE, "carlito"
     if "dejavu" in dominant.lower():
