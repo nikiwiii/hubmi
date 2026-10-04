@@ -7,7 +7,7 @@ import { GeometricIllustration } from "../../components/shared/GeometricIllustra
 import { getThemeStyles } from "../../components/shared/IdeaCard";
 import { InnovationTestPanel } from "../../components/testing/InnovationTestPanel";
 import { useApp } from "../../context/AppContext";
-import { startExpertConversation } from "../../lib/api";
+import { startExpertConversation, fetchIdeaById } from "../../lib/api";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -42,6 +42,30 @@ export default function DiscoverIdeaDetailPage() {
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isOpeningChat, setIsOpeningChat] = useState(false);
+  const [directIdea, setDirectIdea] = useState<Idea | null>(null);
+  const [isDirectLoading, setIsDirectLoading] = useState(false);
+
+  const currentIndex = ideas.findIndex((i) => i.id === id);
+  const listIdea = currentIndex >= 0 ? ideas[currentIndex] : null;
+
+  useEffect(() => {
+    if (!listIdea && id && !isLoadingIdeas) {
+      let cancelled = false;
+      setIsDirectLoading(true);
+      fetchIdeaById(id)
+        .then((res) => {
+          if (!cancelled && res) setDirectIdea(res);
+        })
+        .finally(() => {
+          if (!cancelled) setIsDirectLoading(false);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+  }, [listIdea, id, isLoadingIdeas]);
+
+  const currentIdea = listIdea || directIdea;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -61,7 +85,7 @@ export default function DiscoverIdeaDetailPage() {
     };
   }, [isImageModalOpen]);
 
-  if (isLoadingIdeas) {
+  if (isLoadingIdeas || isDirectLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-stone-400 gap-3">
         <RefreshCw className="w-6 h-6 animate-spin text-stone-500" />
@@ -69,9 +93,6 @@ export default function DiscoverIdeaDetailPage() {
       </div>
     );
   }
-
-  const currentIndex = ideas.findIndex((i) => i.id === id);
-  const currentIdea = currentIndex >= 0 ? ideas[currentIndex] : null;
 
   if (!currentIdea) {
     return (
@@ -102,13 +123,17 @@ export default function DiscoverIdeaDetailPage() {
   const styles = getThemeStyles(theme);
 
   const handlePrev = () => {
-    const nextIdx = (currentIndex - 1 + ideas.length) % ideas.length;
-    router.push(`/discover/${ideas[nextIdx].id}`);
+    if (currentIndex >= 0 && ideas.length > 1) {
+      const nextIdx = (currentIndex - 1 + ideas.length) % ideas.length;
+      router.push(`/discover/${ideas[nextIdx].id}`);
+    }
   };
 
   const handleNext = () => {
-    const nextIdx = (currentIndex + 1) % ideas.length;
-    router.push(`/discover/${ideas[nextIdx].id}`);
+    if (currentIndex >= 0 && ideas.length > 1) {
+      const nextIdx = (currentIndex + 1) % ideas.length;
+      router.push(`/discover/${ideas[nextIdx].id}`);
+    }
   };
 
   return (

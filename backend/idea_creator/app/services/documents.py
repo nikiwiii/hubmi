@@ -3,10 +3,9 @@ import logging
 import re
 import unicodedata
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from zoneinfo import ZoneInfo
-
+from typing import Any
 from app.schemas import APPLICATION_STATUS_LABELS, ApplicationOut, CallField, CallOut
 
 logger = logging.getLogger("idea_creator.documents")
@@ -14,7 +13,11 @@ logger = logging.getLogger("idea_creator.documents")
 logging.getLogger("fontTools").setLevel(logging.WARNING)
 
 FONTS_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
-LOCAL_TZ = ZoneInfo("Europe/Warsaw")
+try:
+    from zoneinfo import ZoneInfo
+    LOCAL_TZ = ZoneInfo("Europe/Warsaw")
+except Exception:
+    LOCAL_TZ = timezone(timedelta(hours=2), name="Europe/Warsaw")
 PDF_MAGIC = b"%PDF-"
 
 
@@ -156,7 +159,7 @@ def _search_keys(label: str) -> list[str]:
 @dataclass
 class _Line:
     page_index: int
-    bbox: "object"
+    bbox: Any
     text: str
     size: float
     font: str
@@ -192,7 +195,7 @@ def _font_for(lines: list[_Line]) -> tuple[str, str]:
     for line in lines:
         if line.size >= 10:
             counts[line.font] = counts.get(line.font, 0) + 1
-    dominant = max(counts, key=counts.get, default="")
+    dominant = max(counts, key=lambda k: counts.get(k, 0), default="")
     if "calibri" in dominant.lower():
         return CARLITO_FILE, "carlito"
     if "dejavu" in dominant.lower():

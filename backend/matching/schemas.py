@@ -99,5 +99,6 @@ class InnovationCreate(BaseModel):
     target_group: Optional[str] = Field(None, description="Grupa docelowa")
     beneficiaries: Optional[str] = Field(None, description="Beneficjenci")
     url: Optional[str] = Field(None, description="Adres URL do szczegółów lub dokumentu")
+    video_url: Optional[str] = Field(None, description="Adres URL do filmu na YouTube (opcjonalny)")
     file_source: str = Field(..., description="Nazwa pliku źródłowego")
 

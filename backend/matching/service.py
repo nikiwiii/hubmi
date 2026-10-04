@@ -442,6 +442,9 @@ class MatchingService:
         raw_url = best_item.get("url")
         clean_url = raw_url if (raw_url and raw_url.startswith("http")) else None
 
+        raw_video_url = best_item.get("video_url")
+        clean_video_url = raw_video_url if (raw_video_url and raw_video_url.startswith("http")) else None
+
         top_solution = InnovationMatchItem(
             id=str(best_item.get("id")),
             title=best_item.get("title", ""),
@@ -450,6 +453,7 @@ class MatchingService:
             funding_info=best_item.get("funding_info"),
             target_group=best_item.get("target_group"),
             url=clean_url,
+            video_url=clean_video_url,
             file_source=best_item.get("file_source"),
             similarity=round(best_sim, 4),
             similarity_percentage=f"{round(best_sim * 100, 1)}%",
@@ -464,6 +468,8 @@ class MatchingService:
             if sim >= cutoff and len(close_solutions) < 2:
                 c_url = item.get("url")
                 clean_c_url = c_url if (c_url and c_url.startswith("http")) else None
+                c_video_url = item.get("video_url")
+                clean_c_video_url = c_video_url if (c_video_url and c_video_url.startswith("http")) else None
                 close_solutions.append(InnovationMatchItem(
                     id=str(item.get("id")),
                     title=item.get("title", ""),
@@ -472,6 +478,7 @@ class MatchingService:
                     funding_info=item.get("funding_info"),
                     target_group=item.get("target_group"),
                     url=clean_c_url,
+                    video_url=clean_c_video_url,
                     file_source=item.get("file_source"),
                     similarity=round(sim, 4),
                     similarity_percentage=f"{round(sim * 100, 1)}%",

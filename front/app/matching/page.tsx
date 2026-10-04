@@ -49,6 +49,7 @@ function MatchingContent() {
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasAutoSentRef = useRef(false);
 
   // Stan dyktowania głosowego
   const [initialTextBeforeDictation, setInitialTextBeforeDictation] =
@@ -180,9 +181,10 @@ function MatchingContent() {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  // Jeśli w URL podano parametr ?q=, wykonaj automatyczne wyszukiwanie
+  // Jeśli w URL podano parametr ?q=, wykonaj automatyczne wyszukiwanie jednokrotnie
   useEffect(() => {
-    if (initialQuery.trim()) {
+    if (initialQuery.trim() && !hasAutoSentRef.current) {
+      hasAutoSentRef.current = true;
       handleSendMessage(initialQuery.trim());
     }
   }, [initialQuery]);
