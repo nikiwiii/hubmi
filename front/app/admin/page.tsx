@@ -18,6 +18,7 @@ import {
   Clock,
   Users,
   FlaskConical,
+  LogOut,
 } from "lucide-react";
 import { CustomSelect } from "../components/shared/CustomSelect";
 import { DeleteIdeaModal } from "../components/shared/DeleteIdeaModal";
@@ -310,6 +311,20 @@ export default function AdminPage() {
             <FlaskConical className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
             <span>Sekcja Testera</span>
             <ExternalLink className="w-3.5 h-3.5 text-stone-400 group-hover:text-white transition-colors" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onUserChange(null);
+              setCurrentUser(null);
+              router.push("/auth");
+            }}
+            title="Wyloguj się z konta administratora"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/60 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5 text-red-600 dark:text-red-400" aria-hidden="true" />
+            <span>Wyloguj</span>
           </button>
 
           {/* Tab Switcher */}
