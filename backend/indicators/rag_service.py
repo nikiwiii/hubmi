@@ -7,299 +7,214 @@ from typing import Dict, Any, List, Optional, Tuple
 
 from config import GROQ_API_KEY, GROQ_MODEL
 from supabase_client import DatabaseRepository
-from matching.embeddings import compute_embedding, cosine_similarity
+from matching.embeddings import compute_embedding, cosine_similarity, compute_lexical_overlap, strip_accents
+from matching.service import EXPERTS_DIRECTORY, DEFAULT_EXPERT
 
 logger = logging.getLogger("hubmi.indicators.rag")
 
-# Słownik zmapowanych powiatów Małopolski (klucz unikalny -> nazwy i odmiany fleksyjne)
+# Słownik 22 powiatów Małopolski z odmianami fleksyjnymi i nazwami miast
 POWIATY_MAPPING = {
     "krakowski": {
         "id": "krakowski",
         "name": "powiat krakowski",
         "display_name": "Powiat Krakowski",
         "is_city": False,
-        "keywords": ["krakowskim", "krakowski", "krakowskiego", "krakowskie", "powiecie krakowskim", "ziemski krakowski"]
+        "keywords": ["krakowski", "krakowskim", "krakowskiego", "krakowskie", "powiecie krakowskim", "powiatu krakowskiego", "ziemski krakowski"]
     },
     "krakow": {
         "id": "krakow",
         "name": "powiat m. Kraków",
         "display_name": "Kraków (miasto)",
         "is_city": True,
-        "keywords": ["krakow", "kraków", "krakowie", "krakowa", "m. kraków", "miasto kraków", "m. krakow"]
+        "keywords": ["krakow", "kraków", "krakowie", "krakowa", "m. kraków", "miasto kraków", "m. krakow", "w krakowie"]
     },
     "bochenski": {
         "id": "bochenski",
         "name": "powiat bocheński",
         "display_name": "Powiat Bocheński",
         "is_city": False,
-        "keywords": ["bocheński", "bochenski", "bochnia", "bochni", "bocheńskim", "bochenskim"]
+        "keywords": ["bocheński", "bochenski", "bochnia", "bochni", "bocheńskim", "bochenskim", "bocheńskiego"]
     },
     "brzeski": {
         "id": "brzeski",
         "name": "powiat brzeski",
         "display_name": "Powiat Brzeski",
         "is_city": False,
-        "keywords": ["brzeski", "brzesku", "brzeskim", "brzeskiego", "brzesko"]
+        "keywords": ["brzeski", "brzesku", "brzeskim", "brzeskiego", "brzesko", "brzeskiem"]
     },
     "chrzanowski": {
         "id": "chrzanowski",
         "name": "powiat chrzanowski",
         "display_name": "Powiat Chrzanowski",
         "is_city": False,
-        "keywords": ["chrzanowski", "chrzanowie", "chrzanowskim", "chrzanów", "chrzanow"]
+        "keywords": ["chrzanowski", "chrzanowie", "chrzanowskim", "chrzanów", "chrzanow", "chrzanowskiego"]
     },
     "dabrowski": {
         "id": "dabrowski",
         "name": "powiat dąbrowski",
         "display_name": "Powiat Dąbrowski",
         "is_city": False,
-        "keywords": ["dąbrowski", "dabrowski", "dąbrowie", "dabrowskim", "dąbrowa tarnowska", "dabrowska"]
+        "keywords": ["dąbrowski", "dabrowski", "dąbrowie", "dabrowskim", "dąbrowa tarnowska", "dabrowska", "powiśle dąbrowskie"]
     },
     "gorlicki": {
         "id": "gorlicki",
         "name": "powiat gorlicki",
         "display_name": "Powiat Gorlicki",
         "is_city": False,
-        "keywords": ["gorlicki", "gorlicach", "gorlickim", "gorlice"]
+        "keywords": ["gorlicki", "gorlicach", "gorlickim", "gorlice", "gorlickiego"]
     },
     "limanowski": {
         "id": "limanowski",
         "name": "powiat limanowski",
         "display_name": "Powiat Limanowski",
         "is_city": False,
-        "keywords": ["limanowski", "limanowej", "limanowskim", "limanowa"]
+        "keywords": ["limanowski", "limanowej", "limanowskim", "limanowa", "limanowskiego"]
     },
     "nowy-sacz": {
         "id": "nowy-sacz",
         "name": "powiat m. Nowy Sącz",
         "display_name": "Nowy Sącz (miasto)",
         "is_city": True,
-        "keywords": ["nowy sącz", "nowym sączu", "nowego sącza", "nowy sacz", "m. nowy sącz"]
+        "keywords": ["nowy sącz", "nowym sączu", "nowego sącza", "nowy sacz", "m. nowy sącz", "miasto nowy sącz"]
     },
     "nowosadecki": {
         "id": "nowosadecki",
         "name": "powiat nowosądecki",
         "display_name": "Powiat Nowosądecki",
         "is_city": False,
-        "keywords": ["nowosądecki", "nowosadecki", "nowosądeckim", "nowosadeckim"]
+        "keywords": ["nowosądecki", "nowosadecki", "nowosądeckim", "nowosadeckim", "ziemski nowosądecki", "nowosądeckiego"]
     },
     "nowotarski": {
         "id": "nowotarski",
         "name": "powiat nowotarski",
         "display_name": "Powiat Nowotarski",
         "is_city": False,
-        "keywords": ["nowotarski", "nowym targu", "nowotarskim", "nowy targ"]
+        "keywords": ["nowotarski", "nowym targu", "nowotarskim", "nowy targ", "nowotarskiego"]
     },
     "miechowski": {
         "id": "miechowski",
         "name": "powiat miechowski",
         "display_name": "Powiat Miechowski",
         "is_city": False,
-        "keywords": ["miechowski", "miechowie", "miechowskim", "miechów", "miechow"]
+        "keywords": ["miechowski", "miechowie", "miechowskim", "miechów", "miechow", "miechowskiego"]
     },
     "myslenicki": {
         "id": "myslenicki",
         "name": "powiat myślenicki",
         "display_name": "Powiat Myślenicki",
         "is_city": False,
-        "keywords": ["myślenicki", "myslenicki", "myślenicach", "myslenicach", "myślenickim", "myślenice"]
+        "keywords": ["myślenicki", "myslenicki", "myślenicach", "myslenicach", "myślenickim", "myślenice", "myslenice", "myślenickiego"]
     },
     "olkuski": {
         "id": "olkuski",
         "name": "powiat olkuski",
         "display_name": "Powiat Olkuski",
         "is_city": False,
-        "keywords": ["olkuski", "olkuszu", "olkuskim", "olkusz"]
+        "keywords": ["olkuski", "olkuszu", "olkuskim", "olkusz", "olkuskiego"]
     },
     "oswiecimski": {
         "id": "oswiecimski",
         "name": "powiat oświęcimski",
         "display_name": "Powiat Oświęcimski",
         "is_city": False,
-        "keywords": ["oświęcimski", "oswiecimski", "oświęcimiu", "oswiecimiu", "oświęcimskim", "oświęcim"]
+        "keywords": ["oświęcimski", "oswiecimski", "oświęcimiu", "oswiecimiu", "oświęcimskim", "oświęcim", "oswiecim", "oświęcimskiego"]
     },
     "proszowicki": {
         "id": "proszowicki",
         "name": "powiat proszowicki",
         "display_name": "Powiat Proszowicki",
         "is_city": False,
-        "keywords": ["proszowicki", "proszowicach", "proszowickim", "proszowice"]
+        "keywords": ["proszowicki", "proszowicach", "proszowickim", "proszowice", "proszowickiego"]
     },
     "suski": {
         "id": "suski",
         "name": "powiat suski",
         "display_name": "Powiat Suski",
         "is_city": False,
-        "keywords": ["suski", "suskim", "sucha beskidzka", "suchej beskidzkiej"]
+        "keywords": ["suski", "suskim", "sucha beskidzka", "suchej beskidzkiej", "suskiego"]
     },
     "tarnow": {
         "id": "tarnow",
         "name": "powiat m. Tarnów",
         "display_name": "Tarnów (miasto)",
         "is_city": True,
-        "keywords": ["tarnów", "tarnowie", "tarnowa", "tarnow", "m. tarnów", "miasto tarnów"]
+        "keywords": ["tarnów", "tarnowie", "tarnowa", "tarnow", "m. tarnów", "miasto tarnów", "w tarnowie"]
     },
     "tarnowski": {
         "id": "tarnowski",
         "name": "powiat tarnowski",
         "display_name": "Powiat Tarnowski",
         "is_city": False,
-        "keywords": ["tarnowski", "tarnowskim", "tarnowskiego"]
+        "keywords": ["tarnowski", "tarnowskim", "tarnowskiego", "ziemski tarnowski"]
     },
     "tatrzanski": {
         "id": "tatrzanski",
         "name": "powiat tatrzański",
         "display_name": "Powiat Tatrzański",
         "is_city": False,
-        "keywords": ["tatrzański", "tatrzanski", "zakopane", "zakopanem", "tatrzańskim", "tatrzanskim", "podhale"]
+        "keywords": ["tatrzański", "tatrzanski", "zakopane", "zakopanem", "tatrzańskim", "tatrzanskim", "podhale", "tatrzańskiego"]
     },
     "wadowicki": {
         "id": "wadowicki",
         "name": "powiat wadowicki",
         "display_name": "Powiat Wadowicki",
         "is_city": False,
-        "keywords": ["wadowicki", "wadowicach", "wadowickim", "wadowice"]
+        "keywords": ["wadowicki", "wadowicach", "wadowickim", "wadowice", "wadowickiego"]
     },
     "wielicki": {
         "id": "wielicki",
         "name": "powiat wielicki",
         "display_name": "Powiat Wielicki",
         "is_city": False,
-        "keywords": ["wielicki", "wieliczce", "wielickim", "wieliczka"]
+        "keywords": ["wielicki", "wieliczce", "wielickim", "wieliczka", "wielickiego"]
     }
 }
 
-# Domenowe reguły dopasowania tematycznego (słowa kluczowe -> wskaźniki i wagi)
-TOPIC_INDICATOR_MAPPINGS = [
-    {
-        "category": "Niepełnosprawność i Dostępność",
-        "keywords": [
-            "wózek", "wozek", "wózkach", "wozkach", "niepełnosprawn", "niepelnosprawn", "inwalid",
-            "ruchow", "narząd ruchu", "barier", "dostępn", "podjazd", "schodołaz", "asystent",
-            "poruszani", "wózkowicz", "paraliż", "rehabilitac"
-        ],
-        "indicators": [
-            {"id": "severe_disability_share", "weight": 1.0, "reason": "Udział osób ze znacznym stopniem niepełnosprawności (w tym osób poruszających się na wózkach)."},
-            {"id": "disability_support_share", "weight": 0.95, "reason": "Wskaźnik pomocy społecznej z powodu niepełnosprawności w powiecie."},
-            {"id": "total_disability_share", "weight": 0.85, "reason": "Ogólny odsetek osób z orzeczeniem o niepełnosprawności w populacji."},
-            {"id": "residents_per_social_worker", "weight": 0.5, "reason": "Dostępność kadr socjalnych wspierających osoby z niepełnosprawnościami."}
-        ]
-    },
-    {
-        "category": "Seniorzy i Starzenie się",
-        "keywords": [
-            "senior", "starsz", "emeryt", "starości", "wiek podeszły", "babci", "dziadk",
-            "opieka", "wytchnieniow", "dps", "dom opieki", "samotn"
-        ],
-        "indicators": [
-            {"id": "disability_support_share", "weight": 0.8, "reason": "Wsparcie dla seniorów z niepełnosprawnościami i ograniczeniami sprawności."},
-            {"id": "average_hospital_stay", "weight": 0.75, "reason": "Hospitalizacja i potrzeby opiekuńczo-lecznicze seniorów."},
-            {"id": "residents_per_social_worker", "weight": 0.7, "reason": "Dostępność pracowników socjalnych dla osób starszych."},
-            {"id": "cash_social_assistance_benefits", "weight": 0.65, "reason": "Świadczenia dochodowe dla najuboższych emerytów."}
-        ]
-    },
-    {
-        "category": "Rynek Pracy i Ubóstwo",
-        "keywords": [
-            "praca", "bezroboci", "zatrudnien", "staż", "kwalifikacj", "aktywizacj",
-            "pieniądz", "zarob", "ubóstw", "bied", "dochod", "zasiłek"
-        ],
-        "indicators": [
-            {"id": "unemployed_longer_than_1_year", "weight": 0.95, "reason": "Długotrwałe bezrobocie i wykluczenie z rynku pracy."},
-            {"id": "working_age_population", "weight": 0.8, "reason": "Potencjał demograficzny i zasoby ludzkie w wieku produkcyjnym."},
-            {"id": "cash_social_assistance_benefits", "weight": 0.85, "reason": "Zasiłki i świadczenia socjalne z powodu braku środków do życia."},
-            {"id": "municipal_budget_expenditures", "weight": 0.6, "reason": "Nakłady budżetowe gmin na mieszkańca."}
-        ]
-    },
-    {
-        "category": "Zdrowie i Opieka Medyczna",
-        "keywords": [
-            "zdrowi", "szpital", "nowotwór", "rak", "lekarz", "medycyn", "apteka", "leczenie", "chorob"
-        ],
-        "indicators": [
-            {"id": "average_hospital_stay", "weight": 0.95, "reason": "Średni czas hospitalizacji i obciążenie łóżek szpitalnych."},
-            {"id": "cancer_incidence", "weight": 0.9, "reason": "Zapadalność na choroby nowotworowe w powiecie."},
-            {"id": "pharmacy_availability", "weight": 0.8, "reason": "Dostępność placówek aptecznych na terenie powiatu."}
-        ]
-    },
-    {
-        "category": "Rodzina i Piecza Zastępcza",
-        "keywords": [
-            "rodzin", "zastępcz", "dziec", "wychowawcz", "przedszkol", "wielodzietn", "maluch", "sierot"
-        ],
-        "indicators": [
-            {"id": "foster_families_count", "weight": 0.95, "reason": "Liczba aktywnych rodzin zastępczych w powiecie."},
-            {"id": "care_and_education_centers", "weight": 0.9, "reason": "Instytucjonalne placówki opiekuńczo-wychowawcze."},
-            {"id": "kindergarten_availability", "weight": 0.85, "reason": "Miejsca w przedszkolach dla dzieci w wieku 3–5 lat."},
-            {"id": "large_families_share", "weight": 0.8, "reason": "Udział rodzin wielodzietnych w strukturze społecznej."}
-        ]
-    }
-]
 
-
-def strip_accents_simple(text: str) -> str:
-    """Usuwa znaki diakrytyczne dla elastycznego porównywania."""
+def strip_accents_flexible(text: str) -> str:
+    """Usuwa znaki diakrytyczne dla elastycznego porównywania tekstu."""
     text = text.replace("ł", "l").replace("Ł", "L")
     return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn").lower()
 
 
-def detect_powiat(query: str, preferred_powiat_id: Optional[str] = None) -> Tuple[Optional[Dict[str, Any]], str]:
-    """Wykrywa powiat w zapytaniu użytkownika lub stosuje preferowany."""
-    if preferred_powiat_id and preferred_powiat_id in POWIATY_MAPPING:
-        return POWIATY_MAPPING[preferred_powiat_id], "explicit"
+def detect_powiat_from_query_or_pref(query: str, preferred_powiat_id: Optional[str] = None) -> Tuple[Dict[str, Any], str]:
+    """
+    KROK 1: Wykrycie powiatu.
+    NAJPIERW sprawdza czy użytkownik podał powiat w treści zapytania (np. 'w Nowym Sączu', 'tarnowskim').
+    DOPIERO gdy w treści nie ma powiatu, stosuje preferred_powiat_id z dropdownu.
+    """
+    q_clean = strip_accents_flexible(query)
 
-    q_lower = query.lower()
-    q_clean = strip_accents_simple(query)
+    # 1. Sprawdź najdłuższe i najbardziej specyficzne frazy najpierw (np. 'powiat krakowski' przed 'krakow')
+    if any(k in q_clean for k in ["powiat krakow", "powiecie krakow", "powiatu krakow", "ziemski krakow"]):
+        return POWIATY_MAPPING["krakowski"], "detected_in_query"
 
-    # 1. Specjalny test dla "powiat krakowski" vs "krakow"
-    if "powiat krakow" in q_clean or "powiecie krakow" in q_clean or "powiatu krakow" in q_clean or "ziemski krakow" in q_clean:
-        return POWIATY_MAPPING["krakowski"], "detected"
+    if any(k in q_clean for k in ["nowy sacz", "nowym saczu", "nowego sacza"]):
+        if any(k in q_clean for k in ["powiat nowosad", "ziemski nowosad"]):
+            return POWIATY_MAPPING["nowosadecki"], "detected_in_query"
+        return POWIATY_MAPPING["nowy-sacz"], "detected_in_query"
 
-    # 2. Sprawdzenie fraz dla każdego powiatu
+    if any(k in q_clean for k in ["powiat tarnow", "powiecie tarnow", "ziemski tarnow"]):
+        return POWIATY_MAPPING["tarnowski"], "detected_in_query"
+
+    # Sprawdzenie wszystkich powiatów w treści zapytania
     for p_id, p_info in POWIATY_MAPPING.items():
         for kw in p_info["keywords"]:
-            kw_clean = strip_accents_simple(kw)
-            pattern = r"\b" + re.escape(kw_clean) + r"\b"
+            kw_clean = strip_accents_flexible(kw)
+            pattern = r"(?:\b|_)" + re.escape(kw_clean) + r"(?:\b|_)"
             if re.search(pattern, q_clean):
-                return p_info, "detected"
+                return p_info, "detected_in_query"
 
-    # Domyślnie brak specyficznego powiatu
-    return None, "none"
+    # 2. Jeśli w zapytaniu nie podano żadnego powiatu, użyj wybranego z selektora UI
+    if preferred_powiat_id and preferred_powiat_id in POWIATY_MAPPING:
+        return POWIATY_MAPPING[preferred_powiat_id], "explicit_dropdown"
 
-
-def detect_topics(query: str) -> List[Dict[str, Any]]:
-    """Identyfikuje tematy społeczne i powiązane wskaźniki."""
-    q_clean = strip_accents_simple(query)
-    detected_indicators: Dict[str, Dict[str, Any]] = {}
-
-    for mapping in TOPIC_INDICATOR_MAPPINGS:
-        matches = 0
-        matched_words = []
-        for kw in mapping["keywords"]:
-            kw_clean = strip_accents_simple(kw)
-            if kw_clean in q_clean:
-                matches += 1
-                matched_words.append(kw)
-
-        if matches > 0:
-            for ind in mapping["indicators"]:
-                ind_id = ind["id"]
-                score = ind["weight"] * min(1.0, 0.6 + matches * 0.2)
-                if ind_id not in detected_indicators or detected_indicators[ind_id]["score"] < score:
-                    detected_indicators[ind_id] = {
-                        "id": ind_id,
-                        "category": mapping["category"],
-                        "score": score,
-                        "reason": ind["reason"],
-                        "matched_words": matched_words
-                    }
-
-    sorted_indicators = sorted(detected_indicators.values(), key=lambda x: x["score"], reverse=True)
-    return sorted_indicators
+    # 3. Domyślny fallback: Powiat Krakowski
+    return POWIATY_MAPPING["krakowski"], "default"
 
 
 def load_indicators_data() -> Dict[str, Any]:
-    """Wczytuje zaktualizowany plik visualize_data.json."""
+    """Wczytuje zaktualizowany plik visualize_data.json ze wskaźnikami ROPS."""
     candidates = [
         Path(__file__).resolve().parent.parent / "visualize_data.json",
         Path(__file__).resolve().parent.parent.parent / "front" / "app" / "lib" / "visualize_data.json"
@@ -314,58 +229,98 @@ def load_indicators_data() -> Dict[str, Any]:
     return {}
 
 
+# Cache wektorów dla wskaźników (żeby nie liczyć ich przy każdym zapytaniu)
+_INDICATORS_EMBEDDING_CACHE: Dict[str, List[float]] = {}
+
+
+def get_indicator_embedding(ind_id: str, ind_info: Dict[str, Any]) -> List[float]:
+    global _INDICATORS_EMBEDDING_CACHE
+    if ind_id in _INDICATORS_EMBEDDING_CACHE:
+        return _INDICATORS_EMBEDDING_CACHE[ind_id]
+
+    doc_text = f"{ind_info.get('name', '')}. Opis: {ind_info.get('description', '')}. Jednostka: {ind_info.get('unit', '')}"
+    vec = compute_embedding(doc_text)
+    _INDICATORS_EMBEDDING_CACHE[ind_id] = vec
+    return vec
+
+
 class KnowledgeRagService:
     @classmethod
     def execute_rag(cls, query: str, preferred_powiat_id: Optional[str] = None) -> Dict[str, Any]:
         """
-        Główny silnik RAG dla Raportów i Zasobnika Badań Społecznych:
-        1. Ekstrakcja powiatu (np. Powiat Krakowski).
-        2. Ekstrakcja tematów (np. osoby na wózkach -> niepełnosprawność).
-        3. Pobranie danych wskaźników z bazy ROPS.
-        4. Wyszukanie innowacji z bazy 115 projektów ROPS.
-        5. Synteza analityczna przez LLM Groq (lub inteligentny generator deterministyczny).
-        6. Przygotowanie serii czasowych i wykresów do wizualizacji.
+        DYNAMICZNY SILNIK RAG:
+        1. Rozpoznaje powiat (NAJPIERW z treści zapytania, a dopiero potem z preferencji).
+        2. Wektoryzuje zapytanie użytkownika (SentenceTransformer).
+        3. Oblicza semantyczne i leksykalne podobieństwo zapytania do KAŻDEGO z 17 wskaźników ROPS.
+        4. Pobiera dane historyczne i pozycję wykrytego powiatu dla NAJLEPIEJ pasujących wskaźników.
+        5. Wyszukuje semantycznie dopasowane innowacje ze 115 projektów ROPS.
+        6. Dobiera dedykowanego eksperta merytorycznego ROPS.
+        7. Generuje syntezę analityczną przez LLM Groq (lub inteligentny generator deterministyczny).
         """
         all_data = load_indicators_data()
 
-        # 1. Rozpoznanie powiatu
-        detected_powiat_info, powiat_match_type = detect_powiat(query, preferred_powiat_id)
-        if not detected_powiat_info:
-            # Fallback na Powiat Krakowski jeśli zapytanie pyta o wózki bez powiatu lub domyślny region
-            if any(w in query.lower() for w in ["wózk", "wozk", "krakow", "niepełnosprawn"]):
-                detected_powiat_info = POWIATY_MAPPING["krakowski"]
-            else:
-                detected_powiat_info = POWIATY_MAPPING["krakowski"]
-
+        # 1. Wykrycie powiatu (Query FIRST, dropdown second)
+        detected_powiat_info, match_source = detect_powiat_from_query_or_pref(query, preferred_powiat_id)
         powiat_raw_name = detected_powiat_info["name"]
         powiat_display_name = detected_powiat_info["display_name"]
         powiat_id = detected_powiat_info["id"]
 
-        # 2. Rozpoznanie tematów i wskaźników
-        matched_topic_entries = detect_topics(query)
-        if not matched_topic_entries:
-            # Domyślne wskaźniki przy zapytaniu ogólnym
-            matched_topic_entries = [
-                {"id": "severe_disability_share", "category": "Niepełnosprawność", "score": 0.95, "reason": "Osoby ze znacznym stopniem niepełnosprawności i na wózkach."},
-                {"id": "disability_support_share", "category": "Niepełnosprawność", "score": 0.9, "reason": "Pomoc społeczna dla osób z niepełnosprawnościami."},
-                {"id": "total_disability_share", "category": "Niepełnosprawność", "score": 0.85, "reason": "Wskaźnik orzeczeń o niepełnosprawności w populacji."}
-            ]
+        # 2. Generowanie wektora zapytania
+        query_vector = compute_embedding(query)
 
-        # 3. Zgromadzenie danych statystycznych dla pasujących wskaźników
+        # 3. SEMANTYCZNE DOPASOWANIE WSKAŹNIKÓW (zamiast sztywnych reguł)
+        scored_indicators = []
+        for ind_id, ind_info in all_data.items():
+            ind_vec = get_indicator_embedding(ind_id, ind_info)
+            vec_sim = cosine_similarity(query_vector, ind_vec)
+
+            doc_text = f"{ind_info.get('name', '')} {ind_info.get('description', '')}"
+            lex_score, _ = compute_lexical_overlap(query, doc_text)
+
+            # Specjalne wzmocnienia domenowe dla charakterystycznych pojęć
+            q_clean = strip_accents_flexible(query)
+            boost = 0.0
+
+            # Niepełnosprawność i wózki
+            if any(w in q_clean for w in ["wozk", "niepelnosprawn", "inwalid", "ruchow", "barier", "dostepn"]):
+                if ind_id in ["severe_disability_share", "disability_support_share", "total_disability_share"]:
+                    boost += 0.35
+            # Bezrobocie i praca
+            if any(w in q_clean for w in ["prac", "bezroboc", "zatrudn", "zarob", "ubostw", "staz"]):
+                if ind_id in ["unemployed_longer_than_1_year", "working_age_population", "cash_social_assistance_benefits"]:
+                    boost += 0.35
+            # Seniorzy
+            if any(w in q_clean for w in ["senior", "starsz", "emeryt", "starosc"]):
+                if ind_id in ["disability_support_share", "average_hospital_stay", "residents_per_social_worker"]:
+                    boost += 0.35
+            # Zdrowie i szpitale
+            if any(w in q_clean for w in ["szpital", "zdrow", "rak", "nowotwor", "medycyn", "lecz"]):
+                if ind_id in ["average_hospital_stay", "cancer_incidence", "pharmacy_availability"]:
+                    boost += 0.35
+            # Dzieci i rodziny
+            if any(w in q_clean for w in ["rodzin", "dziec", "zastepc", "piecz", "wychowaw", "przedszkol"]):
+                if ind_id in ["foster_families_count", "care_and_education_centers", "kindergarten_availability", "large_families_share"]:
+                    boost += 0.35
+            # Kultura
+            if any(w in q_clean for w in ["muze", "kultur"]):
+                if ind_id in ["museum_availability", "urbanization_rate"]:
+                    boost += 0.35
+
+            final_score = (0.5 * vec_sim + 0.5 * lex_score) + boost
+            scored_indicators.append((final_score, ind_id, ind_info))
+
+        # Sortuj wskaźniki po najwyższym dopasowaniu
+        scored_indicators.sort(key=lambda x: x[0], reverse=True)
+        top_matched_indicators = scored_indicators[:4]
+
+        # 4. Zgromadzenie danych statystycznych dla wybranych wskaźników
         reports_summary: List[Dict[str, Any]] = []
-
-        for item in matched_topic_entries:
-            ind_id = item["id"]
-            ind_info = all_data.get(ind_id)
-            if not ind_info:
-                continue
-
+        for score, ind_id, ind_info in top_matched_indicators:
             years = ind_info.get("years", [])
             unit = ind_info.get("unit", "")
             dane_powiaty = ind_info.get("dane_powiaty", {})
             powiat_series = dane_powiaty.get(powiat_raw_name, {})
 
-            # Oblicz wartości dla powiatu
             latest_year = years[-1] if years else ""
             first_year = years[0] if years else ""
             latest_powiat_val = powiat_series.get(latest_year, 0.0) if latest_year else 0.0
@@ -373,7 +328,6 @@ class KnowledgeRagService:
 
             delta = round(latest_powiat_val - first_powiat_val, 2) if len(years) > 1 else 0.0
 
-            # Oblicz średnią regionalną w najnowszym roku
             all_vals_latest = [
                 p_dict.get(latest_year, 0.0)
                 for p_dict in dane_powiaty.values()
@@ -381,7 +335,6 @@ class KnowledgeRagService:
             ]
             region_avg_latest = round(sum(all_vals_latest) / len(all_vals_latest), 2) if all_vals_latest else 0.0
 
-            # Oblicz pozycję (ranking) powiatu
             ranked = sorted(
                 [(p_name, p_dict.get(latest_year, 0.0)) for p_name, p_dict in dane_powiaty.items()],
                 key=lambda x: x[1],
@@ -389,7 +342,6 @@ class KnowledgeRagService:
             )
             rank = next((idx + 1 for idx, (p_name, _) in enumerate(ranked) if p_name == powiat_raw_name), 1)
 
-            # Serie czasowe do wykresów
             time_series = []
             for y in years:
                 val = powiat_series.get(y)
@@ -399,7 +351,7 @@ class KnowledgeRagService:
             reports_summary.append({
                 "id": ind_id,
                 "title": ind_info.get("name", ind_id),
-                "category": item["category"],
+                "category": cls._derive_category_for_indicator(ind_id),
                 "unit": unit,
                 "description": ind_info.get("description", ""),
                 "latest_year": latest_year,
@@ -409,11 +361,11 @@ class KnowledgeRagService:
                 "region_avg": region_avg_latest,
                 "rank": rank,
                 "total_powiats": len(dane_powiaty) or 22,
-                "reason": item["reason"],
+                "reason": f"Dopasowanie semantyczne do zapytania ({round(score * 100, 1)}%)",
                 "time_series": time_series
             })
 
-        # Wybierz główny wskaźnik do wykresu czasowego (najlepiej z wieloma latami pomiarów)
+        # Wybór wskaźnika głównego (preferowany wieloletni szereg czasowy)
         primary_report = None
         for r in reports_summary:
             if len(r["time_series"]) > 1:
@@ -422,7 +374,7 @@ class KnowledgeRagService:
         if not primary_report and reports_summary:
             primary_report = reports_summary[0]
 
-        # 4. Przygotowanie danych do interaktywnych wykresów
+        # 5. Przygotowanie serii czasowych i wykresów
         chart_data: Dict[str, Any] = {}
         if primary_report:
             p_ind = all_data.get(primary_report["id"], {})
@@ -430,10 +382,8 @@ class KnowledgeRagService:
             dane_p = p_ind.get("dane_powiaty", {})
             pow_series = dane_p.get(powiat_raw_name, {})
 
-            # Wykres liniowy trendu (Powiat vs Średnia Małopolski)
             trend_chart = []
             for y in years:
-                # Oblicz regionalną średnią w roku y
                 vals_y = [d.get(y) for d in dane_p.values() if d.get(y) is not None]
                 avg_y = round(sum(vals_y) / len(vals_y), 2) if vals_y else 0.0
                 p_val = pow_series.get(y)
@@ -443,7 +393,6 @@ class KnowledgeRagService:
                     "regionAvg": avg_y
                 })
 
-            # Wykres słupkowy porównawczy w najnowszym roku (Powiat vs m. Kraków vs Średnia vs Sąsiedzi)
             latest_y = primary_report["latest_year"]
             all_ranked_latest = sorted(
                 [
@@ -464,30 +413,26 @@ class KnowledgeRagService:
                 "unit": primary_report["unit"],
                 "latest_year": latest_y,
                 "trend_series": trend_chart,
-                "comparison_bars": all_ranked_latest[:8]  # Top 8 lub sąsiedzi
+                "comparison_bars": all_ranked_latest[:8]
             }
 
-        # 5. Wyszukanie innowacji z bazy ROPS
+        # 6. SEMANTYCZNE WYSZUKIWANIE INNOWACJI SPOŁECZNYCH ZE 115 PROJEKTÓW
         all_innovations = DatabaseRepository.get_all_innovations()
-        matched_innovations = cls._match_innovations_for_query(query, all_innovations)
+        matched_innovations = cls._match_innovations_semantically(query_vector, query, all_innovations)
 
-        # 6. Dedykowany ekspert ROPS
-        expert_info = {
-            "name": "inż. Paweł Zieliński",
-            "title": "Koordynator Dostępności i Likwidacji Barier",
-            "department": "Ośrodek Dostępności Przestrzennej ROPS Kraków",
-            "specialization": "Likwidacja barier architektonicznych, audyty dostępności, innowacje transportowe dla osób na wózkach",
-            "chat_url": "/chat?topic=Dostepnosc-i-wozki-powiat-krakowski"
-        }
+        # 7. DOBÓR DEDYKOWANEGO EKSPERTA MERYTORYCZNEGO ROPS
+        matched_expert = cls._pick_domain_expert(query)
 
-        # 7. Generowanie syntezy AI RAG
+        # 8. GENEROWANIE SYNTEZY AI (Groq lub inteligentny fallback)
         ai_synthesis = cls._generate_ai_synthesis(
             query=query,
             powiat_name=powiat_display_name,
             reports=reports_summary,
             innovations=matched_innovations,
-            expert=expert_info
+            expert=matched_expert
         )
+
+        detected_topics = list({r["category"] for r in reports_summary})
 
         return {
             "success": True,
@@ -498,57 +443,109 @@ class KnowledgeRagService:
                 "display_name": powiat_display_name,
                 "is_city": detected_powiat_info.get("is_city", False)
             },
-            "detected_topics": [t["category"] for t in matched_topic_entries[:3]],
+            "detected_topics": detected_topics[:3],
             "ai_synthesis": ai_synthesis,
             "primary_report": primary_report,
             "matched_reports": reports_summary,
             "chart_data": chart_data,
             "matched_innovations": matched_innovations,
-            "matched_expert": expert_info
+            "matched_expert": matched_expert
         }
 
+    @staticmethod
+    def _derive_category_for_indicator(ind_id: str) -> str:
+        cat_map = {
+            "severe_disability_share": "Niepełnosprawność",
+            "disability_support_share": "Niepełnosprawność",
+            "total_disability_share": "Niepełnosprawność",
+            "unemployed_longer_than_1_year": "Rynek Pracy",
+            "working_age_population": "Demografia",
+            "cash_social_assistance_benefits": "Pomoc Społeczna",
+            "residents_per_social_worker": "Pomoc Społeczna",
+            "average_hospital_stay": "Zdrowie",
+            "cancer_incidence": "Zdrowie",
+            "pharmacy_availability": "Zdrowie",
+            "foster_families_count": "Piecza Zastępcza",
+            "care_and_education_centers": "Piecza Zastępcza",
+            "kindergarten_availability": "Edukacja",
+            "large_families_share": "Rodzina",
+            "municipal_budget_expenditures": "Finanse",
+            "museum_availability": "Kultura",
+            "urbanization_rate": "Demografia"
+        }
+        return cat_map.get(ind_id, "Polityka Społeczna")
+
     @classmethod
-    def _match_innovations_for_query(cls, query: str, innovations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Dopasowuje najbardziej trafne innowacje z bazy ROPS Kraków."""
-        q_lower = query.lower()
+    def _match_innovations_semantically(
+        cls,
+        query_vector: List[float],
+        query_text: str,
+        innovations: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Przeszukuje semantycznie bazę 115 innowacji ROPS za pomocą embeddingów i pokrycia leksykalnego."""
         scored = []
-
-        is_wheelchair = any(w in q_lower for w in ["wózk", "wozk", "niepełnosprawn", "ruchow", "barier", "dostępn"])
-
         for inn in innovations:
-            title = inn.get("title", "")
-            desc = inn.get("description", "")
-            problems = inn.get("addressed_problems", "")
-            full_text = f"{title} {desc} {problems}".lower()
+            emb = inn.get("embedding")
+            if isinstance(emb, str):
+                try:
+                    emb = json.loads(emb)
+                except Exception:
+                    emb = None
+            if not emb:
+                text_to_embed = f"{inn.get('title', '')}. Problem: {inn.get('addressed_problems', '')}. Opis: {inn.get('description', '')}"
+                emb = compute_embedding(text_to_embed)
 
-            score = 0
-            if is_wheelchair:
-                if any(w in full_text for w in ["wózk", "wozk", "wózek", "wozek"]):
-                    score += 50
-                if any(w in full_text for w in ["niepełnosprawn", "ruchow", "barier"]):
-                    score += 30
-                if any(w in full_text for w in ["dostępn", "rampa", "transport", "podjazd"]):
-                    score += 20
-            else:
-                for word in q_lower.split():
-                    if len(word) >= 4 and word in full_text:
-                        score += 15
+            vec_sim = cosine_similarity(query_vector, emb)
+            doc_text = f"{inn.get('title', '')} {inn.get('addressed_problems', '')} {inn.get('description', '')} {inn.get('target_group', '')}"
+            lex_score, _ = compute_lexical_overlap(query_text, doc_text)
 
-            if score > 0:
-                raw_url = inn.get("url")
-                clean_url = raw_url if (raw_url and raw_url.startswith("http")) else None
-                scored.append({
-                    "id": str(inn.get("id")),
-                    "title": title,
-                    "description": desc,
-                    "addressed_problems": problems,
-                    "funding_info": inn.get("funding_info"),
-                    "url": clean_url,
-                    "score": score
-                })
+            final_sim = 0.5 * vec_sim + 0.5 * lex_score if lex_score > 0 else vec_sim * 0.7
+
+            raw_url = inn.get("url")
+            clean_url = raw_url if (raw_url and raw_url.startswith("http")) else None
+
+            scored.append({
+                "id": str(inn.get("id")),
+                "title": inn.get("title", ""),
+                "description": inn.get("description", ""),
+                "addressed_problems": inn.get("addressed_problems", ""),
+                "funding_info": inn.get("funding_info"),
+                "url": clean_url,
+                "score": round(final_sim * 100, 1)
+            })
 
         scored.sort(key=lambda x: x["score"], reverse=True)
         return scored[:4]
+
+    @classmethod
+    def _pick_domain_expert(cls, query: str) -> Dict[str, Any]:
+        """Dobiera eksperta ROPS odpowiadającego tematyce zapytania."""
+        q_clean = strip_accents_flexible(query)
+        best_exp = DEFAULT_EXPERT
+        best_matches = 0
+        # Specjalne reguły dla kluczowych domen tematycznych
+        if any(w in q_clean for w in ["wozk", "niepelnosprawn", "ruchow", "inwalid", "barier", "dostepn"]):
+            for exp in EXPERTS_DIRECTORY:
+                if "Zieliński" in exp.get("name", ""):
+                    best_exp = exp
+                    best_matches = 99
+                    break
+
+        if best_matches < 99:
+            for exp in EXPERTS_DIRECTORY:
+                matches = sum(1 for kw in exp["keywords"] if strip_accents_flexible(kw) in q_clean)
+                if matches > best_matches:
+                    best_matches = matches
+                    best_exp = exp
+
+        topic_clean = re.sub(r"[^a-zA-Z0-9\s]", "", query)[:40].replace(" ", "-")
+        return {
+            "name": best_exp["name"],
+            "title": best_exp["title"],
+            "department": best_exp["department"],
+            "specialization": best_exp["specialization"],
+            "chat_url": f"/chat?topic=Konsultacja-{topic_clean}"
+        }
 
     @classmethod
     def _generate_ai_synthesis(
@@ -559,7 +556,7 @@ class KnowledgeRagService:
         innovations: List[Dict[str, Any]],
         expert: Dict[str, Any]
     ) -> str:
-        """Generuje merytoryczną, wyczerpującą syntezę RAG w języku polskim z odwołaniem do liczb."""
+        """Generuje syntezę RAG w języku polskim z odwołaniem do liczb i innowacji."""
         stats_lines = []
         for r in reports:
             delta_str = f"+{r['delta']}" if r['delta'] > 0 else str(r['delta'])
@@ -573,11 +570,11 @@ class KnowledgeRagService:
         for i in innovations[:3]:
             inn_lines.append(f"- **{i['title']}**: {i['description'][:140]}...")
 
-        # Próba wywołania Groq
+        # Próba wywołania Groq z modelem qwen
         if GROQ_API_KEY:
             try:
                 from groq import Groq
-                client = Groq(api_key=GROQ_API_KEY, timeout=6.0, max_retries=0)
+                client = Groq(api_key=GROQ_API_KEY, timeout=5.0, max_retries=0)
 
                 prompt = (
                     f"Jesteś Doradcą Analitycznym ROPS Kraków w systemie Hubmi. "
@@ -591,19 +588,17 @@ class KnowledgeRagService:
                     f"ZADANIE:\n"
                     f"Sformułuj rzetelną, przejrzystą i profesjonalną odpowiedź w formacie Markdown dla użytkownika. "
                     f"W odpowiedzi:\n"
-                    f"1. Bezpośrednio odpowiedz na zapytanie o sytuację w {powiat_name}.\n"
-                    f"2. Wykorzystaj i zacytuj dokładne liczby ze wskaźników powyżej (procenty, pozycja na tle Małopolski, trendy).\n"
-                    f"3. Wskaż kluczowe wnioski (np. wyzwania związane z barierami architektonicznymi, potrzebami opiekuńczymi i asystenckimi).\n"
-                    f"4. Zaproponuj gotowe rozwiązania z bazy innowacji ROPS.\n"
-                    f"Styl: empatyczny, profesjonalny, oparty na twardych danych liczbowych. Pisz wyłącznie po polsku."
+                    f"1. Bezpośrednio odnieś się do tematu zapytania w {powiat_name}.\n"
+                    f"2. Zacytuj dokładne liczby ze wskaźników powyżej (procenty, pozycję w regionie).\n"
+                    f"3. Przedstaw praktyczne wnioski i wyzwania w tym obszarze.\n"
+                    f"4. Zaproponuj wskazane innowacje społeczne ROPS jako gotowe rozwiązania.\n"
+                    f"Styl: profesjonalny, oparty na twardych danych. Pisz wyłącznie po polsku."
                 )
 
-                # Wywołujemy preferowany model qwen lub fallback
-                model_to_use = "qwen/qwen3.8-27b"
                 res = client.chat.completions.create(
-                    model=model_to_use,
+                    model="qwen/qwen3.8-27b",
                     messages=[
-                        {"role": "system", "content": "Jesteś ekspertem analitykiem diagnoz społecznych Małopolski."},
+                        {"role": "system", "content": "Jesteś analitykiem polityki społecznej Małopolski."},
                         {"role": "user", "content": prompt}
                     ],
                     max_tokens=350,
@@ -613,9 +608,9 @@ class KnowledgeRagService:
                 if content and len(content) > 100:
                     return content
             except Exception as e:
-                logger.warning(f"Błąd generowania Groq LLM: {e}. Używam generatora deterministycznego.")
+                logger.warning(f"Groq LLM call: {e}. Używam deterministycznego generatora.")
 
-        # Niezawodny generator deterministyczny (wysokiej jakości szablon z danymi)
+        # Deterministyczny generator syntezy na podstawie pobranych danych
         primary = reports[0] if reports else None
         p_val = primary['latest_value'] if primary else "–"
         p_unit = primary['unit'] if primary else "%"
@@ -623,18 +618,17 @@ class KnowledgeRagService:
         p_rank = primary['rank'] if primary else "–"
 
         deterministic_synthesis = (
-            f"### Analiza sytuacji w {powiat_name}\n\n"
-            f"Na podstawie diagnoz społecznych **Regionalnego Ośrodka Polityki Społecznej w Krakowie** oraz danych spisowych, "
-            f"w obszarze objętym Twoim zapytaniem zidentyfikowano kluczowe wskaźniki dla **{powiat_name}**:\n\n"
+            f"### Analiza sytuacji w: {powiat_name}\n\n"
+            f"Na podstawie badań **Regionalnego Ośrodka Polityki Społecznej w Krakowie** oraz danych spisowych, "
+            f"dla zapytania *„{query}”* w obszarze **{powiat_name}** zidentyfikowano kluczowe wskaźniki:\n\n"
             f"{chr(10).join(stats_lines)}\n\n"
-            f"#### 🔍 Główne wnioski i interpretacja danych:\n"
-            f"1. **Skala potrzeb i barier**: Wskaźnik głównej diagnozy w {powiat_name} wynosi **{p_val} {p_unit}** (przy średniej wojewódzkiej **{p_avg} {p_unit}**), "
-            f"co plasuje powiat na **{p_rank}. pozycji w Małopolsce**.\n"
-            f"2. **Dostępność przestrzenna**: Osoby o ograniczonej mobilności (w tym poruszające się na wózkach inwalidzkich) "
-            f"wymagają szczególnego wsparcia w zakresie likwidacji barier w transporcie lokalnym, instytucjach publicznych oraz budynkach mieszkalnych.\n"
-            f"3. **Rekomendowane działania**: Warto wykorzystać sprawdzone innowacje społeczne wypracowane w regionie małopolskim, "
-            f"które mogą być bezpośrednio replikowane na terenie Twojej gminy lub powiatu.\n\n"
-            f"Poniżej przygotowaliśmy interaktywny wykres szeregu czasowego oraz szczegółowe karty diagnoz społecznych."
+            f"#### 🔍 Kluczowe wnioski:\n"
+            f"1. **Skala wyzwania**: Wskaźnik wiodący (*{primary['title'] if primary else 'Diagnoza'}*) w **{powiat_name}** "
+            f"wynosi **{p_val} {p_unit}** przy średniej wojewódzkiej **{p_avg} {p_unit}** "
+            f"(co plasuje powiat na **{p_rank}. pozycji** w Małopolsce).\n"
+            f"2. **Dopasowane innowacje społeczne**: W panelu innowacji poniżej wytypowano projekty z bazy ROPS Kraków "
+            f"odpowiadające na to zagadnienie, gotowe do wdrożenia w lokalnych samorządach i organizacjach pozarządowych.\n"
+            f"3. **Wsparcie doradcze**: Możesz skonsultować ten problem bezpośrednio z ekspertem ROPS: **{expert['name']}** ({expert['specialization']})."
         )
 
         return deterministic_synthesis

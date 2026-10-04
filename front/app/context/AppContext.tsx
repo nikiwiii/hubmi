@@ -48,6 +48,12 @@ interface AppContextType {
   isLoadingUser: boolean;
   isLargeFont: boolean;
   toggleFontSize: () => void;
+  fontSizeLevel: 'normal' | 'large' | 'huge';
+  setFontSizeLevel: (level: 'normal' | 'large' | 'huge') => void;
+  isHighContrast: boolean;
+  toggleHighContrast: () => void;
+  isSoundEnabled: boolean;
+  toggleSound: () => void;
   vote: (id: string, type: 'like' | 'dislike') => Promise<void>;
   toggleTesting: (id: string) => Promise<void>;
   addIdea: (ideaData: any) => Promise<Idea>;
@@ -97,8 +103,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(true);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [isLargeFont, setIsLargeFont] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(false);
+  // Accessibility states
+  const [fontSizeLevel, setFontSizeLevelState] = useState<'normal' | 'large' | 'huge'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('minno_font_size_level');
+      if (saved === 'large' || saved === 'huge') return saved;
+    }
+    return 'normal';
+  });
+  const [isHighContrast, setIsHighContrast] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('minno_high_contrast') === 'true';
+    }
+    return false;
+  });
+  const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('minno_sound_enabled') !== 'false';
+    }
+    return true;
+  });
+
+  const isLargeFont = fontSizeLevel !== 'normal';
+
+  const setFontSizeLevel = (level: 'normal' | 'large' | 'huge') => {
+    setFontSizeLevelState(level);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('minno_font_size_level', level);
+    }
+  };
+
+  const toggleHighContrast = () => {
+    setIsHighContrast((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('minno_high_contrast', String(next));
+      }
+      return next;
+    });
+  };
+
+  const toggleSound = () => {
+    setIsSoundEnabled((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('minno_sound_enabled', String(next));
+      }
+      return next;
+    });
+  };
 
   // Innowacje (centralna baza danych i pamięć podręczna)
   const [innovations, setInnovations] = useState<InnovationRecord[]>(() => {
@@ -446,7 +500,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleFontSize = () => {
-    setIsLargeFont((prev) => !prev);
+    if (fontSizeLevel === 'normal') setFontSizeLevel('large');
+    else if (fontSizeLevel === 'large') setFontSizeLevel('huge');
+    else setFontSizeLevel('normal');
   };
 
   return (
@@ -459,6 +515,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isLoadingUser,
         isLargeFont,
         toggleFontSize,
+        fontSizeLevel,
+        setFontSizeLevel,
+        isHighContrast,
+        toggleHighContrast,
+        isSoundEnabled,
+        toggleSound,
         vote: handleVote,
         toggleTesting: handleToggleTesting,
         addIdea: handleAddIdea,
@@ -499,7 +561,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setMatchingMessages,
       }}
     >
-      <div className={`min-h-screen flex flex-col bg-[#F7F6F1] ${isLargeFont ? 'font-scale-large' : ''}`}>
+      <div
+        className={`min-h-screen flex flex-col transition-colors duration-150 ${
+          fontSizeLevel === 'huge'
+            ? 'font-scale-huge'
+            : fontSizeLevel === 'large'
+            ? 'font-scale-large'
+            : ''
+        } ${isHighContrast ? 'high-contrast' : 'bg-[#F7F6F1]'}`}
+      >
         {children}
       </div>
     </AppContext.Provider>

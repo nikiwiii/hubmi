@@ -40,10 +40,14 @@ body {
   background: rgba(0, 0, 0, 0.22);
 }
 
-/* WCAG 2.2 - Wyraźny wskaźnik skupienia klawiatury (Focus Indicator) */
+/* =========================================================================
+   WCAG 2.2 AA ACCESSIBILITY ENHANCEMENTS
+   ========================================================================= */
+
+/* Focus Visible: Clear high-contrast focus indicator for keyboard navigation */
 :focus-visible {
-  outline: 2px solid #1C1917 !important;
-  outline-offset: 2px !important;
+  outline: 2.5px solid #1c1917 !important;
+  outline-offset: 2.5px !important;
   border-radius: 4px;
 }
 
@@ -92,28 +96,26 @@ input[type="reset"],
   }
 }
 
-/* =========================================================================
-   WCAG 2.2 AA – Kontrast Kolorów (min. 4.5:1 normalny tekst, min. 3:1 duży)
-   Podbicie czytelności jasnych odcieni stone na jasnym tle (body:not(.dark)),
-   przy jednoczesnym zachowaniu kontrastu w ciemnych kontenerach (np. bg-stone-900).
-   ========================================================================= */
+/* Accessible placeholders: minimum 4.5:1 contrast against light backgrounds */
+input::placeholder,
+textarea::placeholder,
+::placeholder {
+  color: #57534e !important;
+  opacity: 1;
+}
 
-/* text-stone-400 na jasnym tle: podbijamy do #57534E (kontrast ~6.5:1 na #FAF9F5) */
+/* Kontrast tekstu na jasnym tle */
 body:not(.dark) .text-stone-400:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #57534E;
 }
-
-/* text-stone-500 na jasnym tle: podbijamy do #44403C (kontrast ~8.8:1 na #FAF9F5) */
 body:not(.dark) .text-stone-500:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #44403C;
 }
-
-/* Duże nagłówki z text-stone-300 na jasnym tle: podbijamy do #57534E (kontrast ~6.5:1) */
 body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.bg-black *):not([class*="from-stone-900"] *):not([role="dialog"] *) {
   color: #57534E;
 }
 
-/* Zachowanie wysokiego kontrastu w ciemnych kontenerach (modale, ciemne banery, czarne przyciski) */
+/* Zachowanie wysokiego kontrastu w ciemnych kontenerach */
 .bg-stone-900 .text-stone-400,
 .bg-stone-950 .text-stone-400,
 .bg-black .text-stone-400,
@@ -121,19 +123,12 @@ body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.b
 [role="dialog"] .text-stone-400 {
   color: #D6D3CD;
 }
-
 .bg-stone-900 .text-stone-300,
 .bg-stone-950 .text-stone-300,
 .bg-black .text-stone-300,
 [class*="from-stone-900"] .text-stone-300,
 [role="dialog"] .text-stone-300 {
   color: #E7E5E0;
-}
-
-/* WCAG 2.2 AA - Kontrast placeholderów i etykiet (min 4.5:1) */
-::placeholder {
-  color: #57534E !important;
-  opacity: 1;
 }
 
 /* Utility dla czytników ekranu */
@@ -149,18 +144,120 @@ body:not(.dark) .text-stone-300:not(.bg-stone-900 *):not(.bg-stone-950 *):not(.b
   border-width: 0;
 }
 
-/* 40+ Accessibility Font scaling */
-.font-scale-large {
-  font-size: 1.15rem;
+/* WCAG 1.4.4 Font Scaling (up to 200% scalable) */
+.font-scale-large,
+.font-scale-150 {
+  font-size: 1.25rem;
 }
-.font-scale-large h1 {
+.font-scale-large h1,
+.font-scale-150 h1 {
+  font-size: 130% !important;
+}
+.font-scale-large h2,
+.font-scale-150 h2 {
+  font-size: 125% !important;
+}
+.font-scale-large p,
+.font-scale-large span,
+.font-scale-large button,
+.font-scale-large input,
+.font-scale-large textarea,
+.font-scale-150 p,
+.font-scale-150 span,
+.font-scale-150 button,
+.font-scale-150 input,
+.font-scale-150 textarea {
   font-size: 115% !important;
 }
-.font-scale-large h2 {
-  font-size: 115% !important;
+
+.font-scale-huge,
+.font-scale-200 {
+  font-size: 1.5rem;
 }
-.font-scale-large p, .font-scale-large span, .font-scale-large button, .font-scale-large input, .font-scale-large textarea {
-  font-size: 110% !important;
+.font-scale-huge h1,
+.font-scale-200 h1 {
+  font-size: 160% !important;
+}
+.font-scale-huge h2,
+.font-scale-200 h2 {
+  font-size: 150% !important;
+}
+.font-scale-huge p,
+.font-scale-huge span,
+.font-scale-huge button,
+.font-scale-huge input,
+.font-scale-huge textarea,
+.font-scale-200 p,
+.font-scale-200 span,
+.font-scale-200 button,
+.font-scale-200 input,
+.font-scale-200 textarea {
+  font-size: 135% !important;
+}
+
+/* High Contrast Mode (WCAG AAA contrast) */
+.high-contrast {
+  --background: #000000 !important;
+  --foreground: #ffffff !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast :focus-visible {
+  outline: 3px solid #facc15 !important;
+  outline-offset: 3px !important;
+}
+
+.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast header,
+.high-contrast nav,
+.high-contrast aside,
+.high-contrast section,
+.high-contrast article,
+.high-contrast div.bg-white,
+.high-contrast div.bg-\[\#FAF9F5\],
+.high-contrast div.bg-\[\#F7F6F1\] {
+  background-color: #121212 !important;
+  border-color: #facc15 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast text,
+.high-contrast span,
+.high-contrast p,
+.high-contrast label,
+.high-contrast h1,
+.high-contrast h2,
+.high-contrast h3,
+.high-contrast h4 {
+  color: #ffffff !important;
+}
+
+.high-contrast .text-stone-400,
+.high-contrast .text-stone-500,
+.high-contrast .text-stone-600 {
+  color: #fef08a !important;
+}
+
+.high-contrast button {
+  border-color: #facc15 !important;
+}
+
+.high-contrast button:not(.bg-stone-900) {
+  background-color: #1c1917 !important;
+  color: #fef08a !important;
+}
+
+.high-contrast input,
+.high-contrast textarea,
+.high-contrast select {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #facc15 !important;
 }
 
 /* Middleman Innowacji – wydruk / zapis karty usługi jako PDF */

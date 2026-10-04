@@ -93,17 +93,17 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
   const styles = getThemeStyles(theme);
 
   return (
-    <div
-      role="article"
+    <article
       tabIndex={0}
+      role="article"
+      aria-label={`Karta projektu: ${idea.title}, kategoria ${idea.category}, autor ${idea.authorName}`}
       onClick={onClick}
       onKeyDown={(e) => {
-        if ((e.key === "Enter" || e.key === " ") && onClick) {
+        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
           e.preventDefault();
-          onClick();
+          onClick?.();
         }
       }}
-      aria-label={`Innowacja: ${idea.title}, Kategoria: ${idea.category}`}
       className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${styles.bg} min-h-[290px] border border-black/[0.04] select-none`}
     >
       {/* Top Header */}
@@ -117,15 +117,15 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
 
           <div className="flex flex-wrap items-center gap-1">
             {idea.status === "pending" && (
-              <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full shadow-2xs">
+              <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-600 text-white px-2 py-0.5 rounded-full shadow-2xs">
                 <Clock className="w-3 h-3" aria-hidden="true" />
                 <span>Oczekuje na akceptację</span>
               </span>
             )}
 
             {idea.lookingForPartner && (
-              <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-100/90 text-amber-900 border border-amber-300/60 px-2 py-0.5 rounded-full shadow-2xs">
-                <Handshake className="w-3 h-3 text-amber-700" aria-hidden="true" />
+              <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-100/90 text-amber-950 border border-amber-300/80 px-2 py-0.5 rounded-full shadow-2xs">
+                <Handshake className="w-3 h-3 text-amber-800" aria-hidden="true" />
                 <span>Szuka partnera</span>
               </span>
             )}
@@ -138,8 +138,8 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             )}
 
             {isTester && (
-              <span className="flex items-center gap-1 text-[11px] font-bold bg-white/90 text-stone-800 px-2 py-0.5 rounded-full shadow-2xs">
-                <Check className="w-3 h-3 text-emerald-600" aria-hidden="true" />
+              <span className="flex items-center gap-1 text-[11px] font-bold bg-white/95 text-stone-900 px-2 py-0.5 rounded-full shadow-2xs">
+                <Check className="w-3 h-3 text-emerald-700" aria-hidden="true" />
                 Tester
               </span>
             )}
@@ -152,7 +152,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {idea.title}
         </h3>
 
-        <p className={`text-xs font-medium line-clamp-1 ${styles.subtext}`}>
+        <p className={`text-xs font-semibold line-clamp-1 ${styles.subtext}`}>
           {idea.subtitle}
         </p>
 
@@ -169,19 +169,22 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage / data URLs */}
           <img
             src={idea.visualMockupUrl}
-            alt={`Wizualizacja prototypu innowacji: ${idea.title}`}
+            alt={`Wizualizacja projektu: ${idea.title}`}
             className="w-full aspect-4/3 object-cover transition-transform duration-300 group-hover:scale-103"
           />
         </div>
       ) : (
-        <div className="my-auto flex items-center justify-center py-2 transition-transform duration-300 group-hover:scale-103">
+        <div
+          className="my-auto flex items-center justify-center py-2 transition-transform duration-300 group-hover:scale-103"
+          aria-hidden="true"
+        >
           <GeometricIllustration shape={shape} theme={theme} size={90} />
         </div>
       )}
 
       {/* Bottom Footer with Author and Stats */}
       <div className="z-10 mt-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-black/[0.06]">
-        <p className={`text-xs font-bold ${styles.text}`}>{idea.authorName}</p>
+        <p className={`text-xs font-bold ${styles.text}`}>Autor: {idea.authorName}</p>
 
         {/* Action Counters & Buttons */}
         <div
@@ -193,9 +196,9 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             <button
               type="button"
               onClick={onPartner}
-              aria-label={`Zgłoś chęć partnerstwa dla innowacji: ${idea.title}`}
               title="Zgłoś chęć partnerstwa jako NGO, samorząd lub firma"
-              className="min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-200/80 hover:bg-amber-300 text-amber-950 transition-all cursor-pointer border border-amber-300/60"
+              aria-label={`Zgłoś chęć partnerstwa do pomysłu: ${idea.title}`}
+              className="min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-200/90 hover:bg-amber-300 text-amber-950 transition-all cursor-pointer border border-amber-300/80 focus-visible:ring-2 focus-visible:ring-stone-900"
             >
               <Handshake className="w-3.5 h-3.5 text-amber-900" aria-hidden="true" />
               <span>Partneruj</span>
@@ -207,9 +210,9 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             <button
               type="button"
               onClick={onAssignExpert}
-              aria-label={`Przypisz mentora ROPS do innowacji: ${idea.title}`}
               title="Przypisz mentora ROPS Kraków"
-              className="min-h-[28px] flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-white/80 hover:bg-white text-stone-800 transition-all cursor-pointer border border-black/5"
+              aria-label={`Przypisz mentora ROPS do pomysłu: ${idea.title}`}
+              className="min-h-[28px] flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-white/90 hover:bg-white text-stone-900 transition-all cursor-pointer border border-black/10 focus-visible:ring-2 focus-visible:ring-stone-900"
             >
               <GraduationCap className="w-3.5 h-3.5 text-stone-700" aria-hidden="true" />
               <span>+ Mentor</span>
@@ -220,9 +223,9 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             <button
               type="button"
               onClick={onChat}
-              aria-label={`Otwórz czat z autorem innowacji: ${idea.title}`}
               title="Czat z autorem"
-              className="min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/70 hover:bg-white text-stone-800 transition-all cursor-pointer"
+              aria-label={`Rozpocznij czat z autorem: ${idea.authorName}`}
+              className="min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/80 hover:bg-white text-stone-900 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900"
             >
               <MessageSquare className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Czat</span>
@@ -233,13 +236,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             <button
               type="button"
               onClick={onVote}
-              aria-label={`Polub pomysł: ${idea.title}, aktualnie polubień: ${idea.likes}`}
+              title={idea.userVote === "like" ? "Cofnij polubienie" : "Polub ten pomysł"}
+              aria-label={`Polub pomysł. Aktualna liczba polubień: ${idea.likes}`}
               aria-pressed={idea.userVote === "like"}
-              title="Polub"
-              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${
                 idea.userVote === "like"
                   ? "bg-stone-900 text-white shadow-xs"
-                  : "bg-white/70 hover:bg-white text-stone-800"
+                  : "bg-white/80 hover:bg-white text-stone-900"
               }`}
             >
               <ThumbsUp
@@ -254,17 +257,13 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             <button
               type="button"
               onClick={onToggleTesting}
-              aria-label={
-                isTester
-                  ? `Jesteś testerem innowacji: ${idea.title}. Łącznie testerów: ${idea.testersCount}. Kliknij, aby zrezygnować.`
-                  : `Dołącz jako tester do innowacji: ${idea.title}. Aktualnie testerów: ${idea.testersCount}.`
-              }
+              title={isTester ? "Rezygnuj z testowania" : "Dołącz jako tester"}
+              aria-label={`Dołącz jako tester pomysłu. Aktualna liczba testerów: ${idea.testersCount}`}
               aria-pressed={isTester}
-              title="Testerzy"
-              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              className={`min-h-[28px] flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 ${
                 isTester
                   ? "bg-emerald-700 text-white shadow-xs"
-                  : "bg-white/70 hover:bg-white text-stone-800"
+                  : "bg-white/80 hover:bg-white text-stone-900"
               }`}
             >
               <Users className="w-3.5 h-3.5" aria-hidden="true" />
@@ -273,7 +272,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

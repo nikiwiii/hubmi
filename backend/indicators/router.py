@@ -51,7 +51,6 @@ def fetch_indicators_from_supabase() -> Dict[str, Any]:
                 continue
             result[ind_id] = {
                 "name": ind.get("name", ind_id),
-                "category_id": ind.get("category_id"),
                 "unit": ind.get("unit", ""),
                 "description": ind.get("description", ""),
                 "years": [],
@@ -131,36 +130,6 @@ def refresh_indicators_cache():
     _CACHE_DATA = None
     _CACHE_TIMESTAMP = 0
     return {"success": True, "message": "Cache wskaźników został wyczyszczony."}
-
-
-@router.get("/categories", summary="Pobierz kategorie wskaźników")
-def get_indicator_categories():
-    if is_supabase_connected and supabase_client:
-        try:
-            r = supabase_client.table("indicator_categories").select("*").order("sort_order").execute()
-            if r.data:
-                return {"success": True, "categories": r.data}
-        except Exception as e:
-            logger.warning(f"Błąd pobierania kategorii z Supabase: {e}")
-
-    # Fallback lokalny
-    from seed_indicators import CATEGORIES_DATA
-    return {"success": True, "categories": CATEGORIES_DATA}
-
-
-@router.get("/powiaty", summary="Pobierz listę 22 małopolskich powiatów")
-def get_powiaty_list():
-    if is_supabase_connected and supabase_client:
-        try:
-            r = supabase_client.table("powiaty").select("*").order("name").execute()
-            if r.data:
-                return {"success": True, "powiaty": r.data}
-        except Exception as e:
-            logger.warning(f"Błąd pobierania powiatów z Supabase: {e}")
-
-    # Fallback lokalny
-    from seed_indicators import POWIATY_DATA
-    return {"success": True, "powiaty": POWIATY_DATA}
 
 
 from pydantic import BaseModel, Field
