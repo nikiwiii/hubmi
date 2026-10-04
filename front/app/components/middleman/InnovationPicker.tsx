@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { InnovationRecord } from "../../lib/types";
 import { useApp } from "../../context/AppContext";
+import { getInnovationCategoryStyle } from "../../lib/middleman";
 
 interface InnovationPickerProps {
   onSelect: (innovation: InnovationRecord) => void;
@@ -144,42 +145,64 @@ export const InnovationPicker: React.FC<InnovationPickerProps> = ({
         <>
           {/* Siatka 15 innowacji na stronę */}
           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentResults.map((inn) => (
-              <li key={inn.id}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(inn)}
-                  className="w-full h-full text-left p-5 bg-white hover:bg-[#FAF9F5] border border-black/5 hover:border-black/15 rounded-2xl shadow-2xs hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between gap-3"
-                >
-                  <div className="space-y-2">
-                    <h3 className="text-base font-bold text-stone-900 group-hover:text-stone-950 leading-snug line-clamp-2">
-                      {inn.title}
-                    </h3>
-                    {(inn.addressed_problems || inn.description) && (
-                      <p className="text-xs sm:text-sm text-stone-600 leading-relaxed line-clamp-3">
-                        {inn.addressed_problems || inn.description}
-                      </p>
-                    )}
-                  </div>
+            {currentResults.map((inn) => {
+              const style = getInnovationCategoryStyle(
+                inn.category,
+                inn.target_group || inn.title,
+              );
 
-                  <div className="space-y-3 pt-1">
-                    {inn.target_group && (
-                      <div className="inline-flex items-center gap-1.5 text-xs text-stone-500 bg-stone-50 px-2.5 py-1 rounded-lg border border-black/5 max-w-full">
-                        <Users2 className="w-3.5 h-3.5 shrink-0 text-stone-400" />
-                        <span className="truncate">{inn.target_group}</span>
+              return (
+                <li key={inn.id}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(inn)}
+                    className={`w-full h-full text-left p-5 ${style.cardBg} border ${style.border} rounded-2xl shadow-2xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between gap-3 relative overflow-hidden`}
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${style.badgeBg}`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${style.accentDot}`}
+                          />
+                          <span className="truncate max-w-[200px]">
+                            {style.label}
+                          </span>
+                        </span>
                       </div>
-                    )}
 
-                    <div className="pt-2.5 border-t border-black/5 flex items-center justify-between text-xs sm:text-sm font-semibold text-stone-800 group-hover:text-stone-950">
-                      <span>Wybierz innowację</span>
-                      <div className="w-7 h-7 rounded-full bg-stone-100 group-hover:bg-stone-900 text-stone-500 group-hover:text-white flex items-center justify-center transition-all shrink-0">
-                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                      <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 group-hover:text-stone-950 dark:group-hover:text-white leading-snug line-clamp-2">
+                        {inn.title}
+                      </h3>
+                      {(inn.addressed_problems || inn.description) && (
+                        <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                          {inn.addressed_problems || inn.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-3 pt-1">
+                      {inn.target_group && (
+                        <div className="inline-flex items-center gap-1.5 text-xs text-stone-700 dark:text-stone-300 bg-white/70 dark:bg-white/10 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/10 max-w-full shadow-2xs">
+                          <Users2 className="w-3.5 h-3.5 shrink-0 text-stone-500 dark:text-stone-400" />
+                          <span className="truncate font-medium">
+                            {inn.target_group}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="pt-2.5 border-t border-black/5 dark:border-white/10 flex items-center justify-between text-xs sm:text-sm font-semibold text-stone-800 dark:text-stone-200 group-hover:text-stone-950 dark:group-hover:text-white">
+                        <span>Wybierz innowację</span>
+                        <div className="w-7 h-7 rounded-full bg-stone-900/10 dark:bg-white/10 group-hover:bg-stone-900 dark:group-hover:bg-white text-stone-800 dark:text-stone-200 group-hover:text-white dark:group-hover:text-stone-950 flex items-center justify-center transition-all shrink-0">
+                          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
-              </li>
-            ))}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
 
           {/* Panel paginacji: 15 innowacji na stronę */}

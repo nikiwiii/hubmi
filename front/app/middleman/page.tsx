@@ -141,17 +141,29 @@ function SelectedInnovation({
   innovation: InnovationRecord;
   onChange?: () => void;
 }) {
+  const style = getInnovationCategoryStyle(
+    innovation.category,
+    innovation.target_group || innovation.title,
+  );
+
   return (
-    <div className="print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[#FAF4E5] dark:bg-[#24272F] border border-[#E7DAC0] dark:border-white/10">
-      <div className="space-y-0.5">
-        <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-          Wybrana innowacja
+    <div
+      className={`print:hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl ${style.cardBg} border ${style.border}`}
+    >
+      <div className="space-y-1">
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${style.badgeBg}`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${style.accentDot}`} />
+          <span>{style.label}</span>
         </span>
-        <p className="text-base font-bold text-stone-900 dark:text-white">{innovation.title}</p>
+        <p className="text-base font-bold text-stone-900 dark:text-white pt-0.5">
+          {innovation.title}
+        </p>
         {innovation.target_group && (
-          <p className="text-xs text-stone-600 dark:text-stone-400 flex items-center gap-1.5">
-            <Users2 className="w-3.5 h-3.5" />
-            {innovation.target_group}
+          <p className="text-xs text-stone-600 dark:text-stone-300 flex items-center gap-1.5">
+            <Users2 className="w-3.5 h-3.5 shrink-0 text-stone-500 dark:text-stone-400" />
+            <span>{innovation.target_group}</span>
           </p>
         )}
       </div>
