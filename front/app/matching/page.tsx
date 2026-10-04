@@ -219,10 +219,14 @@ function MatchingContent() {
         )}
 
         {/* Obszar Odpowiedzi z Bazy Wektorowej / Modelu (GÓRA) */}
-        <div className="flex-1 p-5 sm:p-7 space-y-6 overflow-y-auto min-h-0">
+        <div
+          className={`flex-1 p-5 sm:p-7 overflow-y-auto min-h-0 ${
+            messages.length === 0 ? "flex flex-col" : "space-y-6"
+          }`}
+        >
           {/* Stan początkowy (przed zadaniem pytania) */}
           {messages.length === 0 && (
-            <div className="h-full min-h-[320px] flex flex-col items-center justify-center text-center space-y-3.5 p-4 my-auto select-none">
+            <div className="m-auto flex flex-col items-center justify-center text-center space-y-3.5 p-4 select-none">
               <div className="w-12 h-12 rounded-2xl bg-stone-900 text-white flex items-center justify-center shadow-xs">
                 <Sparkles className="w-6 h-6 text-[#EFE5C6]" />
               </div>
