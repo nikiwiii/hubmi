@@ -169,3 +169,18 @@ npx expo start
 - **Typografia i Markdown:** Odpowiedzi Doradcy RAG są renderowane za pomocą bibliotek `react-markdown` oraz `remark-gfm` z dedykowaną, czytelną typografią dopasowaną do identyfikacji wizualnej Hubmi.
 - **Interaktywna Mapa:** Komponent [MalopolskaMap.tsx](file:///c:/Users/fabia/hubmi/front/app/components/knowledge/MalopolskaMap.tsx) umożliwia przeglądanie innowacji i wskaźników statystycznych per powiat.
 - **Komunikator na żywo:** Obsługa automatycznego odpytywania co 3 sekundy w tle bez blokowania interfejsu.
+
+---
+
+## 💰 Kosztorys Utrzymania i Wymagania Formalne (TCO)
+
+Szczegółowy dokument spełniający wymóg formalny wyzwania (*„przewidywany koszt obsługi/utrzymania rozwiązania i opis niezbędnych do tego zasobów”*) znajduje się w pliku:
+👉 **[KOSZTY_I_ZASOBY.md](file:///c:/Users/fabia/hubmi/KOSZTY_I_ZASOBY.md)**
+
+### Podsumowanie TCO dla ROPS Kraków:
+- **Miesięczny koszt infrastruktury (Chmura):** od **~340 do ~560 PLN brutto** (Vercel + Hetzner/OVH VPS + Supabase Pro + Groq API).
+- **Roczny koszt infrastruktury:** od **~4 100 do ~6 700 PLN brutto**.
+- **Wariant On-Premise (serwerownia Urzędu Marszałkowskiego):** **0 PLN** opłat licencyjnych (100% Open Source: self-hosted PostgreSQL z pgvector, kontenery Docker).
+- **Zasoby ludzkie:** Koordynator Hubu (0.25 - 0.5 FTE pracownik ROPS) + 10-15h miesięcznie wsparcia technicznego/DevOps.
+- **Dostępność WCAG 2.1 AA:** Natywna implementacja w kodzie, brak płatnych widgetów zewnętrznych.
+
