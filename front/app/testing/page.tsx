@@ -194,8 +194,8 @@ export default function TestingPage() {
             onClick={() => setSelectedFilter("all")}
             className={`min-h-[38px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               selectedFilter === "all"
-                ? "bg-stone-900 text-white shadow-2xs"
-                : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
+                ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
             }`}
           >
             Wszystkie ({ideas.length})
@@ -208,8 +208,8 @@ export default function TestingPage() {
             onClick={() => setSelectedFilter("testing_only")}
             className={`min-h-[38px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               selectedFilter === "testing_only"
-                ? "bg-stone-900 text-white shadow-2xs"
-                : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
+                ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
             }`}
           >
             Faza testowa ({ideas.filter((i) => i.status === "testing" || i.testersCount > 0).length})
@@ -223,8 +223,8 @@ export default function TestingPage() {
               onClick={() => setSelectedFilter("my_tests")}
               className={`min-h-[38px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 selectedFilter === "my_tests"
-                  ? "bg-stone-900 text-white shadow-2xs"
-                  : "text-stone-700 hover:text-stone-900 hover:bg-stone-100"
+                  ? "bg-stone-900 dark:bg-white text-white dark:text-stone-950 shadow-2xs"
+                  : "text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10"
               }`}
             >
               Moje testy ({myTestingCount})

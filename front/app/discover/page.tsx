@@ -216,7 +216,7 @@ export default function DiscoverPage() {
           type="button"
           onClick={() => navigate("propose")}
           aria-label="Zaproponuj nowy pomysł innowacji"
-          className="self-start sm:self-auto min-h-[40px] flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-colors cursor-pointer shadow-2xs"
+          className="self-start sm:self-auto min-h-[40px] flex items-center gap-1.5 px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-white dark:bg-white dark:hover:bg-stone-100 dark:text-stone-950 rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
         >
           <Plus className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Zaproponuj pomysł</span>
@@ -237,7 +237,7 @@ export default function DiscoverPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Szukaj pomysłów, autorów lub wyzwań..."
             aria-label="Szukaj pomysłów, autorów lub wyzwań"
-            className="w-full pl-10 pr-8 py-2 text-base font-medium text-stone-900 dark:text-white placeholder:text-stone-500 dark:placeholder:text-stone-400 rounded-xl focus:outline-none bg-transparent"
+            className="w-full pl-10 pr-8 py-2 text-base font-medium text-stone-900 dark:text-white placeholder:text-stone-500 dark:placeholder:text-stone-400 bg-transparent rounded-xl focus:outline-none"
           />
           {searchQuery && (
             <button

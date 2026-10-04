@@ -146,30 +146,30 @@ export default function HomePage() {
          ========================================================================= */}
       <section
         aria-label="Wprowadzenie do platformy"
-        className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 text-white p-6 sm:p-10 md:p-12 shadow-xl border border-white/10"
+        className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-white via-[#FAF9F5] to-stone-100 dark:from-stone-900 dark:via-stone-850 dark:to-stone-950 text-stone-900 dark:text-white p-6 sm:p-10 md:p-12 shadow-sm dark:shadow-xl border border-stone-200/80 dark:border-white/10 transition-colors"
       >
         {/* Dekoracyjne elementy geometryczne w tle */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-500/10 dark:bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl space-y-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white/10 text-stone-200 border border-white/15 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-stone-100 dark:bg-white/10 text-stone-800 dark:text-stone-200 border border-stone-200/80 dark:border-white/15 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
             <span>MiNNO • Małopolskie Innowacje Społeczne</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight sm:leading-none">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight sm:leading-none text-stone-900 dark:text-white">
             Zintegrowana platforma wspierania innowacji społecznych w Małopolsce
           </h1>
 
-          <p className="text-stone-300 text-sm sm:text-base md:text-lg leading-relaxed font-normal max-w-2xl">
+          <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base md:text-lg leading-relaxed font-normal max-w-2xl">
             Od diagnozy 17 wskaźników regionalnych ROPS Kraków, przez inteligentne dopasowanie AI i standaryzację usług CUS, aż po automatyczne generowanie wniosków grantowych.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-3">
             <Link
               href="/discover"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white hover:bg-stone-100 text-stone-950 text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer group"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white dark:bg-white dark:hover:bg-stone-100 dark:text-stone-950 text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer group"
             >
               <Compass className="w-4 h-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               <span>Przeglądaj innowacje</span>
@@ -178,7 +178,7 @@ export default function HomePage() {
 
             <Link
               href="/knowledge"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold border border-white/15 backdrop-blur-md transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200/90 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border-white/15 backdrop-blur-md transition-colors cursor-pointer"
             >
               <BookOpen className="w-4 h-4" aria-hidden="true" />
               <span>Raporty i kartogramy</span>
@@ -187,22 +187,22 @@ export default function HomePage() {
         </div>
 
         {/* Wskaźniki statystyczne platformy */}
-        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8 pt-6 border-t border-white/10">
+        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8 pt-6 border-t border-stone-200 dark:border-white/10">
           <div>
-            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">17</div>
-            <div className="text-xs text-stone-400 font-medium mt-0.5">Wskaźników GUS / ROPS</div>
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">17</div>
+            <div className="text-xs text-stone-600 dark:text-stone-400 font-medium mt-0.5">Wskaźników GUS / ROPS</div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">22</div>
-            <div className="text-xs text-stone-400 font-medium mt-0.5">Powiaty Małopolski</div>
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">22</div>
+            <div className="text-xs text-stone-600 dark:text-stone-400 font-medium mt-0.5">Powiaty Małopolski</div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">100+</div>
-            <div className="text-xs text-stone-400 font-medium mt-0.5">Innowacji społecznych</div>
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">100+</div>
+            <div className="text-xs text-stone-600 dark:text-stone-400 font-medium mt-0.5">Innowacji społecznych</div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">100%</div>
-            <div className="text-xs text-stone-400 font-medium mt-0.5">Zgodność WCAG 2.2</div>
+            <div className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight">100%</div>
+            <div className="text-xs text-stone-600 dark:text-stone-400 font-medium mt-0.5">Zgodność WCAG 2.2</div>
           </div>
         </div>
       </section>
